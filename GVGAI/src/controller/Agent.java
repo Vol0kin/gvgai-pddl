@@ -3,6 +3,9 @@ package controller; //The package name is the same as the username in the web.
 // Imports related to GVGAI
 import core.player.AbstractPlayer;
 import core.game.StateObservation;
+import core.game.SerializableStateObservation;
+import core.game.GameDescription;
+import core.vgdl.VGDLRegistry;
 import tools.ElapsedCpuTimer;
 import ontology.Types;
 
@@ -27,10 +30,11 @@ public class Agent extends AbstractPlayer {
 
         //Get the available actions in this game.
         ArrayList<Types.ACTIONS> actions = stateObs.getAvailableActions();
-        System.out.println(stateObs.getObservationGrid()[3][9]);
+        //System.out.println(stateObs.getObservationGrid()[6][6].get(0));
 
         System.out.println(Parser.<String, ArrayList<String>>parseJSONFile("correspondence.json").get("A").get(0));
-
+        System.out.println(VGDLRegistry.GetInstance().getRegisteredSpriteKey(10));
+        Parser.parseStateObservation(stateObs);
 
         //Determine an index randomly and get the action to return.
         int index = randomGenerator.nextInt(actions.size());
