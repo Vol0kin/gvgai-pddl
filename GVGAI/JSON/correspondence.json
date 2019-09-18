@@ -1,0 +1,11 @@
+{
+	"background": ["(terrain-empty cell)"],
+	"dirt": ["(terrain-ground cell)"],
+	"wall": ["(terrain-wall cell)"],
+	"exitdoor": ["(at exit cell)", "(terrain-empty cell)"],
+	"diamond": ["(at gem cell)", "(terrain-empty cell)"],
+	"boulder": ["(at boulder cell)", "(terrain-empty cell)"],
+	"avatar": ["(at player cell)", "(terrain-empty cell)"],
+	"crab": ["(at crab cell)", "(terrain-empty cell)"],
+	"butterfly": ["(at butterfly cell)", "(terrain-empty cell)"]
+}
