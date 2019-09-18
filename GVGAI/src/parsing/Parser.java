@@ -147,8 +147,19 @@ public class Parser {
         return varsFromPredicates;
     }
 
-    public static void parseGameToPDDL(String[][] gameMap, Map<String, String> variables,
-                                       Map<String, ArrayList<String>> predicates,
+
+    /**
+     * WIP
+     * @param gameMap
+     * @param correspondence
+     * @param variables
+     * @param predicateVars
+     * @param connections
+     */
+    public static void parseGameToPDDL(String[][] gameMap,
+                                       Map<String, ArrayList<String>> correspondence,
+                                       Map<String, String> variables,
+                                       Map<String, Set<String>> predicateVars,
                                        Map<String, String> connections)
     {
         Map<String, Integer> numVariables = new HashMap<>();
@@ -166,7 +177,7 @@ public class Parser {
             for (int x = 0; x < X_MAX; x++) {
                 String cellType = gameMap[x][y];
 
-                if (predicates.containsKey(cellType)) {
+                if (correspondence.containsKey(cellType)) {
                     // Increase the number of variables from that type
                     numVariables.replace(cellType, numVariables.get(cellType) + 1);
 
