@@ -168,6 +168,10 @@ public class Parser {
             numVariables.put(key, 0);
         }
 
+        System.out.println(numVariables);
+        System.out.println(correspondence);
+        System.out.println(predicateVars);
+
         ArrayList<String> predicateList = new ArrayList<>();
         ArrayList<String> connectionList = new ArrayList<>();
 
@@ -177,13 +181,17 @@ public class Parser {
             for (int x = 0; x < X_MAX; x++) {
                 String cellType = gameMap[x][y];
 
-                if (correspondence.containsKey(cellType)) {
+                if (predicateVars.containsKey(cellType)) {
                     // Increase the number of variables from that type
-                    numVariables.replace(cellType, numVariables.get(cellType) + 1);
+                    for (String var: predicateVars.get(cellType)) {
+                        numVariables.put(var, numVariables.get(var) + 1);
+                    }
 
 
                 }
             }
         }
+
+        System.out.println(numVariables);
     }
 }

@@ -47,7 +47,8 @@ public class Agent extends AbstractPlayer {
 
         //System.out.println(Parser.<String, ArrayList<String>>parseJSONFile("correspondence.json").get("A").get(0));
         System.out.println(VGDLRegistry.GetInstance().getRegisteredSpriteKey(10));
-        Parser.parseStateObservation(stateObs);
+        String[][] gameMap = Parser.parseStateObservation(stateObs);
+        Parser.parseGameToPDDL(gameMap, correspondence, variables, predicateVars, null);
 
         //Determine an index randomly and get the action to return.
         int index = randomGenerator.nextInt(actions.size());
