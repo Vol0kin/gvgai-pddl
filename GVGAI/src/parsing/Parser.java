@@ -168,9 +168,9 @@ public class Parser {
             numVariables.put(key, 0);
         }
 
-        System.out.println(numVariables);
-        System.out.println(correspondence);
-        System.out.println(predicateVars);
+        //System.out.println(numVariables);
+        //System.out.println(correspondence);
+        //System.out.println(predicateVars);
 
         ArrayList<String> predicateList = new ArrayList<>();
         ArrayList<String> connectionList = new ArrayList<>();
@@ -181,17 +181,32 @@ public class Parser {
             for (int x = 0; x < X_MAX; x++) {
                 String cellType = gameMap[x][y];
 
+                // Check if there are predicates associated to the game element
                 if (predicateVars.containsKey(cellType)) {
+
                     // Increase the number of variables from that type
                     for (String var: predicateVars.get(cellType)) {
                         numVariables.put(var, numVariables.get(var) + 1);
                     }
 
+                    // Add to each variable in each predicate its number
+                    for (String pred: correspondence.get(cellType)) {
+                        // Create new empty output predicate
+                        String outPredicate = "";
 
+                        for (String var: predicateVars.get(cellType)) {
+                            if (pred.contains(var)) {
+                                outPredicate = pred.replace(var, var + numVariables.get(var));
+                            }
+                        }
+
+                        predicateList.add(outPredicate);
+                    }
                 }
             }
         }
 
-        System.out.println(numVariables);
+        //System.out.println(numVariables);
+        //System.out.println(predicateList);
     }
 }

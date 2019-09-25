@@ -46,9 +46,12 @@ public class Agent extends AbstractPlayer {
         //System.out.println(stateObs.getObservationGrid()[6][6].get(0));
 
         //System.out.println(Parser.<String, ArrayList<String>>parseJSONFile("correspondence.json").get("A").get(0));
-        System.out.println(VGDLRegistry.GetInstance().getRegisteredSpriteKey(10));
+        //System.out.println(VGDLRegistry.GetInstance().getRegisteredSpriteKey(10));
         String[][] gameMap = Parser.parseStateObservation(stateObs);
+
+        long time = elapsedTimer.remainingTimeMillis();
         Parser.parseGameToPDDL(gameMap, correspondence, variables, predicateVars, null);
+        System.out.println("Consumed time: " + (time - elapsedTimer.remainingTimeMillis()));
 
         //Determine an index randomly and get the action to return.
         int index = randomGenerator.nextInt(actions.size());
