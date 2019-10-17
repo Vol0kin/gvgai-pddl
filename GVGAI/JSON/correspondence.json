@@ -6,6 +6,6 @@
 	"diamond": ["(at gem cell)", "(terrain-empty cell)"],
 	"boulder": ["(at boulder cell)", "(terrain-empty cell)"],
 	"avatar": ["(at player cell)", "(terrain-empty cell)"],
-	"crab": ["(at crab cell)", "(terrain-empty cell)"],
-	"butterfly": ["(at butterfly cell)", "(terrain-empty cell)"]
+	"crab": ["(at scorpion cell)", "(terrain-empty cell)"],
+	"butterfly": ["(at bat cell)", "(terrain-empty cell)"]
 }

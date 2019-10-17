@@ -3,7 +3,7 @@
 	"player": "Player",
 	"boulder": "Boulder",
 	"gem": "Gem",
-	"butterfly": "Butterfly",
-	"crab": "Crab",
+	"bat": "Bat",
+	"scorpion": "Scorpion",
 	"cell": "Cell"
 }

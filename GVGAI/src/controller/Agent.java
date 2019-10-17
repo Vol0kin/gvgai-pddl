@@ -27,8 +27,7 @@ public class Agent extends AbstractPlayer {
     protected Map<String, Set<String>> predicateVars;
 
     //Constructor. It must return in 1 second maximum.
-    public Agent(StateObservation so, ElapsedCpuTimer elapsedTimer)
-    {
+    public Agent(StateObservation so, ElapsedCpuTimer elapsedTimer) {
         randomGenerator = new Random();
         correspondence = Parser.<String, ArrayList<String>>parseJSONFile("JSON/correspondence.json");
         variables = Parser.<String, String>parseJSONFile("JSON/variables.json");

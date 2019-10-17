@@ -10,6 +10,8 @@ import tools.com.google.gson.Gson;
 import tools.com.google.gson.stream.JsonReader;
 
 // Import java utils (maps, arrays...)
+import java.io.*;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -17,8 +19,7 @@ import java.util.Set;
 import java.util.HashSet;
 
 // Import IO
-import java.io.FileReader;
-import java.io.FileNotFoundException;
+
 
 public class Parser {
 
@@ -90,6 +91,7 @@ public class Parser {
                 }
             }
         }
+
 
         /*for (int y = 0; y < Y_MAX; y++) {
             for (int x = 0; x < X_MAX; x++) {
@@ -163,14 +165,17 @@ public class Parser {
                                        Map<String, String> connections)
     {
         Map<String, Integer> numVariables = new HashMap<>();
+        Map<String, ArrayList<String>> objects = new HashMap<>();
 
         for (String key: variables.keySet()) {
             numVariables.put(key, 0);
+            objects.put(key, new ArrayList<>());
         }
+
 
         //System.out.println(numVariables);
         //System.out.println(correspondence);
-        //System.out.println(predicateVars);
+        System.out.println(predicateVars);
 
         ArrayList<String> predicateList = new ArrayList<>();
         ArrayList<String> connectionList = new ArrayList<>();
@@ -192,21 +197,75 @@ public class Parser {
                     // Add to each variable in each predicate its number
                     for (String pred: correspondence.get(cellType)) {
                         // Create new empty output predicate
-                        String outPredicate = "";
+                        String outPredicate = pred;
+                       // System.out.println(predicateVars);
 
                         for (String var: predicateVars.get(cellType)) {
+
                             if (pred.contains(var)) {
-                                outPredicate = pred.replace(var, var + numVariables.get(var));
+                                String objectNum = var + numVariables.get(var);
+                                outPredicate = outPredicate.replace(var, objectNum);
+                                objects.get(var).add(objectNum);
                             }
                         }
-
                         predicateList.add(outPredicate);
                     }
                 }
             }
         }
 
-        //System.out.println(numVariables);
-        //System.out.println(predicateList);
+        try (BufferedWriter bf = new BufferedWriter(new FileWriter("planning/problem.pddl"))) {
+            // Write problem name
+            // THIS LINE HAS TO BE CHANGED LATER ON, ALLOWING TO CHANGE THE PROBLEM
+            bf.write("(define (problem Boulders");
+            bf.newLine();
+
+            // Write domain that is used
+            // THIS LINE HAS TO BE CHANGED LATER ON, ALLOWING AUTOMATIC CHANGE
+            bf.write("(:domain Boulderdash)");
+            bf.newLine();
+
+            // Write the objects
+            // Each variable will be written
+            bf.write("(:objects");
+            bf.newLine();
+
+            // Write each object
+            for (String key: objects.keySet()) {
+                String objectsStr = String.join(" ", objects.get(key));
+                objectsStr += String.format(" - %s", variables.get(key));
+                bf.write(objectsStr);
+                bf.newLine();
+            }
+
+            // Finish object writing
+            bf.write(")");
+            bf.newLine();
+
+            // Start init writing
+            bf.write("(:init");
+            bf.newLine();
+
+            // Write the predicates list into the file
+            for (String line: predicateList) {
+                bf.write(line);
+                bf.newLine();
+            }
+
+            // Finish init writing
+            bf.write(")");
+            bf.newLine();
+
+            // Finish problem writing
+            bf.write(")");
+
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        System.out.println(numVariables);
+        System.out.println(predicateList);
+        System.out.println(objects);
     }
 }
