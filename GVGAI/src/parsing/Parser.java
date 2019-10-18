@@ -171,7 +171,7 @@ public class Parser {
 
         //System.out.println(numVariables);
         //System.out.println(correspondence);
-        System.out.println(predicateVars);
+        //System.out.println(predicateVars);
 
         ArrayList<String> predicateList = new ArrayList<>();
         Set<String> connectionSet = new LinkedHashSet<>();
@@ -200,7 +200,7 @@ public class Parser {
                                 connectionSet.add(connection);
                             }
 
-                            if (y + 1 < X_MAX) {
+                            if (y + 1 < Y_MAX) {
                                 String connection = connections.get("down");
                                 connection = connection.replace("?c", objects.get("cell").get(numCells - 1));
                                 connection = connection.replace("?n", "cell" + (numCells + X_MAX));
@@ -214,7 +214,7 @@ public class Parser {
                                 connectionSet.add(connection);
                             }
 
-                            if (x + 1 < Y_MAX) {
+                            if (x + 1 < X_MAX) {
                                 String connection = connections.get("right");
                                 connection = connection.replace("?c", objects.get("cell").get(numCells - 1));
                                 connection = connection.replace("?n", "cell" + (numCells + 1));
@@ -233,8 +233,6 @@ public class Parser {
 
                             if (pred.contains(var)) {
                                 outPredicate = outPredicate.replace(var, objects.get(var).get(numVariables.get(var) - 1));
-
-
                             }
 
 
@@ -248,7 +246,7 @@ public class Parser {
         try (BufferedWriter bf = new BufferedWriter(new FileWriter("planning/problem.pddl"))) {
             // Write problem name
             // THIS LINE HAS TO BE CHANGED LATER ON, ALLOWING TO CHANGE THE PROBLEM
-            bf.write("(define (problem Boulders");
+            bf.write("(define (problem Boulders)");
             bf.newLine();
 
             // Write domain that is used
@@ -283,6 +281,11 @@ public class Parser {
                 bf.newLine();
             }
 
+            // Write orientation
+            // THIS PART HAS TO CHANGE LATER ON
+            bf.write("(oriented-right player1)");
+            bf.newLine();
+
             // Write each connection into the file
             for (String connection: connectionSet) {
                 bf.write(connection);
@@ -290,6 +293,23 @@ public class Parser {
             }
 
             // Finish init writing
+            bf.write(")");
+            bf.newLine();
+
+            // Write goal
+            // THIS HAS TO CHANGE
+            bf.write("(:goal");
+            bf.newLine();
+
+            bf.write("(AND");
+            bf.newLine();
+
+            bf.write("(got gem13)");
+            bf.newLine();
+
+            bf.write(")");
+            bf.newLine();
+
             bf.write(")");
             bf.newLine();
 
@@ -301,9 +321,9 @@ public class Parser {
             e.printStackTrace();
         }
 
-        System.out.println(numVariables);
-        System.out.println(predicateList);
-        System.out.println(objects);
-        System.out.println(connectionSet);
+        //System.out.println(numVariables);
+        //System.out.println(predicateList);
+        //System.out.println(objects);
+        //System.out.println(connectionSet);
     }
 }

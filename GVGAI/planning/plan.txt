@@ -1,0 +1,82 @@
+
+ff: parsing domain file
+domain 'BOULDERDASH' defined
+ ... done.
+ff: parsing problem file
+problem 'BOULDERS' defined
+ ... done.
+
+
+no metric specified. plan length assumed.
+
+task contains conditional effects. turning off state domination.
+
+
+
+checking for cyclic := effects --- OK.
+
+ff: search configuration is EHC, if that fails then  best-first on 1*g(s) + 5*h(s) where
+    metric is  plan length
+
+Cueing down from goal distance:   21 into depth [1][2]
+                                  20            [1][2]
+                                  19            [1]
+                                  18            [1]
+                                  17            [1]
+                                  16            [1]
+                                  15            [1]
+                                  14            [1]
+                                  13            [1]
+                                  12            [1]
+                                  11            [1]
+                                  10            [1][2]
+                                   9            [1]
+                                   8            [1]
+                                   7            [1][2]
+                                   6            [1]
+                                   5            [1]
+                                   4            [1][2]
+                                   3            [1]
+                                   2            [1]
+                                   1            [1]
+                                   0            
+
+ff: found legal plan as follows
+
+step    0: TURN-UP PLAYER1
+        1: MOVE-UP PLAYER1 CELL194 CELL168
+        2: TURN-RIGHT PLAYER1
+        3: MOVE-RIGHT PLAYER1 CELL168 CELL169
+        4: MOVE-RIGHT PLAYER1 CELL169 CELL170
+        5: MOVE-RIGHT PLAYER1 CELL170 CELL171
+        6: MOVE-RIGHT PLAYER1 CELL171 CELL172
+        7: MOVE-RIGHT PLAYER1 CELL172 CELL173
+        8: MOVE-RIGHT PLAYER1 CELL173 CELL174
+        9: MOVE-RIGHT PLAYER1 CELL174 CELL175
+       10: MOVE-RIGHT PLAYER1 CELL175 CELL176
+       11: MOVE-RIGHT PLAYER1 CELL176 CELL177
+       12: MOVE-RIGHT PLAYER1 CELL177 CELL178
+       13: TURN-UP PLAYER1
+       14: MOVE-UP PLAYER1 CELL178 CELL152
+       15: MOVE-UP PLAYER1 CELL152 CELL126
+       16: TURN-DOWN PLAYER1
+       17: TURN-RIGHT PLAYER1
+       18: MOVE-RIGHT PLAYER1 CELL126 CELL127
+       19: DIG-RIGHT PLAYER1 CELL127 CELL128 BOULDER20
+       20: MOVE-RIGHT PLAYER1 CELL127 CELL128
+       21: TURN-DOWN PLAYER1
+       22: MOVE-DOWN PLAYER1 CELL128 CELL154
+       23: TURN-RIGHT PLAYER1
+       24: MOVE-RIGHT PLAYER1 CELL154 CELL155
+       25: GET-GEM PLAYER1 CELL155 GEM13
+     		Coste Total: 0.00
+
+
+time spent:    0.00 seconds instantiating 52412 easy, 0 hard action templates
+               0.02 seconds reachability analysis, yielding 21818 facts and 1021 actions
+               0.00 seconds creating final representation with 993 relevant facts, 0 relevant fluents
+               0.01 seconds computing LNF
+               0.00 seconds building connectivity graph
+               0.00 seconds searching, evaluating 30 states, to a max depth of 2
+               0.03 seconds total time
+

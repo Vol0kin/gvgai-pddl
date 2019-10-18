@@ -9,6 +9,10 @@ import core.vgdl.VGDLRegistry;
 import tools.ElapsedCpuTimer;
 import ontology.Types;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -56,9 +60,53 @@ public class Agent extends AbstractPlayer {
 
         //Determine an index randomly and get the action to return.
         int index = randomGenerator.nextInt(actions.size());
-        Types.ACTIONS action = actions.get(index);
+        Types.ACTIONS action = Types.ACTIONS.ACTION_NIL;
+
+        time = elapsedTimer.remainingTimeMillis();
+        callPlanner();
+        System.out.println("Consumed time waiting for planner's response: " + (time - elapsedTimer.remainingTimeMillis()));
 
         //Return the action.
         return action;
+    }
+
+    public void callPlanner() {
+        // Strings that containt the paths for the planner, the domain file,
+        // the problem file and the log file
+        String plannerRoute = "planning/ff",
+                domainFile = "planning/domain.pddl",
+                problemFile = "planning/problem.pddl",
+                logFileRoute = "planning/plan.txt";
+
+        // Create new process which will run the planner
+        ProcessBuilder pb = new ProcessBuilder(plannerRoute, "-o", domainFile,
+                "-f", problemFile);
+        File log = new File(logFileRoute);
+
+        // Clear log file
+        try {
+            PrintWriter writer = new PrintWriter(log);
+            writer.print("");
+            writer.close();
+        } catch (FileNotFoundException ex) {
+            System.out.println("Error: archivo no encontrado " + ex);
+        }
+
+
+        // Redirect error and output streams
+        pb.redirectErrorStream(true);
+        pb.redirectOutput(ProcessBuilder.Redirect.appendTo(log));
+
+        // Run process and wait until it finishes
+        try {
+            Process process = pb.start();
+            try {
+                process.waitFor();
+            } catch (InterruptedException inte) {
+                System.out.println("Se ha interumpido el proceso");
+            }
+        } catch (IOException e) {
+            System.out.println("Se ha producido una excepcion IOException: " + e);
+        }
     }
 }
