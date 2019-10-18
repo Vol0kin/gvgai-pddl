@@ -25,6 +25,7 @@ public class Agent extends AbstractPlayer {
     protected Map<String, ArrayList<String>> correspondence;
     protected Map<String, String> variables;
     protected Map<String, Set<String>> predicateVars;
+    protected Map<String, String> connections;
 
     //Constructor. It must return in 1 second maximum.
     public Agent(StateObservation so, ElapsedCpuTimer elapsedTimer) {
@@ -32,6 +33,7 @@ public class Agent extends AbstractPlayer {
         correspondence = Parser.<String, ArrayList<String>>parseJSONFile("JSON/correspondence.json");
         variables = Parser.<String, String>parseJSONFile("JSON/variables.json");
         predicateVars = Parser.getVariablesFromPredicates(correspondence, variables.keySet());
+        connections = Parser.parseJSONFile("JSON/connections.json");
         System.out.println(variables);
         System.out.println(predicateVars);
 
@@ -49,7 +51,7 @@ public class Agent extends AbstractPlayer {
         String[][] gameMap = Parser.parseStateObservation(stateObs);
 
         long time = elapsedTimer.remainingTimeMillis();
-        Parser.parseGameToPDDL(gameMap, correspondence, variables, predicateVars, null);
+        Parser.parseGameToPDDL(gameMap, correspondence, variables, predicateVars, connections);
         System.out.println("Consumed time: " + (time - elapsedTimer.remainingTimeMillis()));
 
         //Determine an index randomly and get the action to return.

@@ -1,6 +1,6 @@
 {
-	"left":"(connected-left c p)",
-	"right":"(connected-right c n)",
-	"up":"(connected-up c p)",
-	"down":"(connected-down c n)"
+	"left":"(connected-left ?c ?p)",
+	"right":"(connected-right ?c ?n)",
+	"up":"(connected-up ?c ?p)",
+	"down":"(connected-down ?c ?n)"
 }

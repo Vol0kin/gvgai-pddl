@@ -12,11 +12,7 @@ import tools.com.google.gson.stream.JsonReader;
 // Import java utils (maps, arrays...)
 import java.io.*;
 import java.lang.reflect.Array;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.HashSet;
+import java.util.*;
 
 // Import IO
 
@@ -178,7 +174,7 @@ public class Parser {
         System.out.println(predicateVars);
 
         ArrayList<String> predicateList = new ArrayList<>();
-        ArrayList<String> connectionList = new ArrayList<>();
+        Set<String> connectionSet = new LinkedHashSet<>();
 
         final int X_MAX = gameMap.length, Y_MAX = gameMap[0].length;
 
@@ -192,6 +188,39 @@ public class Parser {
                     // Increase the number of variables from that type
                     for (String var: predicateVars.get(cellType)) {
                         numVariables.put(var, numVariables.get(var) + 1);
+                        String objectNum = var + numVariables.get(var);
+                        objects.get(var).add(objectNum);
+
+                        if (var.equals("cell")) {
+                            int numCells = objects.get("cell").size();
+                            if (y - 1 >= 0) {
+                                String connection = connections.get("up");
+                                connection = connection.replace("?c", objects.get("cell").get(numCells - 1));
+                                connection = connection.replace("?p", objects.get("cell").get(numCells - 1 - X_MAX));
+                                connectionSet.add(connection);
+                            }
+
+                            if (y + 1 < X_MAX) {
+                                String connection = connections.get("down");
+                                connection = connection.replace("?c", objects.get("cell").get(numCells - 1));
+                                connection = connection.replace("?n", "cell" + (numCells + X_MAX));
+                                connectionSet.add(connection);
+                            }
+
+                            if (x - 1 >= 0) {
+                                String connection = connections.get("left");
+                                connection = connection.replace("?c", objects.get("cell").get(numCells - 1));
+                                connection = connection.replace("?p", objects.get("cell").get(numCells - 2));
+                                connectionSet.add(connection);
+                            }
+
+                            if (x + 1 < Y_MAX) {
+                                String connection = connections.get("right");
+                                connection = connection.replace("?c", objects.get("cell").get(numCells - 1));
+                                connection = connection.replace("?n", "cell" + (numCells + 1));
+                                connectionSet.add(connection);
+                            }
+                        }
                     }
 
                     // Add to each variable in each predicate its number
@@ -203,10 +232,12 @@ public class Parser {
                         for (String var: predicateVars.get(cellType)) {
 
                             if (pred.contains(var)) {
-                                String objectNum = var + numVariables.get(var);
-                                outPredicate = outPredicate.replace(var, objectNum);
-                                objects.get(var).add(objectNum);
+                                outPredicate = outPredicate.replace(var, objects.get(var).get(numVariables.get(var) - 1));
+
+
                             }
+
+
                         }
                         predicateList.add(outPredicate);
                     }
@@ -252,6 +283,12 @@ public class Parser {
                 bf.newLine();
             }
 
+            // Write each connection into the file
+            for (String connection: connectionSet) {
+                bf.write(connection);
+                bf.newLine();
+            }
+
             // Finish init writing
             bf.write(")");
             bf.newLine();
@@ -267,5 +304,6 @@ public class Parser {
         System.out.println(numVariables);
         System.out.println(predicateList);
         System.out.println(objects);
+        System.out.println(connectionSet);
     }
 }
