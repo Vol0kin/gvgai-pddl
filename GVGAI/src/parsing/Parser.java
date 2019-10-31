@@ -14,6 +14,7 @@ import java.io.*;
 import java.lang.reflect.Array;
 import java.util.*;
 
+import tools.Vector2d;
 // Import IO
 
 
@@ -158,10 +159,27 @@ public class Parser {
                                        Map<String, ArrayList<String>> correspondence,
                                        Map<String, String> variables,
                                        Map<String, Set<String>> predicateVars,
-                                       Map<String, String> connections)
+                                       Map<String, String> connections,
+                                      // Map<String, String> goalPredicates,
+                                       Vector2d orientation,
+                                       Vector2d goalPosition,
+                                       Boolean exit)
     {
         Map<String, Integer> numVariables = new HashMap<>();
         Map<String, ArrayList<String>> objects = new HashMap<>();
+
+        String playerOrientation = "";
+        String outGoal = "";
+
+        if (orientation.x == 1.0) {
+            playerOrientation = "(oriented-right player1)";
+        } else if (orientation.x == -1.0) {
+            playerOrientation = "(oriented-left player1)";
+        } else if (orientation.y == 1.0) {
+            playerOrientation = "(oriented-down player1)";
+        } else if (orientation.y == -1.0) {
+            playerOrientation = "(oriented-up player1)";
+        }
 
         for (String key: variables.keySet()) {
             numVariables.put(key, 0);
@@ -180,6 +198,7 @@ public class Parser {
 
         for (int y = 0; y < Y_MAX; y++) {
             for (int x = 0; x < X_MAX; x++) {
+                // Get the cells representation as a game element
                 String cellType = gameMap[x][y];
 
                 // Check if there are predicates associated to the game element
@@ -191,6 +210,7 @@ public class Parser {
                         String objectNum = var + numVariables.get(var);
                         objects.get(var).add(objectNum);
 
+                        // Create the connections
                         if (var.equals("cell")) {
                             int numCells = objects.get("cell").size();
                             if (y - 1 >= 0) {
@@ -232,8 +252,20 @@ public class Parser {
                         for (String var: predicateVars.get(cellType)) {
 
                             if (pred.contains(var)) {
-                                outPredicate = outPredicate.replace(var, objects.get(var).get(numVariables.get(var) - 1));
+                                int indexLast = objects.get(var).size() - 1;
+                                outPredicate = outPredicate.replace(var, objects.get(var).get(indexLast));
                             }
+
+                            // This part will be modified later on
+                            /*if (goalPredicates.keySet().contains(var) && goalPosition.x == x && goalPosition.y == y) {
+                                if (var.equals("gem")) {
+                                    int indexLast = objects.get(var).size() - 1;
+                                    outGoal = goalPredicates.get(var).replace(var, objects.get(var).get(indexLast));
+                                } else if (var.equals("exit")) {
+                                    outGoal = "(exited-level player1)";
+                                }
+
+                            }*/
 
 
                         }
@@ -283,7 +315,7 @@ public class Parser {
 
             // Write orientation
             // THIS PART HAS TO CHANGE LATER ON
-            bf.write("(oriented-right player1)");
+            bf.write(playerOrientation);
             bf.newLine();
 
             // Write each connection into the file
@@ -304,7 +336,12 @@ public class Parser {
             bf.write("(AND");
             bf.newLine();
 
-            bf.write("(got gem13)");
+            if (!exit) {
+                bf.write("(got gem1)");
+            } else {
+                bf.write("(exited-level player1)");
+            }
+
             bf.newLine();
 
             bf.write(")");
