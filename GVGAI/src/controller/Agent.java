@@ -29,9 +29,13 @@ public class Agent extends AbstractPlayer {
     protected Map<String, String> connections;
     protected Map<String, Types.ACTIONS> actionCorrespondence;
 
+    protected Map<String, String> goalVariablesMap;
+
     protected List<Types.ACTIONS> actionList;
     protected int blockSize;
     protected int numGems;
+    protected int prevNumGems;
+    protected static int MAX_GEMS = 9;
 
     //Constructor. It must return in 1 second maximum.
     public Agent(StateObservation so, ElapsedCpuTimer elapsedTimer) {
@@ -46,6 +50,11 @@ public class Agent extends AbstractPlayer {
         for (Map.Entry<String, String> entry: actions.entrySet()) {
             actionCorrespondence.put(entry.getKey(), Types.ACTIONS.fromString(entry.getValue()));
         }
+
+        this.goalVariablesMap = new HashMap<>();
+
+        this.goalVariablesMap.put("(got gem)", "gem");
+        this.goalVariablesMap.put("(exited-level)", "");
 
         System.out.println(actionCorrespondence);
         System.out.println(variables);
@@ -67,15 +76,41 @@ public class Agent extends AbstractPlayer {
             // Get the list of current resources
             ArrayList<Observation>[] resources = stateObs.getResourcesPositions();
 
+            // Get exit
+            ArrayList<Observation>[] exit = stateObs.getPortalsPositions();
+
             // Get the player's orientation
             Vector2d orientation = stateObs.getAvatarOrientation();
 
-            // Select a random goal
-            int index = randomGenerator.nextInt(resources.length);
-            ArrayList<Observation> goalObservation = resources[index];
+            Vector2d goalPos;
+            Observation goalObservation;
 
-            // Get the goal and transform its position to game cells
-            Vector2d goalPos = goalObservation.get(0).position;
+            String goalPredicate, goalVariable;
+
+            if (this.numGems < this.MAX_GEMS) {
+                // Select a random goal
+                int index = randomGenerator.nextInt(resources[0].size());
+                goalObservation = resources[0].get(index);
+
+                // Get the gem goal
+                goalPos = goalObservation.position;
+
+                goalPredicate = "(got gem)";
+
+            } else {
+                // Get the exit observation
+                goalObservation = exit[0].get(0);
+
+                // Get the goal and transform its position to game cells
+                goalPos = goalObservation.position;
+
+                goalPredicate = "(exited-level)";
+            }
+
+            // Get the goal variable
+            goalVariable = this.goalVariablesMap.get(goalPredicate);
+
+            // Get the position of the current goal
             goalPos.x /= blockSize;
             goalPos.y /= blockSize;
 
@@ -84,7 +119,7 @@ public class Agent extends AbstractPlayer {
             String[][] gameMap = Parser.parseStateObservation(stateObs);
 
             long time = elapsedTimer.remainingTimeMillis();
-            Parser.parseGameToPDDL(gameMap, correspondence, variables, predicateVars, connections, orientation, goalPos, this.numGems == 9);
+            Parser.parseGameToPDDL(gameMap, correspondence, variables, predicateVars, connections, goalPredicate, goalVariable, orientation, goalPos);
             System.out.println("Consumed time: " + (time - elapsedTimer.remainingTimeMillis()));
 
             //Determine an index randomly and get the action to return.

@@ -160,16 +160,16 @@ public class Parser {
                                        Map<String, String> variables,
                                        Map<String, Set<String>> predicateVars,
                                        Map<String, String> connections,
-                                      // Map<String, String> goalPredicates,
+                                       String goalPredicate,
+                                       String goalVariable,
                                        Vector2d orientation,
-                                       Vector2d goalPosition,
-                                       Boolean exit)
+                                       Vector2d goalPosition)
     {
         Map<String, Integer> numVariables = new HashMap<>();
         Map<String, ArrayList<String>> objects = new HashMap<>();
 
         String playerOrientation = "";
-        String outGoal = "";
+        String outGoal = goalPredicate;
 
         if (orientation.x == 1.0) {
             playerOrientation = "(oriented-right player1)";
@@ -271,6 +271,14 @@ public class Parser {
                         }
                         predicateList.add(outPredicate);
                     }
+
+                    // Check whether the current cell is a goal
+                    if (x == goalPosition.x && y == goalPosition.y) {
+                        if (!goalVariable.equals("")) {
+                            int indexLast = objects.get(goalVariable).size() - 1;
+                            outGoal = outGoal.replace(goalVariable, objects.get(goalVariable).get(indexLast));
+                        }
+                    }
                 }
             }
         }
@@ -336,12 +344,7 @@ public class Parser {
             bf.write("(AND");
             bf.newLine();
 
-            if (!exit) {
-                bf.write("(got gem1)");
-            } else {
-                bf.write("(exited-level player1)");
-            }
-
+            bf.write(outGoal);
             bf.newLine();
 
             bf.write(")");
@@ -352,8 +355,6 @@ public class Parser {
 
             // Finish problem writing
             bf.write(")");
-
-
         } catch (IOException e) {
             e.printStackTrace();
         }

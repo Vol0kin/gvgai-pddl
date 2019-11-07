@@ -21,7 +21,7 @@
     (terrain-wall ?c - Cell)
     (terrain-empty ?c - Cell)
     (got ?g - Gem)
-    (exited-level ?p - Player)
+    (exited-level)
   )
 
   (:action turn-up
@@ -261,7 +261,7 @@
     )
     :effect (and
       (not (at ?p ?c))
-      (exited-level ?p)
+      (exited-level)
     )
   )
 )
