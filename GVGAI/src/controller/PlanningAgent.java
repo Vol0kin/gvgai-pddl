@@ -76,12 +76,6 @@ public class PlanningAgent extends AbstractPlayer {
         if (actionList.isEmpty()) {
             System.out.println("I need to find a plan!");
 
-            // Get the list of current resources
-            ArrayList<Observation>[] resources = stateObservation.getResourcesPositions();
-
-            // Get exit
-            ArrayList<Observation>[] exit = stateObservation.getPortalsPositions();
-
             // Get the player's orientation
             Vector2d orientation = stateObservation.getAvatarOrientation();
 
@@ -183,11 +177,11 @@ public class PlanningAgent extends AbstractPlayer {
     }
 
     public void parseGameToPDDL(String[][] gameMap,
-                                       Map<String, ArrayList<String>> correspondence,
-                                       Map<String, String> variables,
-                                       Map<String, Set<String>> predicateVars,
-                                       Map<String, String> connections,
-                                       Vector2d orientation)
+                                Map<String, ArrayList<String>> correspondence,
+                                Map<String, String> variables,
+                                Map<String, Set<String>> predicateVars,
+                                Map<String, String> connections,
+                                Vector2d orientation)
     {
         Map<String, ArrayList<String>> objects = new HashMap<>();
 
@@ -197,11 +191,6 @@ public class PlanningAgent extends AbstractPlayer {
         for (String key: variables.keySet()) {
             objects.put(key, new ArrayList<>());
         }
-
-
-        //System.out.println(numVariables);
-        //System.out.println(correspondence);
-        //System.out.println(predicateVars);
 
         ArrayList<String> predicateList = new ArrayList<>();
         Set<String> connectionSet = new LinkedHashSet<>();
@@ -255,7 +244,6 @@ public class PlanningAgent extends AbstractPlayer {
                     for (String pred: correspondence.get(cellType)) {
                         // Create new empty output predicate
                         String outPredicate = pred;
-                        // System.out.println(predicateVars);
 
                         for (String var: predicateVars.get(cellType)) {
 
@@ -277,19 +265,6 @@ public class PlanningAgent extends AbstractPlayer {
 
                                 objects.get(var).add(replacement);
                             }
-
-                            // This part will be modified later on
-                            /*if (goalPredicates.keySet().contains(var) && goalPosition.x == x && goalPosition.y == y) {
-                                if (var.equals("gem")) {
-                                    int indexLast = objects.get(var).size() - 1;
-                                    outGoal = goalPredicates.get(var).replace(var, objects.get(var).get(indexLast));
-                                } else if (var.equals("exit")) {
-                                    outGoal = "(exited-level player1)";
-                                }
-
-                            }*/
-
-
                         }
                         predicateList.add(outPredicate);
                     }
@@ -338,7 +313,6 @@ public class PlanningAgent extends AbstractPlayer {
             }
 
             // Write orientation
-            // THIS PART HAS TO CHANGE LATER ON
             bf.write(playerOrientation);
             bf.newLine();
 
@@ -374,10 +348,5 @@ public class PlanningAgent extends AbstractPlayer {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-        //System.out.println(numVariables);
-        //System.out.println(predicateList);
-        //System.out.println(objects);
-        //System.out.println(connectionSet);
     }
 }

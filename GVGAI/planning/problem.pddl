@@ -3,11 +3,11 @@
 (:objects
 exit_6_11 - Exit
 boulder_16_1 boulder_20_1 boulder_4_2 boulder_5_2 boulder_6_2 boulder_7_2 boulder_8_2 boulder_9_2 boulder_18_2 boulder_21_2 boulder_17_3 boulder_19_3 boulder_21_3 boulder_22_3 boulder_24_3 boulder_17_4 boulder_19_4 boulder_23_4 boulder_24_4 boulder_18_5 boulder_7_6 boulder_17_7 boulder_1_8 boulder_2_8 boulder_3_8 boulder_20_9 boulder_21_9 boulder_12_10 boulder_13_10 boulder_16_10 - Boulder
-bat_1_7 bat_10_7 - Bat
-cell_0_0 cell_1_0 cell_2_0 cell_3_0 cell_4_0 cell_5_0 cell_6_0 cell_7_0 cell_8_0 cell_9_0 cell_10_0 cell_11_0 cell_12_0 cell_13_0 cell_14_0 cell_15_0 cell_16_0 cell_17_0 cell_18_0 cell_19_0 cell_20_0 cell_21_0 cell_22_0 cell_23_0 cell_24_0 cell_25_0 cell_0_1 cell_1_1 cell_2_1 cell_3_1 cell_4_1 cell_5_1 cell_6_1 cell_7_1 cell_8_1 cell_9_1 cell_10_1 cell_11_1 cell_12_1 cell_13_1 cell_14_1 cell_15_1 cell_16_1 cell_16_1 cell_17_1 cell_18_1 cell_19_1 cell_19_1 cell_20_1 cell_20_1 cell_21_1 cell_21_1 cell_22_1 cell_22_1 cell_23_1 cell_24_1 cell_25_1 cell_0_2 cell_1_2 cell_2_2 cell_3_2 cell_4_2 cell_4_2 cell_5_2 cell_5_2 cell_6_2 cell_6_2 cell_7_2 cell_7_2 cell_8_2 cell_8_2 cell_9_2 cell_9_2 cell_10_2 cell_11_2 cell_12_2 cell_13_2 cell_14_2 cell_15_2 cell_16_2 cell_17_2 cell_18_2 cell_18_2 cell_19_2 cell_20_2 cell_21_2 cell_21_2 cell_22_2 cell_23_2 cell_24_2 cell_25_2 cell_0_3 cell_1_3 cell_2_3 cell_3_3 cell_4_3 cell_5_3 cell_6_3 cell_7_3 cell_8_3 cell_9_3 cell_10_3 cell_11_3 cell_12_3 cell_13_3 cell_14_3 cell_15_3 cell_16_3 cell_17_3 cell_17_3 cell_18_3 cell_19_3 cell_19_3 cell_20_3 cell_20_3 cell_21_3 cell_21_3 cell_22_3 cell_22_3 cell_23_3 cell_24_3 cell_24_3 cell_25_3 cell_0_4 cell_1_4 cell_2_4 cell_3_4 cell_4_4 cell_5_4 cell_6_4 cell_7_4 cell_8_4 cell_9_4 cell_10_4 cell_11_4 cell_12_4 cell_13_4 cell_14_4 cell_15_4 cell_16_4 cell_17_4 cell_17_4 cell_18_4 cell_18_4 cell_19_4 cell_19_4 cell_20_4 cell_21_4 cell_22_4 cell_23_4 cell_23_4 cell_24_4 cell_24_4 cell_25_4 cell_0_5 cell_1_5 cell_2_5 cell_3_5 cell_4_5 cell_5_5 cell_6_5 cell_7_5 cell_8_5 cell_9_5 cell_10_5 cell_11_5 cell_12_5 cell_13_5 cell_14_5 cell_15_5 cell_16_5 cell_17_5 cell_18_5 cell_18_5 cell_19_5 cell_20_5 cell_21_5 cell_22_5 cell_23_5 cell_23_5 cell_24_5 cell_24_5 cell_25_5 cell_0_6 cell_1_6 cell_2_6 cell_3_6 cell_4_6 cell_5_6 cell_6_6 cell_6_6 cell_7_6 cell_7_6 cell_8_6 cell_9_6 cell_10_6 cell_11_6 cell_12_6 cell_13_6 cell_14_6 cell_15_6 cell_16_6 cell_17_6 cell_18_6 cell_19_6 cell_20_6 cell_21_6 cell_22_6 cell_23_6 cell_23_6 cell_24_6 cell_24_6 cell_25_6 cell_0_7 cell_1_7 cell_1_7 cell_2_7 cell_3_7 cell_4_7 cell_5_7 cell_6_7 cell_7_7 cell_8_7 cell_9_7 cell_10_7 cell_10_7 cell_11_7 cell_12_7 cell_13_7 cell_14_7 cell_15_7 cell_16_7 cell_17_7 cell_17_7 cell_18_7 cell_19_7 cell_20_7 cell_21_7 cell_22_7 cell_23_7 cell_23_7 cell_24_7 cell_24_7 cell_25_7 cell_0_8 cell_1_8 cell_1_8 cell_2_8 cell_2_8 cell_3_8 cell_3_8 cell_4_8 cell_5_8 cell_6_8 cell_7_8 cell_8_8 cell_9_8 cell_10_8 cell_11_8 cell_12_8 cell_13_8 cell_14_8 cell_15_8 cell_16_8 cell_17_8 cell_18_8 cell_19_8 cell_20_8 cell_21_8 cell_22_8 cell_23_8 cell_24_8 cell_25_8 cell_0_9 cell_1_9 cell_2_9 cell_3_9 cell_4_9 cell_5_9 cell_6_9 cell_7_9 cell_8_9 cell_9_9 cell_10_9 cell_11_9 cell_12_9 cell_13_9 cell_14_9 cell_15_9 cell_16_9 cell_17_9 cell_18_9 cell_18_9 cell_19_9 cell_20_9 cell_20_9 cell_21_9 cell_21_9 cell_22_9 cell_23_9 cell_24_9 cell_25_9 cell_0_10 cell_1_10 cell_2_10 cell_3_10 cell_3_10 cell_4_10 cell_5_10 cell_6_10 cell_7_10 cell_8_10 cell_9_10 cell_9_10 cell_10_10 cell_11_10 cell_12_10 cell_12_10 cell_13_10 cell_13_10 cell_14_10 cell_14_10 cell_15_10 cell_15_10 cell_16_10 cell_16_10 cell_17_10 cell_18_10 cell_19_10 cell_20_10 cell_21_10 cell_22_10 cell_23_10 cell_24_10 cell_25_10 cell_0_11 cell_1_11 cell_2_11 cell_3_11 cell_4_11 cell_5_11 cell_6_11 cell_6_11 cell_7_11 cell_8_11 cell_9_11 cell_10_11 cell_11_11 cell_12_11 cell_13_11 cell_14_11 cell_15_11 cell_16_11 cell_17_11 cell_18_11 cell_19_11 cell_20_11 cell_21_11 cell_22_11 cell_23_11 cell_24_11 cell_25_11 cell_0_12 cell_1_12 cell_2_12 cell_3_12 cell_4_12 cell_5_12 cell_6_12 cell_7_12 cell_8_12 cell_9_12 cell_10_12 cell_11_12 cell_12_12 cell_13_12 cell_14_12 cell_15_12 cell_16_12 cell_17_12 cell_18_12 cell_19_12 cell_20_12 cell_21_12 cell_22_12 cell_23_12 cell_24_12 cell_25_12 - Cell
+bat_2_7 bat_16_9 - Bat
+cell_0_0 cell_1_0 cell_2_0 cell_3_0 cell_4_0 cell_5_0 cell_6_0 cell_7_0 cell_8_0 cell_9_0 cell_10_0 cell_11_0 cell_12_0 cell_13_0 cell_14_0 cell_15_0 cell_16_0 cell_17_0 cell_18_0 cell_19_0 cell_20_0 cell_21_0 cell_22_0 cell_23_0 cell_24_0 cell_25_0 cell_0_1 cell_1_1 cell_2_1 cell_3_1 cell_4_1 cell_5_1 cell_6_1 cell_7_1 cell_8_1 cell_9_1 cell_10_1 cell_11_1 cell_12_1 cell_13_1 cell_14_1 cell_15_1 cell_16_1 cell_16_1 cell_17_1 cell_18_1 cell_19_1 cell_19_1 cell_20_1 cell_20_1 cell_21_1 cell_21_1 cell_22_1 cell_22_1 cell_23_1 cell_24_1 cell_25_1 cell_0_2 cell_1_2 cell_2_2 cell_3_2 cell_4_2 cell_4_2 cell_5_2 cell_5_2 cell_6_2 cell_6_2 cell_7_2 cell_7_2 cell_8_2 cell_8_2 cell_9_2 cell_9_2 cell_10_2 cell_11_2 cell_12_2 cell_13_2 cell_14_2 cell_15_2 cell_16_2 cell_17_2 cell_18_2 cell_18_2 cell_19_2 cell_20_2 cell_21_2 cell_21_2 cell_22_2 cell_23_2 cell_24_2 cell_25_2 cell_0_3 cell_1_3 cell_2_3 cell_3_3 cell_4_3 cell_5_3 cell_6_3 cell_7_3 cell_8_3 cell_9_3 cell_10_3 cell_11_3 cell_12_3 cell_13_3 cell_14_3 cell_15_3 cell_16_3 cell_17_3 cell_17_3 cell_18_3 cell_19_3 cell_19_3 cell_20_3 cell_20_3 cell_21_3 cell_21_3 cell_22_3 cell_22_3 cell_23_3 cell_24_3 cell_24_3 cell_25_3 cell_0_4 cell_1_4 cell_2_4 cell_3_4 cell_4_4 cell_5_4 cell_6_4 cell_7_4 cell_8_4 cell_9_4 cell_10_4 cell_11_4 cell_12_4 cell_13_4 cell_14_4 cell_15_4 cell_16_4 cell_17_4 cell_17_4 cell_18_4 cell_18_4 cell_19_4 cell_19_4 cell_20_4 cell_21_4 cell_22_4 cell_23_4 cell_23_4 cell_24_4 cell_24_4 cell_25_4 cell_0_5 cell_1_5 cell_2_5 cell_3_5 cell_4_5 cell_5_5 cell_6_5 cell_7_5 cell_8_5 cell_9_5 cell_10_5 cell_11_5 cell_12_5 cell_13_5 cell_14_5 cell_15_5 cell_16_5 cell_17_5 cell_18_5 cell_18_5 cell_19_5 cell_20_5 cell_21_5 cell_22_5 cell_23_5 cell_23_5 cell_24_5 cell_24_5 cell_25_5 cell_0_6 cell_1_6 cell_2_6 cell_3_6 cell_4_6 cell_5_6 cell_6_6 cell_6_6 cell_7_6 cell_7_6 cell_8_6 cell_9_6 cell_10_6 cell_11_6 cell_12_6 cell_13_6 cell_14_6 cell_15_6 cell_16_6 cell_17_6 cell_18_6 cell_19_6 cell_20_6 cell_21_6 cell_22_6 cell_23_6 cell_23_6 cell_24_6 cell_24_6 cell_25_6 cell_0_7 cell_1_7 cell_2_7 cell_2_7 cell_3_7 cell_4_7 cell_5_7 cell_6_7 cell_7_7 cell_8_7 cell_9_7 cell_10_7 cell_11_7 cell_12_7 cell_13_7 cell_14_7 cell_15_7 cell_16_7 cell_17_7 cell_17_7 cell_18_7 cell_19_7 cell_20_7 cell_21_7 cell_22_7 cell_23_7 cell_23_7 cell_24_7 cell_24_7 cell_25_7 cell_0_8 cell_1_8 cell_1_8 cell_2_8 cell_2_8 cell_3_8 cell_3_8 cell_4_8 cell_5_8 cell_6_8 cell_7_8 cell_8_8 cell_9_8 cell_10_8 cell_11_8 cell_12_8 cell_13_8 cell_14_8 cell_15_8 cell_16_8 cell_17_8 cell_18_8 cell_19_8 cell_20_8 cell_21_8 cell_22_8 cell_23_8 cell_24_8 cell_25_8 cell_0_9 cell_1_9 cell_2_9 cell_3_9 cell_4_9 cell_5_9 cell_6_9 cell_7_9 cell_8_9 cell_9_9 cell_10_9 cell_11_9 cell_12_9 cell_13_9 cell_14_9 cell_15_9 cell_16_9 cell_16_9 cell_17_9 cell_18_9 cell_18_9 cell_19_9 cell_20_9 cell_20_9 cell_21_9 cell_21_9 cell_22_9 cell_23_9 cell_24_9 cell_25_9 cell_0_10 cell_1_10 cell_2_10 cell_3_10 cell_4_10 cell_5_10 cell_6_10 cell_7_10 cell_8_10 cell_9_10 cell_9_10 cell_10_10 cell_11_10 cell_12_10 cell_12_10 cell_13_10 cell_13_10 cell_14_10 cell_14_10 cell_15_10 cell_15_10 cell_16_10 cell_16_10 cell_17_10 cell_18_10 cell_19_10 cell_20_10 cell_21_10 cell_22_10 cell_23_10 cell_24_10 cell_25_10 cell_0_11 cell_1_11 cell_1_11 cell_2_11 cell_3_11 cell_4_11 cell_5_11 cell_6_11 cell_6_11 cell_7_11 cell_8_11 cell_9_11 cell_10_11 cell_11_11 cell_12_11 cell_13_11 cell_14_11 cell_15_11 cell_16_11 cell_17_11 cell_18_11 cell_19_11 cell_20_11 cell_21_11 cell_22_11 cell_23_11 cell_24_11 cell_25_11 cell_0_12 cell_1_12 cell_2_12 cell_3_12 cell_4_12 cell_5_12 cell_6_12 cell_7_12 cell_8_12 cell_9_12 cell_10_12 cell_11_12 cell_12_12 cell_13_12 cell_14_12 cell_15_12 cell_16_12 cell_17_12 cell_18_12 cell_19_12 cell_20_12 cell_21_12 cell_22_12 cell_23_12 cell_24_12 cell_25_12 - Cell
 gem_19_1 gem_21_1 gem_22_1 gem_20_3 gem_18_4 gem_23_5 gem_24_5 gem_23_6 gem_24_6 gem_23_7 gem_24_7 gem_18_9 gem_14_10 gem_15_10 - Gem
 player_9_10 - Player
-scorpion_6_6 scorpion_3_10 - Scorpion
+scorpion_6_6 scorpion_1_11 - Scorpion
 )
 (:init
 (terrain-wall cell_0_0)
@@ -224,8 +224,8 @@ scorpion_6_6 scorpion_3_10 - Scorpion
 (terrain-empty cell_24_6)
 (terrain-wall cell_25_6)
 (terrain-wall cell_0_7)
-(at bat_1_7 cell_1_7)
 (terrain-empty cell_1_7)
+(at bat_2_7 cell_2_7)
 (terrain-empty cell_2_7)
 (terrain-ground cell_3_7)
 (terrain-ground cell_4_7)
@@ -234,7 +234,6 @@ scorpion_6_6 scorpion_3_10 - Scorpion
 (terrain-ground cell_7_7)
 (terrain-ground cell_8_7)
 (terrain-ground cell_9_7)
-(at bat_10_7 cell_10_7)
 (terrain-empty cell_10_7)
 (terrain-empty cell_11_7)
 (terrain-empty cell_12_7)
@@ -299,6 +298,7 @@ scorpion_6_6 scorpion_3_10 - Scorpion
 (terrain-wall cell_13_9)
 (terrain-wall cell_14_9)
 (terrain-wall cell_15_9)
+(at bat_16_9 cell_16_9)
 (terrain-empty cell_16_9)
 (terrain-empty cell_17_9)
 (at gem_18_9 cell_18_9)
@@ -315,7 +315,6 @@ scorpion_6_6 scorpion_3_10 - Scorpion
 (terrain-wall cell_0_10)
 (terrain-empty cell_1_10)
 (terrain-empty cell_2_10)
-(at scorpion_3_10 cell_3_10)
 (terrain-empty cell_3_10)
 (terrain-ground cell_4_10)
 (terrain-ground cell_5_10)
@@ -346,6 +345,7 @@ scorpion_6_6 scorpion_3_10 - Scorpion
 (terrain-ground cell_24_10)
 (terrain-wall cell_25_10)
 (terrain-wall cell_0_11)
+(at scorpion_1_11 cell_1_11)
 (terrain-empty cell_1_11)
 (terrain-empty cell_2_11)
 (terrain-empty cell_3_11)

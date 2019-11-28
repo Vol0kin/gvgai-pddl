@@ -38,10 +38,10 @@ step    0: MOVE-DOWN PLAYER_9_10 CELL_9_10 CELL_9_11
 
 
 time spent:    0.03 seconds instantiating 44274 easy, 0 hard action templates
-               0.01 seconds reachability analysis, yielding 17694 facts and 998 actions
+               0.02 seconds reachability analysis, yielding 17694 facts and 998 actions
                0.00 seconds creating final representation with 875 relevant facts, 0 relevant fluents
                0.00 seconds computing LNF
-               0.00 seconds building connectivity graph
+               0.01 seconds building connectivity graph
                0.00 seconds searching, evaluating 22 states, to a max depth of 0
-               0.04 seconds total time
+               0.06 seconds total time
 
