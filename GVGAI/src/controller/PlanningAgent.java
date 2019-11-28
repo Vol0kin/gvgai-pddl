@@ -1,178 +1,200 @@
-package parsing;
+package controller;
 
-// Import GVGAI
-import core.game.StateObservation;
 import core.game.Observation;
-import core.vgdl.VGDLRegistry;
+import core.player.AbstractPlayer;
+import core.game.StateObservation;
+import parsing.Parser;
+import tools.ElapsedCpuTimer;
 
-// Import gson to parse JSON files
-import tools.com.google.gson.Gson;
-import tools.com.google.gson.stream.JsonReader;
+import ontology.Types;
 
-// Import java utils (maps, arrays...)
 import java.io.*;
-import java.lang.reflect.Array;
 import java.util.*;
 
+import parsing.Parser;
 import tools.Vector2d;
-// Import IO
+
+public class PlanningAgent extends AbstractPlayer {
+
+    protected Map<String, ArrayList<String>> correspondence;
+    protected Map<String, String> variables;
+    protected Map<String, Set<String>> predicateVars;
+    protected Map<String, String> connections;
+    protected Map<String, Types.ACTIONS> actionCorrespondence;
+
+    protected Map<String, String> goalVariablesMap;
+
+    protected List<Types.ACTIONS> actionList;
+    protected int blockSize;
+    protected int numGems;
+    protected static int MAX_GEMS = 9;
+    protected LinkedList<String> agenda;
+
+    public PlanningAgent(StateObservation stateObservation, ElapsedCpuTimer elapsedCpuTimer) {
+        this.actionCorrespondence = new HashMap<>();
+        this.correspondence = Parser.<String, ArrayList<String>>parseJSONFile("JSON/correspondence.json");
+        this.variables = Parser.<String, String>parseJSONFile("JSON/variables.json");
+        this.predicateVars = Parser.getVariablesFromPredicates(correspondence, variables.keySet());
+        this.connections = Parser.parseJSONFile("JSON/connections.json");
+        Map<String, String> actions = Parser.parseJSONFile("JSON/actions.json");
+
+        for (Map.Entry<String, String> entry: actions.entrySet()) {
+            actionCorrespondence.put(entry.getKey(), Types.ACTIONS.fromString(entry.getValue()));
+        }
+
+        this.goalVariablesMap = new HashMap<>();
+
+        this.goalVariablesMap.put("(got gem)", "gem");
+        this.goalVariablesMap.put("(exited-level)", "");
+
+        System.out.println(actionCorrespondence);
+        System.out.println(variables);
+        System.out.println(predicateVars);
+
+        this.actionList = new ArrayList<>();
+        this.blockSize = stateObservation.getBlockSize();
+        this.numGems = 0;
+
+        this.agenda = new LinkedList<>();
+        // Las gemas en las que se tienen que picar 2 o más rocas seguidas dan problemas
+        this.agenda.addLast("(got gem_16_9)");
+        this.agenda.addLast("(got gem_7_3)");
+        this.agenda.addLast("(got gem_6_3)");
+        this.agenda.addLast("(got gem_5_3)");
+        this.agenda.addLast("(got gem_1_4)");
+        this.agenda.addLast("(got gem_6_1)");
+        this.agenda.addLast("(got gem_7_1)");
+        this.agenda.addLast("(got gem_7_9)");
+        this.agenda.addLast("(got gem_9_10)");
+        this.agenda.addLast("(exited-level)");
+    }
+
+    @Override
+    public Types.ACTIONS act(StateObservation stateObservation, ElapsedCpuTimer elapsedCpuTimer) {
+        Types.ACTIONS action;
+
+        if (actionList.isEmpty()) {
+            System.out.println("I need to find a plan!");
+
+            // Get the list of current resources
+            ArrayList<Observation>[] resources = stateObservation.getResourcesPositions();
+
+            // Get exit
+            ArrayList<Observation>[] exit = stateObservation.getPortalsPositions();
+
+            // Get the player's orientation
+            Vector2d orientation = stateObservation.getAvatarOrientation();
+
+            //System.out.println(Parser.<String, ArrayList<String>>parseJSONFile("correspondence.json").get("A").get(0));
+            //System.out.println(VGDLRegistry.GetInstance().getRegisteredSpriteKey(10));
+            String[][] gameMap = Parser.parseStateObservation(stateObservation);
+
+            long time = elapsedCpuTimer.remainingTimeMillis();
+            this.parseGameToPDDL(gameMap, correspondence, variables, predicateVars, connections, orientation);
+            System.out.println("Consumed time: " + (time - elapsedCpuTimer.remainingTimeMillis()));
+
+            //Determine an index randomly and get the action to return.
+            action = Types.ACTIONS.ACTION_NIL;
+
+            time = elapsedCpuTimer.remainingTimeMillis();
+            callPlanner();
+            System.out.println("Consumed time waiting for planner's response: " + (time - elapsedCpuTimer.remainingTimeMillis()));
+            this.actionList = translateOutputPlan();
+        } else {
+            System.out.println(this.actionList);
+            action = this.actionList.get(0);
+            this.actionList.remove(0);
+
+            if (this.actionList.isEmpty()) {
+                this.agenda.removeFirst();
+            }
+        }
+
+        //Return the action.
+        return action;
+    }
+
+    public void callPlanner() {
+        // Strings that containt the paths for the planner, the domain file,
+        // the problem file and the log file
+        String plannerRoute = "planning/ff",
+                domainFile = "planning/domain.pddl",
+                problemFile = "planning/problem.pddl",
+                logFileRoute = "planning/plan.txt";
+
+        // Create new process which will run the planner
+        ProcessBuilder pb = new ProcessBuilder(plannerRoute, "-o", domainFile,
+                "-f", problemFile, "-O", "-g", "1", "-h", "1");
+        File log = new File(logFileRoute);
+
+        // Clear log file
+        try {
+            PrintWriter writer = new PrintWriter(log);
+            writer.print("");
+            writer.close();
+        } catch (FileNotFoundException ex) {
+            System.out.println("Error: archivo no encontrado " + ex);
+        }
 
 
-public class Parser {
+        // Redirect error and output streams
+        pb.redirectErrorStream(true);
+        pb.redirectOutput(ProcessBuilder.Redirect.appendTo(log));
 
-    /**
-     * Method that returns a new Map that contains a parsed JSON object.
-     * This method always returns, whether the JSON file exists or not.
-     *
-     * @param <K> This describes the Map's key type.
-     * @param <V> This describes the Map's value type.
-     * @param fileName Name of the file to be parsed.
-     * @return Returns a new Map<K, V> that contains the JSON object specified
-     *         by fileName.
-     */
-    public static <K, V> Map<K, V> parseJSONFile(String fileName) {
+        // Run process and wait until it finishes
+        try {
+            Process process = pb.start();
+            process.waitFor();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
 
-        // Create a new Gson object, which will read the JSON file
-        Gson gson = new Gson();
+    public List<Types.ACTIONS> translateOutputPlan() {
+        // ArrayList of actions
+        List<Types.ACTIONS> actions = new ArrayList<>();
 
-        // Create a new Map using the HashMap interface
-        Map<K, V> map = new HashMap<>();
+        // Plan file
+        File planFile = new File("planning/plan.txt");
 
         try {
-            // Read the JSON file
-            JsonReader reader = new JsonReader(new FileReader(fileName));
+            BufferedReader br = new BufferedReader(new FileReader(planFile));
 
-            // Transform the JSON object into a Map
-            map = gson.fromJson(reader, map.getClass());
-        } catch (FileNotFoundException e) {
-            System.err.println(e);
-        }
+            String line;
 
-        return map;
-    }
+            while ((line = br.readLine()) != null) {
+                String upperLine = line.toUpperCase();
 
-    /**
-     * Method that transforms a given state of the current game to a 2D matrix
-     * of String, which represents the game's map.
-     *
-     * @param so Observation of the current game state.
-     * @return Returns a 2D String matrix containing the current state of the game.
-     */
-    public static String[][] parseStateObservation(StateObservation so) {
-
-        // Get the current game state
-        ArrayList<Observation>[][] gameState = so.getObservationGrid();
-
-        // Get the number of X tiles and Y tiles
-        final int X_MAX = gameState.length, Y_MAX = gameState[0].length;
-
-        // Create a new matrix, representing the game's map
-        String[][] gameStringMap = new String[X_MAX][Y_MAX];
-
-        /*
-         * Iterate over the map and transform it to string
-         * The VGDLRegistry contains information that will allow us to transform
-         * the current StateObservation to a matrix
-         */
-        for (int y = 0; y < Y_MAX; y++) {
-            for (int x = 0; x < X_MAX; x++) {
-                /*
-                 * If there's an observation, get its name using the itype
-                 * information
-                 */
-                if (gameState[x][y].size() > 0) {
-                    int itype = gameState[x][y].get(0).itype;
-                    gameStringMap[x][y] = VGDLRegistry.GetInstance().getRegisteredSpriteKey(itype);
-                } else {
-                    gameStringMap[x][y] = "background";
-                }
-            }
-        }
-
-
-        /*for (int y = 0; y < Y_MAX; y++) {
-            for (int x = 0; x < X_MAX; x++) {
-                System.out.print(gameStringMap[x][y] + " ");
-            }
-            System.out.println();
-        }*/
-
-        return gameStringMap;
-    }
-
-    /**
-     * Method that obtains the variables that can be found in the predicates
-     * associated to each of the game elements.
-     *
-     * @param correspondence Map that contains the correspondence between the
-     *                       game element and the predicates associated to it.
-     * @param variables Set of variables that the user has defined.
-     * @return Returns a Map that associates game elements and variables.
-     */
-    public static Map<String, Set<String>> getVariablesFromPredicates(Map<String, ArrayList<String>> correspondence,
-                                                                      Set<String> variables)
-    {
-        /*
-         * Create a map that will contain the game element and the variables
-         * associated to the predicates for that element
-         */
-        Map<String, Set<String>> varsFromPredicates = new HashMap<>();
-
-        // Iterate over the correspondence map
-        for (Map.Entry<String, ArrayList<String>> entry : correspondence.entrySet()) {
-            // Get the key, which represent the game element
-            String key = entry.getKey();
-
-            // Create a new set of contained variables in the predicates
-            Set<String> containedVars = new HashSet<>();
-
-            /*
-             * Iterate over each predicate and each variable to find
-             * which ones of the variables are contained in the predicates
-             * corresponding to the game element and add them to the set
-             */
-            for (String predicate : entry.getValue()) {
-                for (String var : variables) {
-                    if (predicate.contains(var)) {
-                        containedVars.add(var);
+                for (String action: this.actionCorrespondence.keySet()) {
+                    if (upperLine.contains(action)) {
+                        actions.add(this.actionCorrespondence.get(action));
                     }
                 }
             }
-
-            // Update the map entry
-            varsFromPredicates.put(key, containedVars);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
 
-        return varsFromPredicates;
+        return actions;
     }
 
-
-    /**
-     * WIP
-     * @param gameMap
-     * @param correspondence
-     * @param variables
-     * @param predicateVars
-     * @param connections
-     */
-    public static void parseGameToPDDL(String[][] gameMap,
+    public void parseGameToPDDL(String[][] gameMap,
                                        Map<String, ArrayList<String>> correspondence,
                                        Map<String, String> variables,
                                        Map<String, Set<String>> predicateVars,
                                        Map<String, String> connections,
-                                       String goalPredicate,
-                                       String goalVariable,
-                                       Vector2d orientation,
-                                       Vector2d goalPosition)
+                                       Vector2d orientation)
     {
-        Map<String, Integer> numVariables = new HashMap<>();
         Map<String, ArrayList<String>> objects = new HashMap<>();
 
         String playerOrientation = "";
-        String outGoal = goalPredicate;
+        String outGoal = this.agenda.getFirst();
 
         for (String key: variables.keySet()) {
-            numVariables.put(key, 0);
             objects.put(key, new ArrayList<>());
         }
 
@@ -197,13 +219,8 @@ public class Parser {
 
                     // Increase the number of variables from that type
                     for (String var: predicateVars.get(cellType)) {
-                        numVariables.put(var, numVariables.get(var) + 1);
-                        String objectNum = var + numVariables.get(var);
-                        objects.get(var).add(objectNum);
-
                         // Create the connections
                         if (var.equals("cell")) {
-                            int numCells = objects.get("cell").size();
                             if (y - 1 >= 0) {
                                 String connection = connections.get("up");
                                 connection = connection.replace("?c", currentCell);
@@ -238,7 +255,7 @@ public class Parser {
                     for (String pred: correspondence.get(cellType)) {
                         // Create new empty output predicate
                         String outPredicate = pred;
-                       // System.out.println(predicateVars);
+                        // System.out.println(predicateVars);
 
                         for (String var: predicateVars.get(cellType)) {
 
@@ -275,13 +292,6 @@ public class Parser {
 
                         }
                         predicateList.add(outPredicate);
-                    }
-
-                    // Check whether the current cell is a goal
-                    if (x == goalPosition.x && y == goalPosition.y) {
-                        if (!goalVariable.equals("")) {
-                            outGoal = outGoal.replace(goalVariable, goalVariable + "_" + x + "_" + y);
-                        }
                     }
                 }
             }

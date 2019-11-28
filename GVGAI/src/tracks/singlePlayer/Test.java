@@ -41,7 +41,7 @@ public class Test {
 		String level1 = game.replace(gameName, gameName + "_lvl" + levelIdx);
 
 		// Controller name
-		String controller = "controller.Agent";
+		String controller = "controller.PlanningAgent";
 
 		String recordActionsFile = null;// "actions_" + games[gameIdx] + "_lvl"
 						// + levelIdx + "_" + seed + ".txt";

@@ -17,66 +17,31 @@ checking for cyclic := effects --- OK.
 
 ff: search configuration is  best-first on 1*g(s) + 1*h(s) where
     metric is  plan length
-pasos al goal:   21    #acciones:    0   coste actual:    0.00    coste estimado:    0.00    tiempo:    0.00
-                ----------------------------------------------------------------------------------------------------- 
-                 21    #acciones:    1   coste actual:    0.00    coste estimado:    0.00    tiempo:    0.00   #Explored:      5
-[1A[2K[1A[2K                 20    #acciones:    2   coste actual:    0.00    coste estimado:    0.00    tiempo:    0.01
-                 19    #acciones:    3   coste actual:    0.00    coste estimado:    0.00    tiempo:    0.01
-                 18    #acciones:    4   coste actual:    0.00    coste estimado:    0.00    tiempo:    0.01
-                 17    #acciones:    5   coste actual:    0.00    coste estimado:    0.00    tiempo:    0.01
-                 16    #acciones:    6   coste actual:    0.00    coste estimado:    0.00    tiempo:    0.01
-                ----------------------------------------------------------------------------------------------------- 
-                 16    #acciones:    6   coste actual:    0.00    coste estimado:    0.00    tiempo:    0.01   #Explored:     23
-[1A[2K[1A[2K                 15    #acciones:    7   coste actual:    0.00    coste estimado:    0.00    tiempo:    0.01
-                 14    #acciones:    8   coste actual:    0.00    coste estimado:    0.00    tiempo:    0.01
-                 13    #acciones:    9   coste actual:    0.00    coste estimado:    0.00    tiempo:    0.01
-                 12    #acciones:   10   coste actual:    0.00    coste estimado:    0.00    tiempo:    0.01
-                 11    #acciones:   11   coste actual:    0.00    coste estimado:    0.00    tiempo:    0.01
-                 10    #acciones:   12   coste actual:    0.00    coste estimado:    0.00    tiempo:    0.01
-                  9    #acciones:   13   coste actual:    0.00    coste estimado:    0.00    tiempo:    0.01
-                  8    #acciones:   14   coste actual:    0.00    coste estimado:    0.00    tiempo:    0.01
-                  7    #acciones:   15   coste actual:    0.00    coste estimado:    0.00    tiempo:    0.02
-                  6    #acciones:   16   coste actual:    0.00    coste estimado:    0.00    tiempo:    0.02
-                  5    #acciones:   17   coste actual:    0.00    coste estimado:    0.00    tiempo:    0.02
-                  4    #acciones:   18   coste actual:    0.00    coste estimado:    0.00    tiempo:    0.02
-                  3    #acciones:   19   coste actual:    0.00    coste estimado:    0.00    tiempo:    0.02
-                  2    #acciones:   20   coste actual:    0.00    coste estimado:    0.00    tiempo:    0.02
-                  1    #acciones:   21   coste actual:    0.00    coste estimado:    0.00    tiempo:    0.02
-                  0    #acciones:   22   coste actual:    0.00    coste estimado:    0.00    tiempo:    0.02
+pasos al goal:    6    #acciones:    0   coste actual:    0.00    coste estimado:    0.00    tiempo:    0.00
+                  5    #acciones:    1   coste actual:    0.00    coste estimado:    0.00    tiempo:    0.00
+                  4    #acciones:    2   coste actual:    0.00    coste estimado:    0.00    tiempo:    0.00
+                  3    #acciones:    3   coste actual:    0.00    coste estimado:    0.00    tiempo:    0.00
+                  2    #acciones:    4   coste actual:    0.00    coste estimado:    0.00    tiempo:    0.00
+                  1    #acciones:    5   coste actual:    0.00    coste estimado:    0.00    tiempo:    0.00
+                  0    #acciones:    6   coste actual:    0.00    coste estimado:    0.00    tiempo:    0.00
 
 
 ff: found legal plan as follows
 
-step    0: TURN-RIGHT PLAYER1
-        1: MOVE-RIGHT PLAYER1 CELL33 CELL34
-        2: MOVE-RIGHT PLAYER1 CELL34 CELL35
-        3: MOVE-RIGHT PLAYER1 CELL35 CELL36
-        4: MOVE-RIGHT PLAYER1 CELL36 CELL37
-        5: TURN-DOWN PLAYER1
-        6: MOVE-DOWN PLAYER1 CELL37 CELL63
-        7: MOVE-DOWN PLAYER1 CELL63 CELL89
-        8: MOVE-DOWN PLAYER1 CELL89 CELL115
-        9: MOVE-DOWN PLAYER1 CELL115 CELL141
-       10: MOVE-DOWN PLAYER1 CELL141 CELL167
-       11: MOVE-DOWN PLAYER1 CELL167 CELL193
-       12: MOVE-DOWN PLAYER1 CELL193 CELL219
-       13: MOVE-DOWN PLAYER1 CELL219 CELL245
-       14: MOVE-DOWN PLAYER1 CELL245 CELL271
-       15: MOVE-DOWN PLAYER1 CELL271 CELL297
-       16: TURN-LEFT PLAYER1
-       17: MOVE-LEFT PLAYER1 CELL297 CELL296
-       18: MOVE-LEFT PLAYER1 CELL296 CELL295
-       19: MOVE-LEFT PLAYER1 CELL295 CELL294
-       20: MOVE-LEFT PLAYER1 CELL294 CELL293
-       21: EXIT-LEVEL PLAYER1 CELL293 EXIT1
+step    0: MOVE-DOWN PLAYER_9_10 CELL_9_10 CELL_9_11
+        1: TURN-LEFT PLAYER_9_10
+        2: MOVE-LEFT PLAYER_9_10 CELL_9_11 CELL_8_11
+        3: MOVE-LEFT PLAYER_9_10 CELL_8_11 CELL_7_11
+        4: MOVE-LEFT PLAYER_9_10 CELL_7_11 CELL_6_11
+        5: EXIT-LEVEL PLAYER_9_10 CELL_6_11 EXIT_6_11
      		Coste Total: 0.00
 
 
-time spent:    0.01 seconds instantiating 35954 easy, 0 hard action templates
-               0.01 seconds reachability analysis, yielding 14969 facts and 975 actions
-               0.00 seconds creating final representation with 837 relevant facts, 0 relevant fluents
+time spent:    0.03 seconds instantiating 44274 easy, 0 hard action templates
+               0.01 seconds reachability analysis, yielding 17694 facts and 998 actions
+               0.00 seconds creating final representation with 875 relevant facts, 0 relevant fluents
                0.00 seconds computing LNF
                0.00 seconds building connectivity graph
-               0.04 seconds searching, evaluating 81 states, to a max depth of 0
-               0.06 seconds total time
+               0.00 seconds searching, evaluating 22 states, to a max depth of 0
+               0.04 seconds total time
 
