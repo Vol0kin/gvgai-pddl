@@ -183,13 +183,13 @@ public class PlanningAgent extends AbstractPlayer {
                                 Map<String, String> connections,
                                 Vector2d orientation)
     {
-        Map<String, ArrayList<String>> objects = new HashMap<>();
+        Map<String, LinkedHashSet<String>> objects = new HashMap<>();
 
         String playerOrientation = "";
         String outGoal = this.agenda.getFirst();
 
         for (String key: variables.keySet()) {
-            objects.put(key, new ArrayList<>());
+            objects.put(key, new LinkedHashSet<>());
         }
 
         ArrayList<String> predicateList = new ArrayList<>();
