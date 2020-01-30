@@ -9,7 +9,11 @@ import tools.ElapsedCpuTimer;
 import ontology.Types;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.*;
+import java.util.stream.Stream;
 
 import parsing.Parser;
 import tools.Vector2d;
@@ -148,6 +152,37 @@ public class PlanningAgent extends AbstractPlayer {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+        long a = System.currentTimeMillis();
+        callOnlinePlanner();
+        long b = System.currentTimeMillis() - a;
+        System.out.println("###############################" + b);
+    }
+
+    public void callOnlinePlanner() {
+        String domain = readFile("planning/domain.pddl"),
+               problem = readFile("planning/problem.pddl");
+
+        HttpResponse<JsonNode> response = Unirest.post("http://solver.planning.domains/solve")
+                .header("accept", "application/json")
+                .field("domain", domain)
+                .field("problem", problem)
+                .asJson();
+
+        System.out.println(response.getBody());
+    }
+
+    private String readFile(String filename) {
+        // Create builder that will contain the file's content
+        StringBuilder contentBuilder = new StringBuilder();
+
+        // Get content from file line per line
+        try (Stream<String> stream = Files.lines(Paths.get(filename))) {
+            stream.forEach(s -> contentBuilder.append(s).append("\n"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return contentBuilder.toString();
     }
 
     public List<Types.ACTIONS> translateOutputPlan() {
