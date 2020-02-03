@@ -168,6 +168,8 @@ public class PlanningAgent extends AbstractPlayer {
                 .field("problem", problem)
                 .asJson();
 
+        Plan a = new Plan(response.getBody().getObject());
+
         System.out.println(response.getBody());
     }
 
@@ -287,18 +289,19 @@ public class PlanningAgent extends AbstractPlayer {
                         for (String var: predicateVars.get(cellType)) {
 
                             if (pred.contains(var)) {
-                                String replacement = var + "_" + x + "_" + y;
+                                String replacement = var.equals("player") ? var : var + "_" + x + "_" + y;
                                 outPredicate = outPredicate.replace(var, replacement);
 
                                 if (var.equals("player")) {
+                                    System.out.println(replacement);
                                     if (orientation.x == 1.0) {
-                                        playerOrientation = "(oriented-right player" + "_" + x + "_" + y + ")";
+                                        playerOrientation = "(oriented-right player)";
                                     } else if (orientation.x == -1.0) {
-                                        playerOrientation = "(oriented-left player" + "_" + x + "_" + y + ")";
+                                        playerOrientation = "(oriented-left player)";
                                     } else if (orientation.y == 1.0) {
-                                        playerOrientation = "(oriented-down player" + "_" + x + "_" + y + ")";
+                                        playerOrientation = "(oriented-down player)";
                                     } else if (orientation.y == -1.0) {
-                                        playerOrientation = "(oriented-up player" + "_" + x + "_" + y + ")";
+                                        playerOrientation = "(oriented-up player)";
                                     }
                                 }
 

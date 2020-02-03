@@ -13,7 +13,7 @@ with open("problem.pddl") as f:
 data = {"domain": domain, "problem": problem}
 
 resp = requests.post("http://solver.planning.domains/solve", data=data)
-print(resp)
+print(resp.json())
 for i in resp.json()["result"]["plan"]:
     a = re.sub(" +", " ", i["action"].strip().replace("\n", ""))
     print(a)
