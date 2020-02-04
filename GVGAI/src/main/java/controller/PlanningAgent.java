@@ -37,6 +37,8 @@ public class PlanningAgent extends AbstractPlayer {
     protected List<String> PDDLGameStatePredicates;
     protected Map<String, LinkedHashSet<String>> PDDLGameStateObjects;
 
+    protected Plan plan;
+
     public PlanningAgent(StateObservation stateObservation, ElapsedCpuTimer elapsedCpuTimer) {
         this.actionCorrespondence = new HashMap<>();
         this.correspondence = Parser.<String, ArrayList<String>>parseJSONFile("JSON/correspondence.json");
@@ -65,6 +67,8 @@ public class PlanningAgent extends AbstractPlayer {
         this.PDDLGameStateObjects = new HashMap<>();
         this.variables.keySet().stream().forEach(key -> this.PDDLGameStateObjects.put(key, new LinkedHashSet<>()));
 
+        this.plan = new Plan();
+
 
         this.agenda = new LinkedList<>();
         // Las gemas en las que se tienen que picar 2 o más rocas seguidas dan problemas
@@ -84,18 +88,17 @@ public class PlanningAgent extends AbstractPlayer {
     public Types.ACTIONS act(StateObservation stateObservation, ElapsedCpuTimer elapsedCpuTimer) {
         Types.ACTIONS action;
 
-        if (actionList.isEmpty()) {
+        // Get the player's orientation
+        Vector2d orientation = stateObservation.getAvatarOrientation();
+
+        this.parseGameStateToPDDL(stateObservation, correspondence, predicateVars, connections, orientation);
+
+        if (this.plan.isPlanEmpty()) {
             System.out.println("I need to find a plan!");
-
-            // Get the player's orientation
-            Vector2d orientation = stateObservation.getAvatarOrientation();
-
             //System.out.println(Parser.<String, ArrayList<String>>parseJSONFile("correspondence.json").get("A").get(0));
             //System.out.println(VGDLRegistry.GetInstance().getRegisteredSpriteKey(10));
-            String[][] gameMap = Parser.parseStateObservation(stateObservation);
 
             long time = elapsedCpuTimer.remainingTimeMillis();
-            this.parseGameStateToPDDL(gameMap, correspondence, predicateVars, connections, orientation);
             this.writePDDLGameStateProblem();
             System.out.println("Consumed time: " + (time - elapsedCpuTimer.remainingTimeMillis()));
 
@@ -103,15 +106,14 @@ public class PlanningAgent extends AbstractPlayer {
             action = Types.ACTIONS.ACTION_NIL;
 
             time = elapsedCpuTimer.remainingTimeMillis();
-            callPlanner();
+            this.plan = callOnlinePlanner();
             System.out.println("Consumed time waiting for planner's response: " + (time - elapsedCpuTimer.remainingTimeMillis()));
-            this.actionList = translateOutputPlan();
+            //this.actionList = translateOutputPlan();
         } else {
-            System.out.println(this.actionList);
-            action = this.actionList.get(0);
-            this.actionList.remove(0);
+            //System.out.println(this.actionList);
+            action = this.plan.getNextAction().getGVGAIAction();
 
-            if (this.actionList.isEmpty()) {
+            if (this.plan.isPlanEmpty()) {
                 this.agenda.removeFirst();
             }
         }
@@ -162,7 +164,7 @@ public class PlanningAgent extends AbstractPlayer {
         System.out.println("###############################" + b);
     }
 
-    public void callOnlinePlanner() {
+    public Plan callOnlinePlanner() {
         String domain = readFile("planning/domain.pddl"),
                problem = readFile("planning/problem.pddl");
 
@@ -172,9 +174,9 @@ public class PlanningAgent extends AbstractPlayer {
                 .field("problem", problem)
                 .asJson();
 
-        Plan a = new Plan(response.getBody().getObject());
+        Plan plan = new Plan(response.getBody().getObject(), this.actionCorrespondence);
 
-        System.out.println(response.getBody());
+        return plan;
     }
 
     private String readFile(String filename) {
@@ -221,15 +223,15 @@ public class PlanningAgent extends AbstractPlayer {
         return actions;
     }
 
-    public void parseGameStateToPDDL(String[][] gameMap,
+    public void parseGameStateToPDDL(StateObservation stateObservation,
                                      Map<String, ArrayList<String>> correspondence,
                                      Map<String, Set<String>> predicateVars,
                                      Map<String, String> connections,
                                      Vector2d orientation)
     {
+        String[][] gameMap = Parser.parseStateObservation(stateObservation);
         this.PDDLGameStatePredicates.clear();
         this.PDDLGameStateObjects.values().stream().forEach(x -> x.clear());
-        System.out.println(this.PDDLGameStateObjects);
 
         Set<String> connectionSet = new LinkedHashSet<>();
 
@@ -290,7 +292,6 @@ public class PlanningAgent extends AbstractPlayer {
                                 outPredicate = outPredicate.replace(var, replacement);
 
                                 if (var.equals("player")) {
-                                    System.out.println(replacement);
                                     if (orientation.x == 1.0) {
                                         this.PDDLGameStatePredicates.add("(oriented-right player)");
                                     } else if (orientation.x == -1.0) {

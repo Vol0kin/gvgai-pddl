@@ -2,15 +2,19 @@ package controller;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.*;
 import java.util.ArrayList;
+import ontology.Types;
 
 public class Action {
     private String actionName;
+    private Types.ACTIONS GVGAIAction;
     private List<String> preconditions;
 
-    public Action(String actionName, String actionDescription) {
+    public Action(String actionName, String actionDescription, Map<String, Types.ACTIONS> actionCorrespondence) {
         this.actionName = actionName;
+        this.translateActionNameToGVGAI(actionCorrespondence);
         this.processPreconditionsFromActionDescription(actionDescription);
     }
 
@@ -45,6 +49,22 @@ public class Action {
         this.preconditions = new ArrayList<>(Arrays.asList(preconditionsMatch.split("\n")));
     }
 
+    private void translateActionNameToGVGAI(Map<String, Types.ACTIONS> actionCorrespondence) {
+        // Create pattern
+        Pattern actionPattern = Pattern.compile("[^( ]+");
+
+        // Get match of the pattern
+        Matcher actionMatcher = actionPattern.matcher(this.actionName);
+        // Should this call be controlled in case no match is found?
+        actionMatcher.find();
+
+        // The action is the first element
+        String action = actionMatcher.group(0).toUpperCase();
+
+        // Get the GVGAI Action
+        this.GVGAIAction = actionCorrespondence.get(action);
+    }
+
     public String getActionName() {
         return this.actionName;
     }
@@ -53,10 +73,15 @@ public class Action {
         return this.preconditions;
     }
 
+    public Types.ACTIONS getGVGAIAction() {
+        return this.GVGAIAction;
+    }
+
     @Override
     public String toString() {
         return "Action{" +
                 "actionName='" + actionName + '\'' +
+                ", GVGAIAction= '" + this.GVGAIAction + '\'' +
                 ", preconditions='" + preconditions + '\'' +
                 '}';
     }
