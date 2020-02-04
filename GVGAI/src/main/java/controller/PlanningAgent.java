@@ -9,7 +9,6 @@ import tools.ElapsedCpuTimer;
 import ontology.Types;
 
 import java.io.*;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
@@ -33,10 +32,10 @@ public class PlanningAgent extends AbstractPlayer {
     protected Map<String, String> goalVariablesMap;
 
     protected List<Types.ACTIONS> actionList;
-    protected int blockSize;
-    protected int numGems;
-    protected static int MAX_GEMS = 9;
     protected LinkedList<String> agenda;
+
+    protected List<String> PDDLGameStatePredicates;
+    protected Map<String, LinkedHashSet<String>> PDDLGameStateObjects;
 
     public PlanningAgent(StateObservation stateObservation, ElapsedCpuTimer elapsedCpuTimer) {
         this.actionCorrespondence = new HashMap<>();
@@ -60,8 +59,12 @@ public class PlanningAgent extends AbstractPlayer {
         System.out.println(predicateVars);
 
         this.actionList = new ArrayList<>();
-        this.blockSize = stateObservation.getBlockSize();
-        this.numGems = 0;
+
+        // Initialize PDDL game state information
+        this.PDDLGameStatePredicates = new ArrayList<>();
+        this.PDDLGameStateObjects = new HashMap<>();
+        this.variables.keySet().stream().forEach(key -> this.PDDLGameStateObjects.put(key, new LinkedHashSet<>()));
+
 
         this.agenda = new LinkedList<>();
         // Las gemas en las que se tienen que picar 2 o más rocas seguidas dan problemas
@@ -92,7 +95,8 @@ public class PlanningAgent extends AbstractPlayer {
             String[][] gameMap = Parser.parseStateObservation(stateObservation);
 
             long time = elapsedCpuTimer.remainingTimeMillis();
-            this.parseGameToPDDL(gameMap, correspondence, variables, predicateVars, connections, orientation);
+            this.parseGameStateToPDDL(gameMap, correspondence, predicateVars, connections, orientation);
+            this.writePDDLGameStateProblem();
             System.out.println("Consumed time: " + (time - elapsedCpuTimer.remainingTimeMillis()));
 
             //Determine an index randomly and get the action to return.
@@ -217,23 +221,16 @@ public class PlanningAgent extends AbstractPlayer {
         return actions;
     }
 
-    public void parseGameToPDDL(String[][] gameMap,
-                                Map<String, ArrayList<String>> correspondence,
-                                Map<String, String> variables,
-                                Map<String, Set<String>> predicateVars,
-                                Map<String, String> connections,
-                                Vector2d orientation)
+    public void parseGameStateToPDDL(String[][] gameMap,
+                                     Map<String, ArrayList<String>> correspondence,
+                                     Map<String, Set<String>> predicateVars,
+                                     Map<String, String> connections,
+                                     Vector2d orientation)
     {
-        Map<String, LinkedHashSet<String>> objects = new HashMap<>();
+        this.PDDLGameStatePredicates.clear();
+        this.PDDLGameStateObjects.values().stream().forEach(x -> x.clear());
+        System.out.println(this.PDDLGameStateObjects);
 
-        String playerOrientation = "";
-        String outGoal = this.agenda.getFirst();
-
-        for (String key: variables.keySet()) {
-            objects.put(key, new LinkedHashSet<>());
-        }
-
-        ArrayList<String> predicateList = new ArrayList<>();
         Set<String> connectionSet = new LinkedHashSet<>();
 
         final int X_MAX = gameMap.length, Y_MAX = gameMap[0].length;
@@ -295,24 +292,31 @@ public class PlanningAgent extends AbstractPlayer {
                                 if (var.equals("player")) {
                                     System.out.println(replacement);
                                     if (orientation.x == 1.0) {
-                                        playerOrientation = "(oriented-right player)";
+                                        this.PDDLGameStatePredicates.add("(oriented-right player)");
                                     } else if (orientation.x == -1.0) {
-                                        playerOrientation = "(oriented-left player)";
+                                        this.PDDLGameStatePredicates.add("(oriented-left player)");
                                     } else if (orientation.y == 1.0) {
-                                        playerOrientation = "(oriented-down player)";
+                                        this.PDDLGameStatePredicates.add("(oriented-down player)");
                                     } else if (orientation.y == -1.0) {
-                                        playerOrientation = "(oriented-up player)";
+                                        this.PDDLGameStatePredicates.add("(oriented-up player)");
                                     }
                                 }
 
-                                objects.get(var).add(replacement);
+                                this.PDDLGameStateObjects.get(var).add(replacement);
                             }
                         }
-                        predicateList.add(outPredicate);
+                        this.PDDLGameStatePredicates.add(outPredicate);
                     }
                 }
             }
         }
+
+        // Add connections to predicates
+        connectionSet.stream().forEach(connection -> this.PDDLGameStatePredicates.add(connection));
+    }
+
+    private void writePDDLGameStateProblem() {
+        String outGoal = this.agenda.getFirst();
 
         try (BufferedWriter bf = new BufferedWriter(new FileWriter("planning/problem.pddl"))) {
             // Write problem name
@@ -331,9 +335,9 @@ public class PlanningAgent extends AbstractPlayer {
             bf.newLine();
 
             // Write each object
-            for (String key: objects.keySet()) {
-                if (!objects.get(key).isEmpty()) {
-                    String objectsStr = String.join(" ", objects.get(key));
+            for (String key: this.PDDLGameStateObjects.keySet()) {
+                if (!this.PDDLGameStateObjects.get(key).isEmpty()) {
+                    String objectsStr = String.join(" ", this.PDDLGameStateObjects.get(key));
                     objectsStr += String.format(" - %s", variables.get(key));
                     bf.write(objectsStr);
                     bf.newLine();
@@ -349,18 +353,8 @@ public class PlanningAgent extends AbstractPlayer {
             bf.newLine();
 
             // Write the predicates list into the file
-            for (String line: predicateList) {
-                bf.write(line);
-                bf.newLine();
-            }
-
-            // Write orientation
-            bf.write(playerOrientation);
-            bf.newLine();
-
-            // Write each connection into the file
-            for (String connection: connectionSet) {
-                bf.write(connection);
+            for (String predicate: this.PDDLGameStatePredicates) {
+                bf.write(predicate);
                 bf.newLine();
             }
 
