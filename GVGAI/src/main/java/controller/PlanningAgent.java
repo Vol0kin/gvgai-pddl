@@ -33,7 +33,8 @@ public class PlanningAgent extends AbstractPlayer {
     protected Map<String, String> goalVariablesMap;
 
     protected List<Types.ACTIONS> actionList;
-    protected LinkedList<String> agenda;
+    protected LinkedList<String> goalsList;
+    protected Agenda agenda;
 
     protected List<String> PDDLGameStatePredicates;
     protected Map<String, LinkedHashSet<String>> PDDLGameStateObjects;
@@ -76,18 +77,20 @@ public class PlanningAgent extends AbstractPlayer {
         this.iterPlan = plan.iterator();
 
 
-        this.agenda = new LinkedList<>();
+        this.goalsList = new LinkedList<>();
         // Las gemas en las que se tienen que picar 2 o más rocas seguidas dan problemas
-        this.agenda.addLast("(got gem_16_9)");
-        this.agenda.addLast("(got gem_7_3)");
-        this.agenda.addLast("(got gem_6_3)");
-        this.agenda.addLast("(got gem_5_3)");
-        this.agenda.addLast("(got gem_1_4)");
-        this.agenda.addLast("(got gem_6_1)");
-        this.agenda.addLast("(got gem_7_1)");
-        this.agenda.addLast("(got gem_7_9)");
-        this.agenda.addLast("(got gem_9_10)");
-        this.agenda.addLast("(exited-level)");
+        this.goalsList.addLast("(got gem_16_9)");
+        this.goalsList.addLast("(got gem_7_3)");
+        this.goalsList.addLast("(got gem_6_3)");
+        this.goalsList.addLast("(got gem_5_3)");
+        this.goalsList.addLast("(got gem_1_4)");
+        this.goalsList.addLast("(got gem_6_1)");
+        this.goalsList.addLast("(got gem_7_1)");
+        this.goalsList.addLast("(got gem_7_9)");
+        this.goalsList.addLast("(got gem_9_10)");
+        this.goalsList.addLast("(exited-level)");
+
+        this.agenda = new Agenda(this.goalsList);
     }
 
     @Override
@@ -105,6 +108,7 @@ public class PlanningAgent extends AbstractPlayer {
             //System.out.println(VGDLRegistry.GetInstance().getRegisteredSpriteKey(10));
 
             long time = elapsedCpuTimer.remainingTimeMillis();
+            this.agenda.setCurrentGoal();
             this.writePDDLGameStateProblem();
             System.out.println("Consumed time: " + (time - elapsedCpuTimer.remainingTimeMillis()));
 
@@ -122,6 +126,7 @@ public class PlanningAgent extends AbstractPlayer {
 
             boolean satisfiedPrec = this.checkPreconditions(nextAction);
 
+
             if (satisfiedPrec) {
                 System.out.println("//////////////////////////////All preconditions satisfied");
             } else {
@@ -131,7 +136,8 @@ public class PlanningAgent extends AbstractPlayer {
             action = nextAction.getGVGAIAction();
 
             if (!this.iterPlan.hasNext()) {
-                this.agenda.removeFirst();
+                this.agenda.updateReachedGoals();
+                System.out.println(this.agenda);
             }
             /*
             action = this.iterPlan.next().getGVGAIAction();
@@ -365,7 +371,7 @@ public class PlanningAgent extends AbstractPlayer {
     }
 
     private void writePDDLGameStateProblem() {
-        String outGoal = this.agenda.getFirst();
+        String outGoal = this.agenda.getCurrentGoal();
 
         try (BufferedWriter bf = new BufferedWriter(new FileWriter("planning/problem.pddl"))) {
             // Write problem name
