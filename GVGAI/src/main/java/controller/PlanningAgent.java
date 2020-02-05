@@ -1,5 +1,6 @@
 package controller;
 
+import com.sun.org.apache.xpath.internal.objects.XBooleanStatic;
 import core.game.Observation;
 import core.player.AbstractPlayer;
 import core.game.StateObservation;
@@ -38,7 +39,7 @@ public class PlanningAgent extends AbstractPlayer {
     protected Map<String, LinkedHashSet<String>> PDDLGameStateObjects;
 
     protected Plan plan;
-    protected Iterator<Action> nextAction;
+    protected Iterator<Action> iterPlan;
 
     public PlanningAgent(StateObservation stateObservation, ElapsedCpuTimer elapsedCpuTimer) {
         this.actionCorrespondence = new HashMap<>();
@@ -72,7 +73,7 @@ public class PlanningAgent extends AbstractPlayer {
                 .forEach(key -> this.PDDLGameStateObjects.put(key, new LinkedHashSet<>()));
 
         this.plan = new Plan();
-        this.nextAction = plan.iterator();
+        this.iterPlan = plan.iterator();
 
 
         this.agenda = new LinkedList<>();
@@ -98,7 +99,7 @@ public class PlanningAgent extends AbstractPlayer {
 
         this.parseGameStateToPDDL(stateObservation, correspondence, predicateVars, connections, orientation);
 
-        if (!this.nextAction.hasNext()) {
+        if (!this.iterPlan.hasNext()) {
             System.out.println("I need to find a plan!");
             //System.out.println(Parser.<String, ArrayList<String>>parseJSONFile("correspondence.json").get("A").get(0));
             //System.out.println(VGDLRegistry.GetInstance().getRegisteredSpriteKey(10));
@@ -112,28 +113,61 @@ public class PlanningAgent extends AbstractPlayer {
 
             time = elapsedCpuTimer.remainingTimeMillis();
             this.plan = callOnlinePlanner();
-            this.nextAction = plan.iterator();
+            this.iterPlan = plan.iterator();
             System.out.println("Consumed time waiting for planner's response: " + (time - elapsedCpuTimer.remainingTimeMillis()));
             //this.actionList = translateOutputPlan();
         } else {
             //System.out.println(this.actionList);
-            Action nextAction = this.nextAction.next();
+            Action nextAction = this.iterPlan.next();
+
+            boolean satisfiedPrec = this.checkPreconditions(nextAction);
+
+            if (satisfiedPrec) {
+                System.out.println("//////////////////////////////All preconditions satisfied");
+            } else {
+                System.out.println("//////////////////////////////One or more preconditions hasn't been satisfied. ERROR.");
+            }
 
             action = nextAction.getGVGAIAction();
 
-            if (!this.nextAction.hasNext()) {
+            if (!this.iterPlan.hasNext()) {
                 this.agenda.removeFirst();
             }
             /*
-            action = this.nextAction.next().getGVGAIAction();
+            action = this.iterPlan.next().getGVGAIAction();
 
-            if (!this.nextAction.hasNext()) {
+            if (!this.iterPlan.hasNext()) {
                 this.agenda.removeFirst();
             }*/
         }
 
         //Return the action.
         return action;
+    }
+
+    public boolean checkPreconditions(Action action) {
+        boolean satisfiedPreconditions = true;
+
+        // Check whether all preconditions are satisfied
+        for (String precondition: action.getPreconditions()) {
+            // If the precondition is negative, it has to be checked that the positive can't be found
+            if (precondition.contains("not")) {
+                String positivePred = precondition.replace("(not ", "");
+                positivePred = positivePred.substring(0, positivePred.length() - 1);
+
+                if (this.PDDLGameStatePredicates.contains(positivePred)) {
+                    System.out.println(precondition);
+                    satisfiedPreconditions = false;
+                }
+            } else {
+                if (!this.PDDLGameStatePredicates.contains(precondition)) {
+                    System.out.println(precondition);
+                    satisfiedPreconditions = false;
+                }
+            }
+        }
+
+        return satisfiedPreconditions;
     }
 
     public void callPlanner() {

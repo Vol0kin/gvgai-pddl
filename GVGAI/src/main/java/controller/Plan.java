@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Iterator;
+import java.util.stream.Collectors;
 
 
 public class Plan implements Iterable<Action>{
@@ -19,6 +20,8 @@ public class Plan implements Iterable<Action>{
     public Plan(JSONObject response, Map<String, Types.ACTIONS> actionCorrespondence) {
         JSONArray plan = response.getJSONObject("result").getJSONArray("plan");
 
+        ArrayList<Action> actionList = new ArrayList<>();
+
         this.actions = new ArrayList<>();
 
         for (int i = 0; i < plan.length(); i++) {
@@ -27,8 +30,14 @@ public class Plan implements Iterable<Action>{
             String actionName = planElement.getString("name");
             String preconditions = planElement.getString("action");
 
-            actions.add(new Action(actionName, preconditions, actionCorrespondence));
+            actionList.add(new Action(actionName, preconditions, actionCorrespondence));
         }
+
+        // Remove null actions
+        this.actions = actionList
+                        .stream()
+                        .filter(action -> action.getGVGAIAction() != null)
+                        .collect(Collectors.toList());
 
         System.out.println(this.actions);
     }
@@ -36,6 +45,17 @@ public class Plan implements Iterable<Action>{
     public List<Action> getActions() {
         return this.actions;
     }
+/*
+    public Action getNextAction() {
+        Action nextAction = this.actions.get(0);
+        this.actions.remove(0);
+
+        return nextAction;
+    }
+
+    public boolean isPlanEmpty() {
+        return this.actions.isEmpty();
+    }*/
 
     @Override
     public Iterator<Action> iterator() {
