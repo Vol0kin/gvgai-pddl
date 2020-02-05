@@ -18,6 +18,7 @@ public class Plan implements Iterable<Action>{
     }
 
     public Plan(JSONObject response, Map<String, Types.ACTIONS> actionCorrespondence) {
+        System.out.println(response);
         JSONArray plan = response.getJSONObject("result").getJSONArray("plan");
 
         ArrayList<Action> actionList = new ArrayList<>();

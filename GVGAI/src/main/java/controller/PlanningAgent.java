@@ -33,7 +33,7 @@ public class PlanningAgent extends AbstractPlayer {
     protected Map<String, String> goalVariablesMap;
 
     protected List<Types.ACTIONS> actionList;
-    protected LinkedList<String> goalsList;
+    protected LinkedList<GoalState> goalsList;
     protected Agenda agenda;
 
     protected List<String> PDDLGameStatePredicates;
@@ -41,6 +41,8 @@ public class PlanningAgent extends AbstractPlayer {
 
     protected Plan plan;
     protected Iterator<Action> iterPlan;
+
+    protected boolean mustReplan;
 
     public PlanningAgent(StateObservation stateObservation, ElapsedCpuTimer elapsedCpuTimer) {
         this.actionCorrespondence = new HashMap<>();
@@ -79,18 +81,20 @@ public class PlanningAgent extends AbstractPlayer {
 
         this.goalsList = new LinkedList<>();
         // Las gemas en las que se tienen que picar 2 o más rocas seguidas dan problemas
-        this.goalsList.addLast("(got gem_16_9)");
-        this.goalsList.addLast("(got gem_7_3)");
-        this.goalsList.addLast("(got gem_6_3)");
-        this.goalsList.addLast("(got gem_5_3)");
-        this.goalsList.addLast("(got gem_1_4)");
-        this.goalsList.addLast("(got gem_6_1)");
-        this.goalsList.addLast("(got gem_7_1)");
-        this.goalsList.addLast("(got gem_7_9)");
-        this.goalsList.addLast("(got gem_9_10)");
-        this.goalsList.addLast("(exited-level)");
+        this.goalsList.addLast(new GoalState("(got gem_16_9)", 1));
+        this.goalsList.addLast(new GoalState("(got gem_7_3)", 1));
+        this.goalsList.addLast(new GoalState("(got gem_6_3)", 1));
+        this.goalsList.addLast(new GoalState("(got gem_5_3)", 1));
+        this.goalsList.addLast(new GoalState("(got gem_1_4)", 1));
+        this.goalsList.addLast(new GoalState("(got gem_6_1)", 1));
+        this.goalsList.addLast(new GoalState("(got gem_7_1)", 1));
+        this.goalsList.addLast(new GoalState("(got gem_7_9)", 1));
+        this.goalsList.addLast(new GoalState("(got gem_9_10)", 1));
+        this.goalsList.addLast(new GoalState("(exited-level)", 2));
 
         this.agenda = new Agenda(this.goalsList);
+
+        this.mustReplan = true;
     }
 
     @Override
@@ -102,7 +106,7 @@ public class PlanningAgent extends AbstractPlayer {
 
         this.parseGameStateToPDDL(stateObservation, correspondence, predicateVars, connections, orientation);
 
-        if (!this.iterPlan.hasNext()) {
+        if (this.mustReplan) {
             System.out.println("I need to find a plan!");
             //System.out.println(Parser.<String, ArrayList<String>>parseJSONFile("correspondence.json").get("A").get(0));
             //System.out.println(VGDLRegistry.GetInstance().getRegisteredSpriteKey(10));
@@ -118,6 +122,7 @@ public class PlanningAgent extends AbstractPlayer {
             time = elapsedCpuTimer.remainingTimeMillis();
             this.plan = callOnlinePlanner();
             this.iterPlan = plan.iterator();
+            this.mustReplan = false;
             System.out.println("Consumed time waiting for planner's response: " + (time - elapsedCpuTimer.remainingTimeMillis()));
             //this.actionList = translateOutputPlan();
         } else {
@@ -131,6 +136,9 @@ public class PlanningAgent extends AbstractPlayer {
                 System.out.println("//////////////////////////////All preconditions satisfied");
             } else {
                 System.out.println("//////////////////////////////One or more preconditions hasn't been satisfied. ERROR.");
+                this.agenda.haltCurrentGoal();
+                System.out.println(this.agenda);
+                this.mustReplan = true;
             }
 
             action = nextAction.getGVGAIAction();
@@ -138,6 +146,7 @@ public class PlanningAgent extends AbstractPlayer {
             if (!this.iterPlan.hasNext()) {
                 this.agenda.updateReachedGoals();
                 System.out.println(this.agenda);
+                this.mustReplan = true;
             }
             /*
             action = this.iterPlan.next().getGVGAIAction();
@@ -153,6 +162,7 @@ public class PlanningAgent extends AbstractPlayer {
 
     public boolean checkPreconditions(Action action) {
         boolean satisfiedPreconditions = true;
+        System.out.println(action.getPreconditions());
 
         // Check whether all preconditions are satisfied
         for (String precondition: action.getPreconditions()) {
@@ -371,7 +381,7 @@ public class PlanningAgent extends AbstractPlayer {
     }
 
     private void writePDDLGameStateProblem() {
-        String outGoal = this.agenda.getCurrentGoal();
+        String outGoal = this.agenda.getCurrentGoal().getGoalDescription();
 
         try (BufferedWriter bf = new BufferedWriter(new FileWriter("planning/problem.pddl"))) {
             // Write problem name
