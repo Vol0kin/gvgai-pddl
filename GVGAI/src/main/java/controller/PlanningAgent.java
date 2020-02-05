@@ -38,6 +38,7 @@ public class PlanningAgent extends AbstractPlayer {
     protected Map<String, LinkedHashSet<String>> PDDLGameStateObjects;
 
     protected Plan plan;
+    protected Iterator<Action> nextAction;
 
     public PlanningAgent(StateObservation stateObservation, ElapsedCpuTimer elapsedCpuTimer) {
         this.actionCorrespondence = new HashMap<>();
@@ -65,9 +66,13 @@ public class PlanningAgent extends AbstractPlayer {
         // Initialize PDDL game state information
         this.PDDLGameStatePredicates = new ArrayList<>();
         this.PDDLGameStateObjects = new HashMap<>();
-        this.variables.keySet().stream().forEach(key -> this.PDDLGameStateObjects.put(key, new LinkedHashSet<>()));
+        this.variables
+                .keySet()
+                .stream()
+                .forEach(key -> this.PDDLGameStateObjects.put(key, new LinkedHashSet<>()));
 
         this.plan = new Plan();
+        this.nextAction = plan.iterator();
 
 
         this.agenda = new LinkedList<>();
@@ -93,7 +98,7 @@ public class PlanningAgent extends AbstractPlayer {
 
         this.parseGameStateToPDDL(stateObservation, correspondence, predicateVars, connections, orientation);
 
-        if (this.plan.isPlanEmpty()) {
+        if (!this.nextAction.hasNext()) {
             System.out.println("I need to find a plan!");
             //System.out.println(Parser.<String, ArrayList<String>>parseJSONFile("correspondence.json").get("A").get(0));
             //System.out.println(VGDLRegistry.GetInstance().getRegisteredSpriteKey(10));
@@ -107,15 +112,24 @@ public class PlanningAgent extends AbstractPlayer {
 
             time = elapsedCpuTimer.remainingTimeMillis();
             this.plan = callOnlinePlanner();
+            this.nextAction = plan.iterator();
             System.out.println("Consumed time waiting for planner's response: " + (time - elapsedCpuTimer.remainingTimeMillis()));
             //this.actionList = translateOutputPlan();
         } else {
             //System.out.println(this.actionList);
-            action = this.plan.getNextAction().getGVGAIAction();
+            Action nextAction = this.nextAction.next();
 
-            if (this.plan.isPlanEmpty()) {
+            action = nextAction.getGVGAIAction();
+
+            if (!this.nextAction.hasNext()) {
                 this.agenda.removeFirst();
             }
+            /*
+            action = this.nextAction.next().getGVGAIAction();
+
+            if (!this.nextAction.hasNext()) {
+                this.agenda.removeFirst();
+            }*/
         }
 
         //Return the action.

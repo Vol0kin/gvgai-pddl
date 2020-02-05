@@ -6,9 +6,10 @@ import ontology.Types;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Iterator;
 
 
-public class Plan {
+public class Plan implements Iterable<Action>{
     private List<Action> actions;
 
     public Plan() {
@@ -36,14 +37,22 @@ public class Plan {
         return this.actions;
     }
 
-    public Action getNextAction() {
-        Action nextAction = this.actions.get(0);
-        this.actions.remove(0);
+    @Override
+    public Iterator<Action> iterator() {
+        Iterator<Action> iterator = new Iterator<Action>() {
+            private int currentIdx = 0;
 
-        return nextAction;
-    }
+            @Override
+            public boolean hasNext() {
+                return currentIdx < actions.size() && actions.get(currentIdx) != null;
+            }
 
-    public boolean isPlanEmpty() {
-        return this.actions.isEmpty();
+            @Override
+            public Action next() {
+                return actions.get(currentIdx++);
+            }
+        };
+
+        return iterator;
     }
 }

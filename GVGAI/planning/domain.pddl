@@ -22,6 +22,7 @@
     (terrain-empty ?c - Cell)
     (got ?g - Gem)
     (exited-level)
+    (occupied ?c - Cell)
   )
 
   (:action turn-up
@@ -137,7 +138,7 @@
       (at ?p ?c1)
       (oriented-down ?p)
       (connected-down ?c1 ?c2)
-      (not (exists (?b - Boulder) (at ?b ?c2)))
+      (not (occupied ?c2))
       (not (terrain-wall ?c2))
     )
     :effect (and
@@ -156,7 +157,7 @@
       (at ?p ?c1)
       (oriented-left ?p)
       (connected-left ?c1 ?c2)
-      (not (exists (?b - Boulder) (at ?b ?c2)))
+      (not (occupied ?c2))
       (not (terrain-wall ?c2))
     )
     :effect (and
@@ -175,7 +176,7 @@
       (at ?p ?c1)
       (oriented-right ?p)
       (connected-right ?c1 ?c2)
-      (not (exists (?b - Boulder) (at ?b ?c2)))
+      (not (occupied ?c2))
       (not (terrain-wall ?c2))
     )
     :effect (and
@@ -206,11 +207,13 @@
     :precondition (and
       (at ?p ?c1)
       (at ?b ?c2)
+      (occupied ?c2)
       (oriented-up ?p)
       (connected-up ?c1 ?c2)
     )
     :effect (and
       (not (at ?b ?c2))
+      (not (occupied ?c2))
     )
   )
 
@@ -219,11 +222,13 @@
     :precondition (and
       (at ?p ?c1)
       (at ?b ?c2)
+      (occupied ?c2)
       (oriented-down ?p)
       (connected-down ?c1 ?c2)
     )
     :effect (and
       (not (at ?b ?c2))
+      (not (occupied ?c2))
     )
   )
 
@@ -232,11 +237,13 @@
     :precondition (and
       (at ?p ?c1)
       (at ?b ?c2)
+      (occupied ?c2)
       (oriented-left ?p)
       (connected-left ?c1 ?c2)
     )
     :effect (and
       (not (at ?b ?c2))
+      (not (occupied ?c2))
     )
   )
 
@@ -245,11 +252,13 @@
     :precondition (and
       (at ?p ?c1)
       (at ?b ?c2)
+      (occupied ?c2)
       (oriented-right ?p)
       (connected-right ?c1 ?c2)
     )
     :effect (and
       (not (at ?b ?c2))
+      (not (occupied ?c2))
     )
   )
 
