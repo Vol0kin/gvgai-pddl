@@ -1,3 +1,5 @@
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+
 # gvgai-pddl
 Implementation of a PDDL-based agent in GVGAI. This project is being developed as part
 of my Bachelor's thesis.
