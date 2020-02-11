@@ -1,7 +1,24 @@
+/*
+ * PlanningAgent.java
+ *
+ * Copyright (C) 2020 Vladislav Nikolov Vasilev
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see https://www.gnu.org/licenses/gpl-3.0.html.
+ */
+
 package controller;
 
-import com.sun.org.apache.xpath.internal.objects.XBooleanStatic;
-import core.game.Observation;
 import core.player.AbstractPlayer;
 import core.game.StateObservation;
 import parsing.Parser;
@@ -15,12 +32,10 @@ import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Stream;
 
-import parsing.Parser;
 import tools.Vector2d;
 import kong.unirest.HttpResponse;
 import kong.unirest.JsonNode;
 import kong.unirest.Unirest;
-import kong.unirest.UnirestException;
 
 public class PlanningAgent extends AbstractPlayer {
 
@@ -33,14 +48,14 @@ public class PlanningAgent extends AbstractPlayer {
     protected Map<String, String> goalVariablesMap;
 
     protected List<Types.ACTIONS> actionList;
-    protected LinkedList<GoalState> goalsList;
+    protected LinkedList<PDDLGoal> goalsList;
     protected Agenda agenda;
 
     protected List<String> PDDLGameStatePredicates;
     protected Map<String, LinkedHashSet<String>> PDDLGameStateObjects;
 
-    protected Plan plan;
-    protected Iterator<Action> iterPlan;
+    protected PDDLPlan PDDLPlan;
+    protected Iterator<PDDLAction> iterPlan;
 
     protected boolean mustReplan;
 
@@ -75,22 +90,22 @@ public class PlanningAgent extends AbstractPlayer {
                 .stream()
                 .forEach(key -> this.PDDLGameStateObjects.put(key, new LinkedHashSet<>()));
 
-        this.plan = new Plan();
-        this.iterPlan = plan.iterator();
+        this.PDDLPlan = new PDDLPlan();
+        this.iterPlan = PDDLPlan.iterator();
 
 
         this.goalsList = new LinkedList<>();
         // Las gemas en las que se tienen que picar 2 o más rocas seguidas dan problemas
-        this.goalsList.addLast(new GoalState("(got gem_16_9)", 1));
-        this.goalsList.addLast(new GoalState("(got gem_7_3)", 1));
-        this.goalsList.addLast(new GoalState("(got gem_6_3)", 1));
-        this.goalsList.addLast(new GoalState("(got gem_5_3)", 1));
-        this.goalsList.addLast(new GoalState("(got gem_1_4)", 1));
-        this.goalsList.addLast(new GoalState("(got gem_6_1)", 1));
-        this.goalsList.addLast(new GoalState("(got gem_7_1)", 1));
-        this.goalsList.addLast(new GoalState("(got gem_7_9)", 1));
-        this.goalsList.addLast(new GoalState("(got gem_9_10)", 1));
-        this.goalsList.addLast(new GoalState("(exited-level)", 2));
+        this.goalsList.addLast(new PDDLGoal("(got gem_16_9)", 1));
+        this.goalsList.addLast(new PDDLGoal("(got gem_7_3)", 1));
+        this.goalsList.addLast(new PDDLGoal("(got gem_6_3)", 1));
+        this.goalsList.addLast(new PDDLGoal("(got gem_5_3)", 1));
+        this.goalsList.addLast(new PDDLGoal("(got gem_1_4)", 1));
+        this.goalsList.addLast(new PDDLGoal("(got gem_6_1)", 1));
+        this.goalsList.addLast(new PDDLGoal("(got gem_7_1)", 1));
+        this.goalsList.addLast(new PDDLGoal("(got gem_7_9)", 1));
+        this.goalsList.addLast(new PDDLGoal("(got gem_9_10)", 1));
+        this.goalsList.addLast(new PDDLGoal("(exited-level)", 2));
 
         this.agenda = new Agenda(this.goalsList);
 
@@ -120,16 +135,16 @@ public class PlanningAgent extends AbstractPlayer {
             action = Types.ACTIONS.ACTION_NIL;
 
             time = elapsedCpuTimer.remainingTimeMillis();
-            this.plan = callOnlinePlanner();
-            this.iterPlan = plan.iterator();
+            this.PDDLPlan = callOnlinePlanner();
+            this.iterPlan = PDDLPlan.iterator();
             this.mustReplan = false;
             System.out.println("Consumed time waiting for planner's response: " + (time - elapsedCpuTimer.remainingTimeMillis()));
             //this.actionList = translateOutputPlan();
         } else {
             //System.out.println(this.actionList);
-            Action nextAction = this.iterPlan.next();
+            PDDLAction nextPDDLAction = this.iterPlan.next();
 
-            boolean satisfiedPrec = this.checkPreconditions(nextAction);
+            boolean satisfiedPrec = this.checkPreconditions(nextPDDLAction);
 
 
             if (satisfiedPrec) {
@@ -141,7 +156,7 @@ public class PlanningAgent extends AbstractPlayer {
                 this.mustReplan = true;
             }
 
-            action = nextAction.getGVGAIAction();
+            action = nextPDDLAction.getGVGAIAction();
 
             if (!this.iterPlan.hasNext()) {
                 this.agenda.updateReachedGoals();
@@ -160,12 +175,12 @@ public class PlanningAgent extends AbstractPlayer {
         return action;
     }
 
-    public boolean checkPreconditions(Action action) {
+    public boolean checkPreconditions(PDDLAction PDDLAction) {
         boolean satisfiedPreconditions = true;
-        System.out.println(action.getPreconditions());
+        System.out.println(PDDLAction.getPreconditions());
 
         // Check whether all preconditions are satisfied
-        for (String precondition: action.getPreconditions()) {
+        for (String precondition: PDDLAction.getPreconditions()) {
             // If the precondition is negative, it has to be checked that the positive can't be found
             if (precondition.contains("not")) {
                 String positivePred = precondition.replace("(not ", "");
@@ -228,7 +243,7 @@ public class PlanningAgent extends AbstractPlayer {
         System.out.println("###############################" + b);
     }
 
-    public Plan callOnlinePlanner() {
+    public PDDLPlan callOnlinePlanner() {
         String domain = readFile("planning/domain.pddl"),
                problem = readFile("planning/problem.pddl");
 
@@ -238,9 +253,9 @@ public class PlanningAgent extends AbstractPlayer {
                 .field("problem", problem)
                 .asJson();
 
-        Plan plan = new Plan(response.getBody().getObject(), this.actionCorrespondence);
+        PDDLPlan PDDLPlan = new PDDLPlan(response.getBody().getObject(), this.actionCorrespondence);
 
-        return plan;
+        return PDDLPlan;
     }
 
     private String readFile(String filename) {
@@ -381,7 +396,7 @@ public class PlanningAgent extends AbstractPlayer {
     }
 
     private void writePDDLGameStateProblem() {
-        String outGoal = this.agenda.getCurrentGoal().getGoalDescription();
+        String outGoal = this.agenda.getCurrentGoal().getGoalPredicate();
 
         try (BufferedWriter bf = new BufferedWriter(new FileWriter("planning/problem.pddl"))) {
             // Write problem name

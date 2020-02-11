@@ -5,14 +5,14 @@ Java files with Main() entry points:
  - **tracks.singlePlayer.Test.java** This is the main test file to run single player games in the vgdl framework. It uses methods of the class ArcadeMachine.java. In particular, you can execute the framework in the following ways:
      1. Play a game/level as a human (ArcadeMachine.playOneGame(...)).
      2. Play a game/level with a controller (ArcadeMachine.runOneGame(...)).
-     3. Replay a game/level from an action file, obtained in a previous run (ArcadeMachine.replayGame(...)).
+     3. Replay a game/level from an PDDLAction file, obtained in a previous run (ArcadeMachine.replayGame(...)).
      4. Play a game in N levels, M times each (ArcadeMachine.runGames(...)). This execution mode provides statistical information in the games played.
      5. Play a generated level for a certain game that was generated before.
 
  - **tracks.multiPlayer.TestMultiPlayer.java** This is the main test file to run multi player games in the vgdl framework, using methods from the class ArcadeMachine.java. The following methods could be used:
      1. Play a game/level with two human players (ArcadeMachine.playOneGame(...)).
      2. Play a game/level with two controllers (ArcadeMachine.runOneGame(...)). Note: one of the controllers can be human; if this is the case, the ID of the human player has to be passed to the runOneGame method as the last argument (0 if first player, 1 if second).
-     3. Replay a game/level from an action file, obtained in a previous run (ArcadeMachine.replayGame(...)).
+     3. Replay a game/level from an PDDLAction file, obtained in a previous run (ArcadeMachine.replayGame(...)).
      4. Play a game in N levels, M times each (ArcadeMachine.runGames(...)). Statistical information can be obtained from this method.
  
  - **tracks.levelGeneration.TestLevelGeneration.java** 

@@ -266,16 +266,16 @@ class ClientComm:
             self.io.writeToServer(self.lastMessageId, "INIT_DONE" + "#" + self.lastSsoType, self.LOG)
 
     """
-     * Manages the action request for an agent. The agent is requested for an action,
+     * Manages the PDDLAction request for an agent. The agent is requested for an PDDLAction,
      * which is sent back to the server
     """
 
     def act(self):
         ect = ElapsedCpuTimer()
         ect.setMaxTimeMillis(CompetitionParameters.ACTION_TIME)
-        action = str(self.player.act(self.sso, ect.copy()))
-        if (not action) or (action == ""):
-            action = "ACTION_NIL"
+        PDDLAction = str(self.player.act(self.sso, ect.copy()))
+        if (not PDDLAction) or (PDDLAction == ""):
+            PDDLAction = "ACTION_NIL"
 
         self.lastSsoType = self.player.lastSsoType
         if ect.exceededMaxTime():
@@ -284,7 +284,7 @@ class ClientComm:
             else:
                 self.io.writeToServer(self.lastMessageId, "ACTION_NIL" + "#" + self.lastSsoType, self.LOG)
         else:
-            self.io.writeToServer(self.lastMessageId, action + "#" + self.lastSsoType, self.LOG)
+            self.io.writeToServer(self.lastMessageId, PDDLAction + "#" + self.lastSsoType, self.LOG)
 
     """
      * Manages the aresult sent to the agent. The time limit for this call will be TOTAL_LEARNING_TIME

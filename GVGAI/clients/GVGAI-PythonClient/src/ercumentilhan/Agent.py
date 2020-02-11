@@ -1,6 +1,6 @@
 """
 This controller is based on a shallow reinforcement learning method, true online Sarsa(lambda) with linear function
-approximation, dutch traces and softmax/epsilon-greedy action selection policy [1]. In addition, "Double" and "Expected"
+approximation, dutch traces and softmax/epsilon-greedy PDDLAction selection policy [1]. In addition, "Double" and "Expected"
 variants of Sarsa algorithm are employed [2].
 
 States are represented with hand-designed features which are comprised of normalized relative proximity values between
@@ -130,7 +130,7 @@ class Agent(AbstractPlayer):
 
         :param state_features: state features
         :param reward: transition reward
-        :param action_probabilities: action probabilities from the "state_features" according to the current policy
+        :param action_probabilities: PDDLAction probabilities from the "state_features" according to the current policy
         """
         q_previous = self.w[0].dot(self.previous_state_features_extended)
 
@@ -163,15 +163,15 @@ class Agent(AbstractPlayer):
 
         :param sso: observation of the current state of the game
         :param elapsed_timer: the timer
-        :return: index of the action to be taken
+        :return: index of the PDDLAction to be taken
         """
         # Training mode
         if self.running_mode == 1:
 
             reward = sso.gameScore - self.previous_gameScore
             state_features = self.extract_features(sso)
-            action, action_probabilities = self.select_action(state_features)
-            state_features_extended = self.extend_features(state_features, action)
+            PDDLAction, action_probabilities = self.select_action(state_features)
+            state_features_extended = self.extend_features(state_features, PDDLAction)
 
             if sso.gameTick > 0:
                 # Perform a step of learning for the previous transition
@@ -179,7 +179,7 @@ class Agent(AbstractPlayer):
 
             self.previous_state_features = np.copy(state_features)
             self.previous_state_features_extended = np.copy(state_features_extended)
-            self.previous_action = action
+            self.previous_action = PDDLAction
 
             self.n_total_steps += 1
 
@@ -210,10 +210,10 @@ class Agent(AbstractPlayer):
 
     def select_action(self, state_features):
         """
-        Determines the action to be taken based on state features by using softmax policy.
+        Determines the PDDLAction to be taken based on state features by using softmax policy.
 
         :param state_features: state features
-        :return: selected action, probabilities for the actions
+        :return: selected PDDLAction, probabilities for the actions
         """
         action_values = np.zeros((self.n_actions,), dtype=np.float32)
 
@@ -243,9 +243,9 @@ class Agent(AbstractPlayer):
             action_probabilities[greedy_action] = 1.0 - epsilon
             action_probabilities[action_probabilities == 0.0] = epsilon/(self.n_actions - 1)
 
-            if random_number < epsilon:  # Random action
+            if random_number < epsilon:  # Random PDDLAction
                 selected_action = random.randint(0, self.n_actions - 1)
-            else:  # Greedy action
+            else:  # Greedy PDDLAction
                 selected_action = greedy_action
 
         return selected_action, action_probabilities
@@ -401,7 +401,7 @@ class Agent(AbstractPlayer):
         Extends the given feature vector by multiplying its size and filling up with zeros for the other actions.
 
         :param state_features: state features
-        :param action_index: index of relevant action
+        :param action_index: index of relevant PDDLAction
         :return: extended state features vector
         """
         extended_state_features = np.zeros((self.n_actions*self.f_length_full,), dtype=np.float32)
@@ -434,7 +434,7 @@ class Agent(AbstractPlayer):
                 elif sso.gameWinner == 'PLAYER_WINS':
                     reward += self.win_reward
 
-            # Terminal state: features and action probabilities are all set to zero
+            # Terminal state: features and PDDLAction probabilities are all set to zero
             features = np.zeros((self.f_length_full,), dtype=np.float32)
             action_probabilities = np.zeros((self.n_actions,), dtype=np.float32)
 

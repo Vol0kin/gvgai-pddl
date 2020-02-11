@@ -176,7 +176,7 @@ extends <a href="../../core/game/Game.html" title="class in core.game">Game</a><
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><strong><a href="../../core/game/ForwardModel.html#advance(ontology.Types.ACTIONS)">advance</a></strong>(<a href="../../ontology/Types.ACTIONS.html" title="enum in ontology">Types.ACTIONS</a>&nbsp;action)</code>
+<td class="colLast"><code><strong><a href="../../core/game/ForwardModel.html#advance(ontology.Types.ACTIONS)">advance</a></strong>(<a href="../../ontology/Types.ACTIONS.html" title="enum in ontology">Types.ACTIONS</a>&nbsp;PDDLAction)</code>
 <div class="block">Advances the forward model using the acction supplied.</div>
 </td>
 </tr>
@@ -323,7 +323,7 @@ extends <a href="../../core/game/Game.html" title="class in core.game">Game</a><
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>protected void</code></td>
-<td class="colLast"><code><strong><a href="../../core/game/ForwardModel.html#tick(ontology.Types.ACTIONS)">tick</a></strong>(<a href="../../ontology/Types.ACTIONS.html" title="enum in ontology">Types.ACTIONS</a>&nbsp;action)</code>
+<td class="colLast"><code><strong><a href="../../core/game/ForwardModel.html#tick(ontology.Types.ACTIONS)">tick</a></strong>(<a href="../../ontology/Types.ACTIONS.html" title="enum in ontology">Types.ACTIONS</a>&nbsp;PDDLAction)</code>
 <div class="block">Performs one tick for the game: calling update(this) in all sprites.</div>
 </td>
 </tr>
@@ -435,11 +435,11 @@ extends <a href="../../core/game/Game.html" title="class in core.game">Game</a><
 <ul class="blockList">
 <li class="blockList">
 <h4>tick</h4>
-<pre>protected&nbsp;void&nbsp;tick(<a href="../../ontology/Types.ACTIONS.html" title="enum in ontology">Types.ACTIONS</a>&nbsp;action)</pre>
+<pre>protected&nbsp;void&nbsp;tick(<a href="../../ontology/Types.ACTIONS.html" title="enum in ontology">Types.ACTIONS</a>&nbsp;PDDLAction)</pre>
 <div class="block">Performs one tick for the game: calling update(this) in all sprites. It follows the
- opposite order of the drawing order (spriteOrder[]). It uses the action received as the
- action of the avatar.</div>
-<dl><dt><span class="strong">Parameters:</span></dt><dd><code>action</code> - Action to be performed by the avatar for this game tick.</dd></dl>
+ opposite order of the drawing order (spriteOrder[]). It uses the PDDLAction received as the
+ PDDLAction of the avatar.</div>
+<dl><dt><span class="strong">Parameters:</span></dt><dd><code>PDDLAction</code> - Action to be performed by the avatar for this game tick.</dd></dl>
 </li>
 </ul>
 <a name="advance(ontology.Types.ACTIONS)">
@@ -448,9 +448,9 @@ extends <a href="../../core/game/Game.html" title="class in core.game">Game</a><
 <ul class="blockList">
 <li class="blockList">
 <h4>advance</h4>
-<pre>public final&nbsp;void&nbsp;advance(<a href="../../ontology/Types.ACTIONS.html" title="enum in ontology">Types.ACTIONS</a>&nbsp;action)</pre>
+<pre>public final&nbsp;void&nbsp;advance(<a href="../../ontology/Types.ACTIONS.html" title="enum in ontology">Types.ACTIONS</a>&nbsp;PDDLAction)</pre>
 <div class="block">Advances the forward model using the acction supplied.</div>
-<dl><dt><span class="strong">Parameters:</span></dt><dd><code>action</code> - </dd></dl>
+<dl><dt><span class="strong">Parameters:</span></dt><dd><code>PDDLAction</code> - </dd></dl>
 </li>
 </ul>
 <a name="copy()">

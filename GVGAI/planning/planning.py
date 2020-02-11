@@ -14,11 +14,11 @@ data = {"domain": domain, "problem": problem}
 
 resp = requests.post("http://solver.planning.domains/solve", data=data)
 print(resp.json())
-for i in resp.json()["result"]["plan"]:
-    a = re.sub(" +", " ", i["action"].strip().replace("\n", ""))
+for i in resp.json()["result"]["PDDLPlan"]:
+    a = re.sub(" +", " ", i["PDDLAction"].strip().replace("\n", ""))
     print(a)
     a = re.sub(" \)", ")", a)
     print(a)
-#print(resp.json()["result"]["plan"])
+#print(resp.json()["result"]["PDDLPlan"])
 b = time.time() - ini
 print(b)

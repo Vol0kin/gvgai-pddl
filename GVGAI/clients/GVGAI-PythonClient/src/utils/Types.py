@@ -1,7 +1,7 @@
 
 class ACTIONS:
     """
-     * All action types, corresponding to the server Java code ontology.Types
+     * All PDDLAction types, corresponding to the server Java code ontology.Types
     """
 
     def __init__(self):
