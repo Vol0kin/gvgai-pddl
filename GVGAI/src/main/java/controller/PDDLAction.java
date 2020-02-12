@@ -26,23 +26,47 @@ import java.util.regex.*;
 import java.util.ArrayList;
 import ontology.Types;
 
+/**
+ * Class that represents a PDDL action. A PDDLAction object contains a PDDL instantiated
+ * action, the corresponding GVGAI action and all the preconditions that must be meet in order
+ * to execute the action.
+ *
+ * @author Vladislav Nikolov Vasilev
+ */
 public class PDDLAction {
-    private String actionName;
+    private String actionInstance;
     private Types.ACTIONS GVGAIAction;
     private List<String> preconditions;
 
-    public PDDLAction(String actionName, String actionDescription, Map<String, Types.ACTIONS> actionCorrespondence) {
-        this.actionName = actionName;
-        this.translateActionNameToGVGAI(actionCorrespondence);
+    /**
+     * Class constructor.
+     *
+     * @param actionInstance String that contains the name of the PDDL action and its
+     *                       parameters.
+     * @param actionDescription String that contains the description of an action
+     *                          (parameters, preconditions and effects).
+     * @param actionCorrespondence Map that contains the correspondence from a PDDL
+     *                             action to a GVGAI action.
+     */
+    public PDDLAction(String actionInstance, String actionDescription, Map<String, Types.ACTIONS> actionCorrespondence) {
+        this.actionInstance = actionInstance;
+        this.translateActionInstanceToGVGAI(actionCorrespondence);
         this.processPreconditionsFromActionDescription(actionDescription);
     }
 
-    private void processPreconditionsFromActionDescription(String action) {
+    /**
+     * Method that reads an action's description and obtains all the preconditions
+     * associated to that action. All of the preconditions are instantiated.
+     *
+     * @param actionDescription String that contains the description of an action
+     *                          (parameters, preconditions and effects).
+     */
+    private void processPreconditionsFromActionDescription(String actionDescription) {
         // Crete pattern
         Pattern preconditionPattern = Pattern.compile(":precondition[^:]+");
 
         // Get match of the pattern
-        Matcher preconditionMatcher = preconditionPattern.matcher(action);
+        Matcher preconditionMatcher = preconditionPattern.matcher(actionDescription);
         // Should this call be controlled in case no match is found?
         preconditionMatcher.find();
 
@@ -68,12 +92,19 @@ public class PDDLAction {
         this.preconditions = new ArrayList<>(Arrays.asList(preconditionsMatch.split("\n")));
     }
 
-    private void translateActionNameToGVGAI(Map<String, Types.ACTIONS> actionCorrespondence) {
+    /**
+     * Method that transforms the PDDL action instance into a GVGAI action.
+     * It used a Map that is passed as parameter in which each PDDL action
+     * is associated to a GVGAI action.
+     *
+     * @param actionCorrespondence Correspondence between PDDL and GVGAI actions.
+     */
+    private void translateActionInstanceToGVGAI(Map<String, Types.ACTIONS> actionCorrespondence) {
         // Create pattern
         Pattern actionPattern = Pattern.compile("[^( ]+");
 
         // Get match of the pattern
-        Matcher actionMatcher = actionPattern.matcher(this.actionName);
+        Matcher actionMatcher = actionPattern.matcher(this.actionInstance);
         // Should this call be controlled in case no match is found?
         actionMatcher.find();
 
@@ -84,14 +115,26 @@ public class PDDLAction {
         this.GVGAIAction = actionCorrespondence.get(action);
     }
 
-    public String getActionName() {
-        return this.actionName;
+    /**
+     * PDDL action instance getter.
+     * @return Returns the PDDL action instance.
+     */
+    public String getActionInstance() {
+        return this.actionInstance;
     }
 
+    /**
+     * Preconditions getter.
+     * @return Returns the instantiated preconditions of a given PDDL actions.
+     */
     public List<String> getPreconditions() {
         return this.preconditions;
     }
 
+    /**
+     * GVGAI action getter.
+     * @return Returns the GVGAI action associated to the given PDDL action.
+     */
     public Types.ACTIONS getGVGAIAction() {
         return this.GVGAIAction;
     }
@@ -99,9 +142,9 @@ public class PDDLAction {
     @Override
     public String toString() {
         return "Action{" +
-                "actionName='" + actionName + '\'' +
+                "actionName='" + this.actionInstance + '\'' +
                 ", GVGAIAction= '" + this.GVGAIAction + '\'' +
-                ", preconditions='" + preconditions + '\'' +
+                ", preconditions='" + this.preconditions + '\'' +
                 '}';
     }
 }
