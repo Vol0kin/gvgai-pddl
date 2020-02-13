@@ -23,12 +23,23 @@ import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.stream.Collectors;
 
+/**
+ * Class that represents an agenda like data structure. The agenda is made up
+ * of a list of not planned goals (those
+ *
+ * @author Vladislav Nikolov Vasilev
+ */
 public class Agenda {
     private LinkedList<PDDLGoal> notPlannedGoals;
     private LinkedList<PDDLGoal> haltedGoals;
     private LinkedList<PDDLGoal> reachedGoals;
     private PDDLGoal currentGoal;
 
+    /**
+     * Class constructor.
+     *
+     * @param goals List of goals
+     */
     public Agenda(LinkedList<PDDLGoal> goals) {
         this.notPlannedGoals = this.sortListByPriority(goals);
         this.haltedGoals = new LinkedList<>();
@@ -48,13 +59,18 @@ public class Agenda {
         return this.reachedGoals;
     }
 
+    /**
+     * Current goal getter.
+     * @return Returns the current goal.
+     */
     public PDDLGoal getCurrentGoal() {
         return this.currentGoal;
     }
 
     /**
      * Method that sets the current goal.
-     * @return Returns true if the goal has been set and false otherwise.
+     *
+     * @return Returns true if the goal has been set successfully or false if it hasn't.
      */
     public boolean setCurrentGoal() {
         boolean setGoal = true;
@@ -82,7 +98,7 @@ public class Agenda {
     }
 
     /**
-     *
+     * Method that allows to halt the current goal in case some discrepancy is found.
      */
     public void haltCurrentGoal() {
         this.haltedGoals.addLast(this.currentGoal);
@@ -92,7 +108,8 @@ public class Agenda {
     }
 
     /**
-     *
+     * Method that allows to update the reached goals list. It should be called when the
+     * current goal has been reached successfully.
      */
     public void updateReachedGoals() {
         this.reachedGoals.addLast(this.currentGoal);

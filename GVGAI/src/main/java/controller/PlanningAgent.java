@@ -244,15 +244,20 @@ public class PlanningAgent extends AbstractPlayer {
     }
 
     public PDDLPlan callOnlinePlanner() {
+        // Read domain and problem files
         String domain = readFile("planning/domain.pddl"),
                problem = readFile("planning/problem.pddl");
 
+        // Call online planner and get its response
         HttpResponse<JsonNode> response = Unirest.post("http://solver.planning.domains/solve")
                 .header("accept", "application/json")
                 .field("domain", domain)
                 .field("problem", problem)
                 .asJson();
 
+        // Here the response should be checked in case there's been an error
+
+        // Create a new PDDLPlan instance if a valid plan has been found
         PDDLPlan PDDLPlan = new PDDLPlan(response.getBody().getObject(), this.actionCorrespondence);
 
         return PDDLPlan;

@@ -28,32 +28,56 @@ import java.util.Map;
 import java.util.Iterator;
 import java.util.stream.Collectors;
 
-
+/**
+ * Class that represents a PDDL plan. A PDDLPlan object is made up of a list of
+ * PDDL actions. It also contains an iterator which allows to iterate over each
+ * one of the actions of the plan.
+ *
+ * @author Vladislav Nikolov Vasilev
+ */
 public class PDDLPlan implements Iterable<PDDLAction>{
     private List<PDDLAction> PDDLActions;
 
+    /**
+     * Default class constructor. Creates an object with an empty plan.
+     */
     public PDDLPlan() {
         this.PDDLActions = new ArrayList<>();
     }
 
-    public PDDLPlan(JSONObject response, Map<String, Types.ACTIONS> actionCorrespondence) {
-        System.out.println(response);
-        JSONArray plan = response.getJSONObject("result").getJSONArray("plan");
+    /**
+     * Class constructor. Creates an object with a valid plan.
+     *
+     * @param plannerResponse JSONObject that represents the planner's response. It must
+     *                        be a valid response (a response that contains a valid plan).
+     * @param actionCorrespondence Map that represents the correspondence between PDDL and
+     *                             GVGAI actions.
+     */
+    public PDDLPlan(JSONObject plannerResponse, Map<String, Types.ACTIONS> actionCorrespondence) {
+        System.out.println(plannerResponse);
+        // Get the plan from the JSON object
+        JSONArray plan = plannerResponse.getJSONObject("result").getJSONArray("plan");
 
+        // Create a new empty list of actions
         ArrayList<PDDLAction> PDDLActionList = new ArrayList<>();
 
         this.PDDLActions = new ArrayList<>();
 
+        // Transform each action to a PDDLAction instance
         for (int i = 0; i < plan.length(); i++) {
-            JSONObject planElement = plan.getJSONObject(i);
+            // Get the JSON object that represents an action
+            JSONObject action = plan.getJSONObject(i);
 
-            String actionName = planElement.getString("name");
-            String preconditions = planElement.getString("action");
+            // Get Strings that represent the action instance and its preconditions
+            String actionInstance = action.getString("name");
+            String preconditions = action.getString("action");
 
-            PDDLActionList.add(new PDDLAction(actionName, preconditions, actionCorrespondence));
+            // Add the new action to the list
+            PDDLActionList.add(new PDDLAction(actionInstance, preconditions, actionCorrespondence));
         }
 
-        // Remove null actions
+        // Process resulting list of actions removing all null actions. These actions are the ones
+        // that don't have a correspondence
         this.PDDLActions = PDDLActionList
                         .stream()
                         .filter(PDDLAction -> PDDLAction.getGVGAIAction() != null)
@@ -62,21 +86,20 @@ public class PDDLPlan implements Iterable<PDDLAction>{
         System.out.println(this.PDDLActions);
     }
 
+    /**
+     * Plan getter.
+     *
+     * @return Returns the list of actions that make up the plan.
+     */
     public List<PDDLAction> getPDDLActions() {
         return this.PDDLActions;
     }
-/*
-    public Action getNextAction() {
-        Action nextAction = this.actions.get(0);
-        this.actions.remove(0);
 
-        return nextAction;
-    }
-
-    public boolean isPlanEmpty() {
-        return this.actions.isEmpty();
-    }*/
-
+    /**
+     * Method that returns an iterator which allows to iterate over the plan's actions.
+     *
+     * @return Returns a new PDDLAction iterator.
+     */
     @Override
     public Iterator<PDDLAction> iterator() {
         Iterator<PDDLAction> iterator = new Iterator<PDDLAction>() {
