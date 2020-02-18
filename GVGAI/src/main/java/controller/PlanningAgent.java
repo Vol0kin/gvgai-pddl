@@ -48,7 +48,7 @@ public class PlanningAgent extends AbstractPlayer {
     protected Map<String, String> goalVariablesMap;
 
     protected List<Types.ACTIONS> actionList;
-    protected LinkedList<PDDLGoal> goalsList;
+    protected LinkedList<PDDLSingleGoal> goalsList;
     protected Agenda agenda;
 
     protected List<String> PDDLGameStatePredicates;
@@ -96,16 +96,16 @@ public class PlanningAgent extends AbstractPlayer {
 
         this.goalsList = new LinkedList<>();
         // Las gemas en las que se tienen que picar 2 o más rocas seguidas dan problemas
-        this.goalsList.addLast(new PDDLGoal("(got gem_16_9)", 1));
-        this.goalsList.addLast(new PDDLGoal("(got gem_7_3)", 1));
-        this.goalsList.addLast(new PDDLGoal("(got gem_6_3)", 1));
-        this.goalsList.addLast(new PDDLGoal("(got gem_5_3)", 1));
-        this.goalsList.addLast(new PDDLGoal("(got gem_1_4)", 1));
-        this.goalsList.addLast(new PDDLGoal("(got gem_6_1)", 1));
-        this.goalsList.addLast(new PDDLGoal("(got gem_7_1)", 1));
-        this.goalsList.addLast(new PDDLGoal("(got gem_7_9)", 1));
-        this.goalsList.addLast(new PDDLGoal("(got gem_9_10)", 1));
-        this.goalsList.addLast(new PDDLGoal("(exited-level)", 2));
+        this.goalsList.addLast(new PDDLSingleGoal("(got gem_16_9)", 1));
+        this.goalsList.addLast(new PDDLSingleGoal("(got gem_7_3)", 1));
+        this.goalsList.addLast(new PDDLSingleGoal("(got gem_6_3)", 1));
+        this.goalsList.addLast(new PDDLSingleGoal("(got gem_5_3)", 1));
+        this.goalsList.addLast(new PDDLSingleGoal("(got gem_1_4)", 1));
+        this.goalsList.addLast(new PDDLSingleGoal("(got gem_6_1)", 1));
+        this.goalsList.addLast(new PDDLSingleGoal("(got gem_7_1)", 1));
+        this.goalsList.addLast(new PDDLSingleGoal("(got gem_7_9)", 1));
+        this.goalsList.addLast(new PDDLSingleGoal("(got gem_9_10)", 1));
+        this.goalsList.addLast(new PDDLSingleGoal("(exited-level)", 2));
 
         this.agenda = new Agenda(this.goalsList);
 

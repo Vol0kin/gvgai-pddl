@@ -1,5 +1,5 @@
 /*
- * PDDLGoal.java
+ * PDDLSingleGoal.java
  *
  * Copyright (C) 2020 Vladislav Nikolov Vasilev
  *
@@ -20,23 +20,23 @@
 package controller;
 
 /**
- * Class that represents a PDDL goal. A PDDLGoal object contains a PDDL predicate
+ * Class that represents a PDDL goal. A PDDLSingleGoal object contains a PDDL predicate
  * and its priority with regard to other goals.
  *
  * @author Vladislav Nikolov Vasilev
  */
-public class PDDLGoal {
+public class PDDLSingleGoal {
     private String goalPredicate;
     private int priority;
 
     /**
-     * Class constructor. Creates a new PDDLGoal instance with a given PDDL predicate and a priority.
+     * Class constructor. Creates a new PDDLSingleGoal instance with a given PDDL predicate and a priority.
      * @param goalPredicate A PDDL predicate which represents a goal.
      * @param priority The goal's priority with regard to other goals. A smaller priority
      *                 value means that the goal has more priority whereas a higher one means
      *                 that it has less priority.
      */
-    public PDDLGoal(String goalPredicate, int priority) {
+    public PDDLSingleGoal(String goalPredicate, int priority) {
         this.goalPredicate = goalPredicate;
         this.priority = priority;
     }
