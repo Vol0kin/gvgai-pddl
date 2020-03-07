@@ -21,6 +21,7 @@ package controller;
 
 import core.player.AbstractPlayer;
 import core.game.StateObservation;
+import org.yaml.snakeyaml.constructor.Constructor;
 import parsing.Parser;
 import tools.ElapsedCpuTimer;
 
@@ -36,6 +37,8 @@ import tools.Vector2d;
 import kong.unirest.HttpResponse;
 import kong.unirest.JsonNode;
 import kong.unirest.Unirest;
+
+import org.yaml.snakeyaml.Yaml;
 
 public class PlanningAgent extends AbstractPlayer {
 
@@ -60,6 +63,15 @@ public class PlanningAgent extends AbstractPlayer {
     protected boolean mustReplan;
 
     public PlanningAgent(StateObservation stateObservation, ElapsedCpuTimer elapsedCpuTimer) {
+        //GameInformation a = new GameInformation("planning/prueba.yaml");
+        Yaml yaml = new Yaml(new Constructor(GameInformation.class));
+        try {
+            InputStream inputStream = new FileInputStream(new File("planning/prueba.yaml"));
+            GameInformation gameInformation = yaml.load(inputStream);
+            System.out.println(gameInformation.correspondence);
+        } catch (FileNotFoundException e) {
+            System.out.println(e.getStackTrace());
+        }
         this.actionCorrespondence = new HashMap<>();
         this.correspondence = Parser.<String, ArrayList<String>>parseJSONFile("JSON/correspondence.json");
         this.variables = Parser.<String, String>parseJSONFile("JSON/variables.json");
