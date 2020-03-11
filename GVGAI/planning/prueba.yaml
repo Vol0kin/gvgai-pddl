@@ -1,8 +1,18 @@
-domainName: "hola"
+domainName: hola
 correspondence:
   sword:
-    - "(asdfasd)"
-    - "(basdf)"
+    - (asdfasd)
+    - (basdf)
   blah:
-    - "asdf"
-    - "cat"
+    - asdf
+    - cat
+orientationCorrespondence:
+  UP: (asfasdf)
+goal:
+  goalPredicate: asdf
+  priority: 1
+goals:
+  - goalPredicate: "asfd"
+    priority: 1
+  - goalPredicate: "asdfasfd"
+    priority: 2

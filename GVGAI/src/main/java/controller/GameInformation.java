@@ -13,6 +13,13 @@ public class GameInformation {
     public String domainName;
     public Map<String, ArrayList<String>> correspondence;
     public String a;
+    public Map<Orientation, String> orientationCorrespondence;
+    public PDDLSingleGoal goal;
+    public ArrayList<PDDLSingleGoal> goals;
+
+    public GameInformation() {
+        this.domainName = "afdasdfasdfasdf";
+    }
 /*
     public GameInformation(String file) {
         Yaml yaml = new Yaml();

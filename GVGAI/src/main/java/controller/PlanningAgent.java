@@ -68,7 +68,9 @@ public class PlanningAgent extends AbstractPlayer {
         try {
             InputStream inputStream = new FileInputStream(new File("planning/prueba.yaml"));
             GameInformation gameInformation = yaml.load(inputStream);
+            System.out.println(gameInformation.domainName);
             System.out.println(gameInformation.correspondence);
+            System.out.println(gameInformation.orientationCorrespondence);
         } catch (FileNotFoundException e) {
             System.out.println(e.getStackTrace());
         }

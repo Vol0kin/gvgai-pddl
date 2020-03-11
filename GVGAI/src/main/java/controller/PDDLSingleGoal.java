@@ -41,6 +41,16 @@ public class PDDLSingleGoal {
         this.priority = priority;
     }
 
+    public  PDDLSingleGoal() {}
+
+    public void setGoalPredicate(String goalPredicate) {
+        this.goalPredicate = goalPredicate;
+    }
+
+    public void setPriority(int priority) {
+        this.priority = priority;
+    }
+
     /**
      * Goal predicate getter.
      * @return Returns the PDDL goal predicate.
