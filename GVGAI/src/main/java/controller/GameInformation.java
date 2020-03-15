@@ -8,37 +8,17 @@ import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Map;
+import ontology.Types;
 
 public class GameInformation {
     public String domainName;
-    public Map<String, ArrayList<String>> correspondence;
-    public String a;
+    public Map<String, ArrayList<String>> gameElementsCorrespondence;
     public Map<Orientation, String> orientationCorrespondence;
     public PDDLSingleGoal goal;
     public ArrayList<PDDLSingleGoal> goals;
+    public Map<String, Types.ACTIONS> actionsCorrespondence;
+    public Map<String, String> connections;
+    public Map<String, String> variablesTypes;
 
-    public GameInformation() {
-        this.domainName = "afdasdfasdfasdf";
-    }
-/*
-    public GameInformation(String file) {
-        Yaml yaml = new Yaml();
-
-        try {
-            InputStream inputStream = new FileInputStream(new File(file));
-            Map<String, Object> obj = yaml.load(inputStream);
-            System.out.println(obj);
-            System.out.println(obj.keySet());
-            System.out.println(obj.get("gameInformation"));
-            Map<String, Object> a = (Map<String, Object>) obj.get("gameInformation");
-            System.out.println(a);
-        } catch (FileNotFoundException e) {
-            System.out.println(e.getStackTrace());
-        }
-
-        /*InputStream inputStream = this.getClass()
-                .getClassLoader()
-                .getResourceAsStream(file);
-
-    }*/
+    public GameInformation() { }
 }

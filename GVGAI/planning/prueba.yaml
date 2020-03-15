@@ -1,13 +1,63 @@
-domainName: hola
-correspondence:
-  sword:
-    - (asdfasd)
-    - (basdf)
-  blah:
-    - asdf
-    - cat
+domainName: Boulderdash
+gameElementsCorrespondence:
+  background:
+    - (terrain-empty cell)
+  dirt:
+    - (terrain-ground cell)
+  wall:
+    - (terrain-wall cell)
+  exitdoor:
+    - (at exit cell)
+    - (terrain-empty cell)
+  diamond:
+    - (at gem cell)
+    - (terrain-empty cell)
+  boulder:
+    - (at boulder cell)
+    - (terrain-empty cell)
+    - (occupied cell)
+  avatar:
+    - (at player cell)
+    - (terrain-empty cell)
+  crab:
+    - (at scorpion cell)
+    - (terrain-empty cell)
+    - (occupied cell)
+  butterfly:
+    - (at bat cell)
+    - (terrain-empty cell)
+    - (occupied cell)
 orientationCorrespondence:
   UP: (asfasdf)
+  DOWN:
+  LEFT:
+  RIGHT:
+actionsCorrespondence:
+  TURN-UP: ACTION_UP
+  TURN-DOWN: ACTION_DOWN
+  TURN-LEFT: ACTION_LEFT
+  TURN-RIGHT: ACTION_RIGHT
+  MOVE-UP: ACTION_UP
+  MOVE-DOWN: ACTION_DOWN
+  MOVE-LEFT: ACTION_LEFT
+  MOVE-RIGHT: ACTION_RIGHT
+  DIG-UP: ACTION_USE
+  DIG-DOWN: ACTION_USE
+  DIG-LEFT: ACTION_USE
+  DIG-RIGHT: ACTION_USE
+connections:
+  up: (connected-up ?c ?p)
+  down: (connected-down ?c ?n)
+  left: (connected-left ?c ?p)
+  right: (connected-right ?c ?n)
+variablesTypes:
+  exit: Exit
+  player: Player
+  boulder: Boulder
+  gem: Gem
+  bat: Bat
+  scorpion: Scorpion
+  cell: Cell
 goal:
   goalPredicate: asdf
   priority: 1
@@ -16,3 +66,4 @@ goals:
     priority: 1
   - goalPredicate: "asdfasfd"
     priority: 2
+

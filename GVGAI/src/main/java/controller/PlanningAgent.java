@@ -59,6 +59,7 @@ public class PlanningAgent extends AbstractPlayer {
 
     protected PDDLPlan PDDLPlan;
     protected Iterator<PDDLAction> iterPlan;
+    protected GameInformation gameInformation;
 
     protected boolean mustReplan;
 
@@ -67,10 +68,10 @@ public class PlanningAgent extends AbstractPlayer {
         Yaml yaml = new Yaml(new Constructor(GameInformation.class));
         try {
             InputStream inputStream = new FileInputStream(new File("planning/prueba.yaml"));
-            GameInformation gameInformation = yaml.load(inputStream);
-            System.out.println(gameInformation.domainName);
-            System.out.println(gameInformation.correspondence);
-            System.out.println(gameInformation.orientationCorrespondence);
+            this.gameInformation = yaml.load(inputStream);
+            System.out.println(this.gameInformation.domainName);
+            System.out.println(this.gameInformation.gameElementsCorrespondence);
+            System.out.println(this.gameInformation.orientationCorrespondence);
         } catch (FileNotFoundException e) {
             System.out.println(e.getStackTrace());
         }
@@ -272,7 +273,7 @@ public class PlanningAgent extends AbstractPlayer {
         // Here the response should be checked in case there's been an error
 
         // Create a new PDDLPlan instance if a valid plan has been found
-        PDDLPlan PDDLPlan = new PDDLPlan(response.getBody().getObject(), this.actionCorrespondence);
+        PDDLPlan PDDLPlan = new PDDLPlan(response.getBody().getObject(), this.gameInformation.actionsCorrespondence);
 
         return PDDLPlan;
     }
@@ -425,7 +426,7 @@ public class PlanningAgent extends AbstractPlayer {
 
             // Write domain that is used
             // THIS LINE HAS TO BE CHANGED LATER ON, ALLOWING AUTOMATIC CHANGE
-            bf.write("(:domain Boulderdash)");
+            bf.write(String.format("(:domain %s)", this.gameInformation.domainName));
             bf.newLine();
 
             // Write the objects
