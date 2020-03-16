@@ -28,9 +28,12 @@ import tools.ElapsedCpuTimer;
 import ontology.Types;
 
 import java.io.*;
+import java.lang.reflect.Array;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import tools.Vector2d;
@@ -45,13 +48,8 @@ public class PlanningAgent extends AbstractPlayer {
     protected Map<String, ArrayList<String>> correspondence;
     protected Map<String, String> variables;
     protected Map<String, Set<String>> predicateVars;
-    protected Map<String, String> connections;
-    protected Map<String, Types.ACTIONS> actionCorrespondence;
-
-    protected Map<String, String> goalVariablesMap;
 
     protected List<Types.ACTIONS> actionList;
-    protected LinkedList<PDDLSingleGoal> goalsList;
     protected Agenda agenda;
 
     protected List<String> PDDLGameStatePredicates;
@@ -63,6 +61,8 @@ public class PlanningAgent extends AbstractPlayer {
 
     protected boolean mustReplan;
 
+    protected Set<String> connectionSet;
+
     public PlanningAgent(StateObservation stateObservation, ElapsedCpuTimer elapsedCpuTimer) {
         //GameInformation a = new GameInformation("planning/prueba.yaml");
         Yaml yaml = new Yaml(new Constructor(GameInformation.class));
@@ -71,27 +71,16 @@ public class PlanningAgent extends AbstractPlayer {
             this.gameInformation = yaml.load(inputStream);
             System.out.println(this.gameInformation.domainName);
             System.out.println(this.gameInformation.gameElementsCorrespondence);
-            System.out.println(this.gameInformation.orientationCorrespondence);
+            System.out.println(this.gameInformation.avatarVariable);
         } catch (FileNotFoundException e) {
             System.out.println(e.getStackTrace());
         }
-        this.actionCorrespondence = new HashMap<>();
+
         this.correspondence = Parser.<String, ArrayList<String>>parseJSONFile("JSON/correspondence.json");
         this.variables = Parser.<String, String>parseJSONFile("JSON/variables.json");
         this.predicateVars = Parser.getVariablesFromPredicates(correspondence, variables.keySet());
-        this.connections = Parser.parseJSONFile("JSON/connections.json");
-        Map<String, String> actions = Parser.parseJSONFile("JSON/actions.json");
 
-        for (Map.Entry<String, String> entry: actions.entrySet()) {
-            actionCorrespondence.put(entry.getKey(), Types.ACTIONS.fromString(entry.getValue()));
-        }
-
-        this.goalVariablesMap = new HashMap<>();
-
-        this.goalVariablesMap.put("(got gem)", "gem");
-        this.goalVariablesMap.put("(exited-level)", "");
-
-        System.out.println(actionCorrespondence);
+        //System.out.println(actionCorrespondence);
         System.out.println(variables);
         System.out.println(predicateVars);
 
@@ -108,23 +97,98 @@ public class PlanningAgent extends AbstractPlayer {
         this.PDDLPlan = new PDDLPlan();
         this.iterPlan = PDDLPlan.iterator();
 
-
-        this.goalsList = new LinkedList<>();
-        // Las gemas en las que se tienen que picar 2 o más rocas seguidas dan problemas
-        this.goalsList.addLast(new PDDLSingleGoal("(got gem_16_9)", 1));
-        this.goalsList.addLast(new PDDLSingleGoal("(got gem_7_3)", 1));
-        this.goalsList.addLast(new PDDLSingleGoal("(got gem_6_3)", 1));
-        this.goalsList.addLast(new PDDLSingleGoal("(got gem_5_3)", 1));
-        this.goalsList.addLast(new PDDLSingleGoal("(got gem_1_4)", 1));
-        this.goalsList.addLast(new PDDLSingleGoal("(got gem_6_1)", 1));
-        this.goalsList.addLast(new PDDLSingleGoal("(got gem_7_1)", 1));
-        this.goalsList.addLast(new PDDLSingleGoal("(got gem_7_9)", 1));
-        this.goalsList.addLast(new PDDLSingleGoal("(got gem_9_10)", 1));
-        this.goalsList.addLast(new PDDLSingleGoal("(exited-level)", 2));
-
-        this.agenda = new Agenda(this.goalsList);
+        this.agenda = new Agenda(this.gameInformation.goals);
 
         this.mustReplan = true;
+
+        this.extractVariablesFromPredicates();
+
+        String[][] a = Parser.parseStateObservation(stateObservation);
+        this.setConnectionSet(stateObservation);
+        System.out.println(this.connectionSet);
+
+    }
+
+    private void setConnectionSet(StateObservation stateObservation) {
+        // Initialize connection set
+        this.connectionSet = new LinkedHashSet<>();
+
+        // Get the observations of the game state as elements of the VGDDLRegistry
+        String[][] gameMap = Parser.parseStateObservation(stateObservation);
+
+        final int X_MAX = gameMap.length, Y_MAX = gameMap[0].length;
+
+        for (int y = 0; y < Y_MAX; y++) {
+            for (int x = 0; x < X_MAX; x++) {
+                // Create string containing the current cell
+                String currentCell = String.format("%s_%d_%d", this.gameInformation.cellVariable, x, y).replace("?", "");
+
+                if (y - 1 >= 0) {
+                    String connection = this.gameInformation.connections.get(Position.UP);
+                    connection = connection.replace("?c", currentCell);
+                    connection = connection.replace("?p", String
+                                    .format("%s_%d_%d", this.gameInformation.cellVariable, x, y - 1)
+                                    .replace("?", ""));
+
+                    this.connectionSet.add(connection);
+                }
+
+                if (y + 1 < Y_MAX) {
+                    String connection = this.gameInformation.connections.get(Position.DOWN);
+                    connection = connection.replace("?c", currentCell);
+                    connection = connection.replace("?n", String
+                            .format("%s_%d_%d", this.gameInformation.cellVariable, x, y + 1)
+                            .replace("?", ""));
+
+                    this.connectionSet.add(connection);
+                }
+
+                if (x - 1 >= 0) {
+                    String connection = this.gameInformation.connections.get(Position.LEFT);
+                    connection = connection.replace("?c", currentCell);
+                    connection = connection.replace("?p", String
+                            .format("%s_%d_%d", this.gameInformation.cellVariable, x - 1, y)
+                            .replace("?", ""));
+
+                    this.connectionSet.add(connection);
+                }
+
+                if (x + 1 < X_MAX) {
+                    String connection = this.gameInformation.connections.get(Position.RIGHT);
+                    connection = connection.replace("?c", currentCell);
+                    connection = connection.replace("?n", String
+                            .format("%s_%d_%d", this.gameInformation.cellVariable, x + 1, y)
+                            .replace("?", ""));
+                    
+                    this.connectionSet.add(connection);
+                }
+            }
+        }
+    }
+
+    private void extractVariablesFromPredicates() {
+        Map<String, Set<String>> varsFromPredicates = new HashMap<>();
+
+        Pattern variablePattern = Pattern.compile("\\?[a-zA-Z]+");
+
+        for (Map.Entry<String, ArrayList<String>> entry: this.gameInformation.gameElementsCorrespondence.entrySet()) {
+            String gameObservation = entry.getKey();
+            Set<String> variables = new HashSet<>();
+
+            for (String observation: entry.getValue()) {
+                Matcher variableMatcher = variablePattern.matcher(observation);
+                //System.out.println(variableMatcher.find());
+                if (variableMatcher.find()) {
+                    for (int i = 0; i <= variableMatcher.groupCount(); i++) {
+                        variables.add(variableMatcher.group(i));
+                    }
+                }
+            }
+
+            varsFromPredicates.put(gameObservation, variables);
+        }
+
+        System.out.println(varsFromPredicates);
     }
 
     @Override
@@ -134,7 +198,7 @@ public class PlanningAgent extends AbstractPlayer {
         // Get the player's orientation
         Vector2d orientation = stateObservation.getAvatarOrientation();
 
-        this.parseGameStateToPDDL(stateObservation, correspondence, predicateVars, connections, orientation);
+        this.parseGameStateToPDDL(stateObservation, predicateVars);
 
         if (this.mustReplan) {
             System.out.println("I need to find a plan!");
@@ -292,6 +356,7 @@ public class PlanningAgent extends AbstractPlayer {
         return contentBuilder.toString();
     }
 
+    /*
     public List<Types.ACTIONS> translateOutputPlan() {
         // ArrayList of actions
         List<Types.ACTIONS> actions = new ArrayList<>();
@@ -321,18 +386,72 @@ public class PlanningAgent extends AbstractPlayer {
 
         return actions;
     }
+    */
+
+    public void translateGameStateToPDDL(StateObservation stateObservation) {
+        // Get the observations of the game state as elements of the VGDDLRegistry
+        String[][] gameMap = Parser.parseStateObservation(stateObservation);
+
+        // Clear the list of predicates and objects
+        this.PDDLGameStatePredicates.clear();
+        this.PDDLGameStateObjects.clear();
+
+        Set<String> connectionSet = new LinkedHashSet<>();
+
+        // Get orientation
+
+        final int X_MAX = gameMap.length, Y_MAX = gameMap[0].length;
+
+        for (int y = 0; y < Y_MAX; y++) {
+            for (int x = 0; x < X_MAX; x++) {
+                // Get the observation in the current cell
+                String cellObservation = gameMap[x][y];
+
+                String currentCell = String.format("%s_%d_%d", this.gameInformation.cellVariable, x, y).replace("?", "");
+
+                if (y - 1 >= 0) {
+                    String connection = this.gameInformation.connections.get(Position.UP);
+                    connection = connection.replace("?c", currentCell);
+                    connection = connection.replace("?p", String.format("%s_%d_%d", this.gameInformation.cellVariable, x, y - 1).replace("?", ""));
+                    connectionSet.add(connection);
+                }
+
+                if (y + 1 < Y_MAX) {
+                    String connection = this.gameInformation.connections.get(Position.DOWN);
+                    connection = connection.replace("?c", currentCell);
+                    connection = connection.replace("?n", "cell_" + x + "_" + (y+1));
+                    connectionSet.add(connection);
+                }
+
+                if (x - 1 >= 0) {
+                    String connection = this.gameInformation.connections.get(Position.LEFT);
+                    connection = connection.replace("?c", currentCell);
+                    connection = connection.replace("?p", "cell_" + (x-1) + "_" + y);
+                    connectionSet.add(connection);
+                }
+
+                if (x + 1 < X_MAX) {
+                    String connection = this.gameInformation.connections.get(Position.RIGHT);
+                    connection = connection.replace("?c", currentCell);
+                    connection = connection.replace("?n", "cell_" + (x+1) + "_" + y);
+                    connectionSet.add(connection);
+                }
+            }
+        }
+
+    }
 
     public void parseGameStateToPDDL(StateObservation stateObservation,
-                                     Map<String, ArrayList<String>> correspondence,
-                                     Map<String, Set<String>> predicateVars,
-                                     Map<String, String> connections,
-                                     Vector2d orientation)
+                                     Map<String, Set<String>> predicateVars)
     {
         String[][] gameMap = Parser.parseStateObservation(stateObservation);
         this.PDDLGameStatePredicates.clear();
         this.PDDLGameStateObjects.values().stream().forEach(x -> x.clear());
 
         Set<String> connectionSet = new LinkedHashSet<>();
+
+        // Get the avatar's orientation
+        Vector2d orientation = stateObservation.getAvatarOrientation();
 
         final int X_MAX = gameMap.length, Y_MAX = gameMap[0].length;
 
@@ -350,28 +469,28 @@ public class PlanningAgent extends AbstractPlayer {
                         // Create the connections
                         if (var.equals("cell")) {
                             if (y - 1 >= 0) {
-                                String connection = connections.get("up");
+                                String connection = this.gameInformation.connections.get(Position.UP);
                                 connection = connection.replace("?c", currentCell);
                                 connection = connection.replace("?p", "cell_" + x + "_" + (y-1));
                                 connectionSet.add(connection);
                             }
 
                             if (y + 1 < Y_MAX) {
-                                String connection = connections.get("down");
+                                String connection = this.gameInformation.connections.get(Position.DOWN);
                                 connection = connection.replace("?c", currentCell);
                                 connection = connection.replace("?n", "cell_" + x + "_" + (y+1));
                                 connectionSet.add(connection);
                             }
 
                             if (x - 1 >= 0) {
-                                String connection = connections.get("left");
+                                String connection = this.gameInformation.connections.get(Position.LEFT);
                                 connection = connection.replace("?c", currentCell);
                                 connection = connection.replace("?p", "cell_" + (x-1) + "_" + y);
                                 connectionSet.add(connection);
                             }
 
                             if (x + 1 < X_MAX) {
-                                String connection = connections.get("right");
+                                String connection = this.gameInformation.connections.get(Position.RIGHT);
                                 connection = connection.replace("?c", currentCell);
                                 connection = connection.replace("?n", "cell_" + (x+1) + "_" + y);
                                 connectionSet.add(connection);
@@ -380,7 +499,7 @@ public class PlanningAgent extends AbstractPlayer {
                     }
 
                     // Add to each variable in each predicate its number
-                    for (String pred: correspondence.get(cellType)) {
+                    for (String pred: this.gameInformation.gameElementsCorrespondence.get(cellType)) {
                         // Create new empty output predicate
                         String outPredicate = pred;
 

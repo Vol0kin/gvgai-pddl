@@ -1,6 +1,6 @@
 package controller;
 
-public enum Orientation {
+public enum Position {
     UP,
     DOWN,
     LEFT,

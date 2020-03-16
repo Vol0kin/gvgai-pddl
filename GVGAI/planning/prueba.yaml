@@ -1,32 +1,32 @@
 domainName: Boulderdash
 gameElementsCorrespondence:
   background:
-    - (terrain-empty cell)
+    - (terrain-empty ?c)
   dirt:
-    - (terrain-ground cell)
+    - (terrain-ground ?c)
   wall:
-    - (terrain-wall cell)
+    - (terrain-wall ?c)
   exitdoor:
-    - (at exit cell)
-    - (terrain-empty cell)
+    - (at ?e ?c)
+    - (terrain-empty ?c)
   diamond:
-    - (at gem cell)
-    - (terrain-empty cell)
+    - (at ?g ?c)
+    - (terrain-empty ?c)
   boulder:
-    - (at boulder cell)
-    - (terrain-empty cell)
-    - (occupied cell)
+    - (at ?r ?c)
+    - (terrain-empty ?c)
+    - (occupied ?c)
   avatar:
-    - (at player cell)
-    - (terrain-empty cell)
+    - (at ?p ?c)
+    - (terrain-empty ?c)
   crab:
-    - (at scorpion cell)
-    - (terrain-empty cell)
-    - (occupied cell)
+    - (at ?s ?c)
+    - (terrain-empty ?c)
+    - (occupied ?c)
   butterfly:
-    - (at bat cell)
-    - (terrain-empty cell)
-    - (occupied cell)
+    - (at ?b ?c)
+    - (terrain-empty ?c)
+    - (occupied ?c)
 orientationCorrespondence:
   UP: (asfasdf)
   DOWN:
@@ -46,24 +46,39 @@ actionsCorrespondence:
   DIG-LEFT: ACTION_USE
   DIG-RIGHT: ACTION_USE
 connections:
-  up: (connected-up ?c ?p)
-  down: (connected-down ?c ?n)
-  left: (connected-left ?c ?p)
-  right: (connected-right ?c ?n)
+  UP: (connected-up ?c ?p)
+  DOWN: (connected-down ?c ?n)
+  LEFT: (connected-left ?c ?p)
+  RIGHT: (connected-right ?c ?n)
 variablesTypes:
-  exit: Exit
-  player: Player
-  boulder: Boulder
-  gem: Gem
-  bat: Bat
-  scorpion: Scorpion
-  cell: Cell
-goal:
-  goalPredicate: asdf
-  priority: 1
+  ?e: Exit
+  ?p: Player
+  ?r: Boulder
+  ?g: Gem
+  ?b: Bat
+  ?s: Scorpion
+  ?c: Cell
+cellVariable: ?c
+avatarVariable: ?p
 goals:
-  - goalPredicate: "asfd"
+  - goalPredicate: (got gem_16_9)
     priority: 1
-  - goalPredicate: "asdfasfd"
+  - goalPredicate: (got gem_7_3)
+    priority: 1
+  - goalPredicate: (got gem_6_3)
+    priority: 1
+  - goalPredicate: (got gem_5_3)
+    priority: 1
+  - goalPredicate: (got gem_1_4)
+    priority: 1
+  - goalPredicate: (got gem_6_1)
+    priority: 1
+  - goalPredicate: (got gem_7_1)
+    priority: 1
+  - goalPredicate: (got gem_7_9)
+    priority: 1
+  - goalPredicate: (got gem_9_10)
+    priority: 1
+  - goalPredicate: (exited-level)
     priority: 2
 
