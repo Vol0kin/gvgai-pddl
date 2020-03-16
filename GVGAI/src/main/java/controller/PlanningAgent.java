@@ -19,10 +19,11 @@
 
 package controller;
 
+import core.game.Observation;
 import core.player.AbstractPlayer;
 import core.game.StateObservation;
+import core.vgdl.VGDLRegistry;
 import org.yaml.snakeyaml.constructor.Constructor;
-import parsing.Parser;
 import tools.ElapsedCpuTimer;
 
 import ontology.Types;
@@ -97,7 +98,7 @@ public class PlanningAgent extends AbstractPlayer {
         this.connectionSet = new LinkedHashSet<>();
 
         // Get the observations of the game state as elements of the VGDDLRegistry
-        String[][] gameMap = Parser.parseStateObservation(stateObservation);
+        String[][] gameMap = this.getGameElementsMatrix(stateObservation);
 
         final int X_MAX = gameMap.length, Y_MAX = gameMap[0].length;
 
@@ -373,7 +374,7 @@ public class PlanningAgent extends AbstractPlayer {
 
     public void translateGameStateToPDDL(StateObservation stateObservation) {
         // Get the observations of the game state as elements of the VGDDLRegistry
-        String[][] gameMap = Parser.parseStateObservation(stateObservation);
+        String[][] gameMap = this.getGameElementsMatrix(stateObservation);
 
         // Clear the list of predicates and objects
         this.PDDLGameStatePredicates.clear();
@@ -446,97 +447,46 @@ public class PlanningAgent extends AbstractPlayer {
         this.connectionSet.stream().forEach(connection -> this.PDDLGameStatePredicates.add(connection));
     }
 
-    public void parseGameStateToPDDL(StateObservation stateObservation,
-                                     Map<String, Set<String>> predicateVars)
-    {
-        String[][] gameMap = Parser.parseStateObservation(stateObservation);
-        this.PDDLGameStatePredicates.clear();
-        this.PDDLGameStateObjects.values().stream().forEach(x -> x.clear());
+    public String[][] getGameElementsMatrix(StateObservation so) {
 
-        Set<String> connectionSet = new LinkedHashSet<>();
+        // Get the current game state
+        ArrayList<Observation>[][] gameState = so.getObservationGrid();
 
-        // Get the avatar's orientation
-        Vector2d orientation = stateObservation.getAvatarOrientation();
+        // Get the number of X tiles and Y tiles
+        final int X_MAX = gameState.length, Y_MAX = gameState[0].length;
 
-        final int X_MAX = gameMap.length, Y_MAX = gameMap[0].length;
+        // Create a new matrix, representing the game's map
+        String[][] gameStringMap = new String[X_MAX][Y_MAX];
 
+        /*
+         * Iterate over the map and transform it to string
+         * The VGDLRegistry contains information that will allow us to transform
+         * the current StateObservation to a matrix
+         */
         for (int y = 0; y < Y_MAX; y++) {
             for (int x = 0; x < X_MAX; x++) {
-                // Get the cells representation as a game element
-                String cellType = gameMap[x][y];
-                String currentCell = "cell_" + x + "_" + y;
-
-                // Check if there are predicates associated to the game element
-                if (predicateVars.containsKey(cellType)) {
-
-                    // Increase the number of variables from that type
-                    for (String var: predicateVars.get(cellType)) {
-                        // Create the connections
-                        if (var.equals("cell")) {
-                            if (y - 1 >= 0) {
-                                String connection = this.gameInformation.connections.get(Position.UP);
-                                connection = connection.replace("?c", currentCell);
-                                connection = connection.replace("?p", "cell_" + x + "_" + (y-1));
-                                connectionSet.add(connection);
-                            }
-
-                            if (y + 1 < Y_MAX) {
-                                String connection = this.gameInformation.connections.get(Position.DOWN);
-                                connection = connection.replace("?c", currentCell);
-                                connection = connection.replace("?n", "cell_" + x + "_" + (y+1));
-                                connectionSet.add(connection);
-                            }
-
-                            if (x - 1 >= 0) {
-                                String connection = this.gameInformation.connections.get(Position.LEFT);
-                                connection = connection.replace("?c", currentCell);
-                                connection = connection.replace("?p", "cell_" + (x-1) + "_" + y);
-                                connectionSet.add(connection);
-                            }
-
-                            if (x + 1 < X_MAX) {
-                                String connection = this.gameInformation.connections.get(Position.RIGHT);
-                                connection = connection.replace("?c", currentCell);
-                                connection = connection.replace("?n", "cell_" + (x+1) + "_" + y);
-                                connectionSet.add(connection);
-                            }
-                        }
-                    }
-
-                    // Add to each variable in each predicate its number
-                    for (String pred: this.gameInformation.gameElementsCorrespondence.get(cellType)) {
-                        // Create new empty output predicate
-                        String outPredicate = pred;
-
-                        for (String var: predicateVars.get(cellType)) {
-
-                            if (pred.contains(var)) {
-                                String replacement = var.equals("player") ? var : var + "_" + x + "_" + y;
-                                outPredicate = outPredicate.replace(var, replacement);
-
-                                if (var.equals("player")) {
-                                    if (orientation.x == 1.0) {
-                                        this.PDDLGameStatePredicates.add("(oriented-right player)");
-                                    } else if (orientation.x == -1.0) {
-                                        this.PDDLGameStatePredicates.add("(oriented-left player)");
-                                    } else if (orientation.y == 1.0) {
-                                        this.PDDLGameStatePredicates.add("(oriented-down player)");
-                                    } else if (orientation.y == -1.0) {
-                                        this.PDDLGameStatePredicates.add("(oriented-up player)");
-                                    }
-                                }
-
-                                this.PDDLGameStateObjects.get(var).add(replacement);
-                            }
-                        }
-                        this.PDDLGameStatePredicates.add(outPredicate);
-                    }
+                /*
+                 * If there's an observation, get its name using the itype
+                 * information
+                 */
+                if (gameState[x][y].size() > 0) {
+                    int itype = gameState[x][y].get(0).itype;
+                    gameStringMap[x][y] = VGDLRegistry.GetInstance().getRegisteredSpriteKey(itype);
+                } else {
+                    gameStringMap[x][y] = "background";
                 }
             }
         }
 
-        // Add connections to predicates
-        connectionSet.stream().forEach(connection -> this.PDDLGameStatePredicates.add(connection));
+
+        /*for (int y = 0; y < Y_MAX; y++) {
+            for (int x = 0; x < X_MAX; x++) {
+                System.out.print(gameStringMap[x][y] + " ");
+            }
+            System.out.println();
+        }*/
+
+        return gameStringMap;
     }
 
     private void writePDDLGameStateProblem() {
