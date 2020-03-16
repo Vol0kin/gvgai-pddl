@@ -28,10 +28,10 @@ gameElementsCorrespondence:
     - (terrain-empty ?c)
     - (occupied ?c)
 orientationCorrespondence:
-  UP: (asfasdf)
-  DOWN:
-  LEFT:
-  RIGHT:
+  UP: (oriented-up ?p)
+  DOWN: (oriented-down ?p)
+  LEFT: (oriented-left ?p)
+  RIGHT: (oriented-right ?p)
 actionsCorrespondence:
   TURN-UP: ACTION_UP
   TURN-DOWN: ACTION_DOWN
@@ -61,23 +61,23 @@ variablesTypes:
 cellVariable: ?c
 avatarVariable: ?p
 goals:
-  - goalPredicate: (got gem_16_9)
+  - goalPredicate: (got g_16_9)
     priority: 1
-  - goalPredicate: (got gem_7_3)
+  - goalPredicate: (got g_7_3)
     priority: 1
-  - goalPredicate: (got gem_6_3)
+  - goalPredicate: (got g_6_3)
     priority: 1
-  - goalPredicate: (got gem_5_3)
+  - goalPredicate: (got g_5_3)
     priority: 1
-  - goalPredicate: (got gem_1_4)
+  - goalPredicate: (got g_1_4)
     priority: 1
-  - goalPredicate: (got gem_6_1)
+  - goalPredicate: (got g_6_1)
     priority: 1
-  - goalPredicate: (got gem_7_1)
+  - goalPredicate: (got g_7_1)
     priority: 1
-  - goalPredicate: (got gem_7_9)
+  - goalPredicate: (got g_7_9)
     priority: 1
-  - goalPredicate: (got gem_9_10)
+  - goalPredicate: (got g_9_10)
     priority: 1
   - goalPredicate: (exited-level)
     priority: 2
