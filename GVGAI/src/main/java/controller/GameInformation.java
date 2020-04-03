@@ -6,6 +6,7 @@ import java.util.Map;
 import ontology.Types;
 
 public class GameInformation {
+    public String domainFile;
     public String domainName;
     public Map<String, ArrayList<String>> gameElementsCorrespondence;
     public Map<Position, String> orientationCorrespondence;

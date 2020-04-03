@@ -62,7 +62,7 @@ public class PlanningAgent extends AbstractPlayer {
         //GameInformation a = new GameInformation("planning/prueba.yaml");
         Yaml yaml = new Yaml(new Constructor(GameInformation.class));
         try {
-            InputStream inputStream = new FileInputStream(new File("planning/prueba.yaml"));
+            InputStream inputStream = new FileInputStream(new File("planning/boulderdash.yaml"));
             this.gameInformation = yaml.load(inputStream);
             System.out.println(this.gameInformation.domainName);
             System.out.println(this.gameInformation.gameElementsCorrespondence);
@@ -308,7 +308,7 @@ public class PlanningAgent extends AbstractPlayer {
 
     public PDDLPlan callOnlinePlanner() {
         // Read domain and problem files
-        String domain = readFile("planning/domain.pddl"),
+        String domain = readFile(this.gameInformation.domainFile),
                problem = readFile("planning/problem.pddl");
 
         // Call online planner and get its response
