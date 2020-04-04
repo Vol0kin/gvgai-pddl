@@ -28,6 +28,23 @@ def get_domain_name(domain_content):
     return domain_name
 
 
+def process_pddl_action(pddl_action):
+    gvgai_action = None
+
+    if 'UP' in pddl_action:
+        gvgai_action = 'ACTION_UP'
+    elif 'DOWN' in pddl_action:
+        gvgai_action = 'ACTION_DOWN'
+    elif 'LEFT' in pddl_action:
+        gvgai_action = 'ACTION_LEFT'
+    elif 'RIGHT' in pddl_action:
+        gvgai_action = 'ACTION_RIGHT'
+    elif 'USE' in pddl_action:
+        gvgai_action = 'ACTION_USE'
+
+    return gvgai_action
+
+
 def get_pddl_actions(domain_content):
     # Get all the actions
     actions = re.findall(r'action\s+[a-zA-Z\-_]+' , domain_content)
@@ -36,7 +53,7 @@ def get_pddl_actions(domain_content):
     actions = list(map(lambda x: re.sub(r'\s+', ' ', x).split()[-1].upper(), actions))
 
     # Create a dictionary which will map PDDL actions to GVGAI actions
-    actions_dict = {act: None for act in actions}
+    actions_dict = {act: process_pddl_action(act) for act in actions}
 
     return actions_dict
 
