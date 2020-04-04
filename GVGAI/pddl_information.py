@@ -148,7 +148,7 @@ if __name__ == '__main__':
     game_information['actionsCorrespondence'] = actions_correspondence
 
     # Add goals template
-    goals = [{'goalPredicate': None, 'priority': 0}]
+    goals = [{'goalPredicate': None, 'priority': 0, 'saveGoal': False}]
     game_information['goals'] = goals
 
 

@@ -52,6 +52,7 @@ public class PlanningAgent extends AbstractPlayer {
     protected PDDLPlan PDDLPlan;
     protected Iterator<PDDLAction> iterPlan;
     protected GameInformation gameInformation;
+    protected List<String> savedGoalPredicates;
 
     protected boolean mustReplan;
 
@@ -62,7 +63,7 @@ public class PlanningAgent extends AbstractPlayer {
         //GameInformation a = new GameInformation("planning/prueba.yaml");
         Yaml yaml = new Yaml(new Constructor(GameInformation.class));
         try {
-            InputStream inputStream = new FileInputStream(new File("planning/boulderdash.yaml"));
+            InputStream inputStream = new FileInputStream(new File("games-information/boulderdash.yaml"));
             this.gameInformation = yaml.load(inputStream);
             System.out.println(this.gameInformation.domainName);
             System.out.println(this.gameInformation.gameElementsCorrespondence);
@@ -72,6 +73,7 @@ public class PlanningAgent extends AbstractPlayer {
         }
 
         // Initialize PDDL game state information
+        this.savedGoalPredicates = new ArrayList<>();
         this.PDDLGameStatePredicates = new ArrayList<>();
         this.PDDLGameStateObjects = new HashMap<>();
         this.gameInformation.variablesTypes
@@ -87,6 +89,7 @@ public class PlanningAgent extends AbstractPlayer {
         this.mustReplan = true;
 
         this.extractVariablesFromPredicates();
+        System.out.println(this.gameElementVars);
 
         this.setConnectionSet(stateObservation);
         System.out.println(this.connectionSet);
@@ -162,7 +165,7 @@ public class PlanningAgent extends AbstractPlayer {
             for (String observation: entry.getValue()) {
                 Matcher variableMatcher = variablePattern.matcher(observation);
                 //System.out.println(variableMatcher.find());
-                if (variableMatcher.find()) {
+                while (variableMatcher.find()) {
                     for (int i = 0; i <= variableMatcher.groupCount(); i++) {
                         variables.add(variableMatcher.group(i));
                     }
@@ -222,6 +225,9 @@ public class PlanningAgent extends AbstractPlayer {
             action = nextPDDLAction.getGVGAIAction();
 
             if (!this.iterPlan.hasNext()) {
+                if (this.agenda.getCurrentGoal().isSaveGoal()) {
+                    this.savedGoalPredicates.add(this.agenda.getCurrentGoal().getGoalPredicate());
+                }
                 this.agenda.updateReachedGoals();
                 System.out.println(this.agenda);
                 this.mustReplan = true;
@@ -426,6 +432,9 @@ public class PlanningAgent extends AbstractPlayer {
                                     }
                                 } else {
                                     variableInstance = String.format("%s_%d_%d", variable, x, y).replace("?", "");
+                                    if (cellObservation.equals("floor")) {
+                                        System.out.println(variableInstance);
+                                    }
                                 }
 
                                 // Add instantiated variables to the predicate
@@ -445,6 +454,9 @@ public class PlanningAgent extends AbstractPlayer {
 
         // Add connections to predicates
         this.connectionSet.stream().forEach(connection -> this.PDDLGameStatePredicates.add(connection));
+
+        // Add saved goals
+        this.savedGoalPredicates.stream().forEach(goal -> this.PDDLGameStatePredicates.add(goal));
     }
 
     public String[][] getGameElementsMatrix(StateObservation so) {

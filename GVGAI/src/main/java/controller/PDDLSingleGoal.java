@@ -28,6 +28,7 @@ package controller;
 public class PDDLSingleGoal {
     private String goalPredicate;
     private int priority;
+    private boolean saveGoal;
 
     /**
      * Class constructor. Creates a new PDDLSingleGoal instance with a given PDDL predicate and a priority.
@@ -51,6 +52,10 @@ public class PDDLSingleGoal {
         this.priority = priority;
     }
 
+    public void setSaveGoal(boolean saveGoal) {
+        this.saveGoal = saveGoal;
+    }
+
     /**
      * Goal predicate getter.
      * @return Returns the PDDL goal predicate.
@@ -67,11 +72,16 @@ public class PDDLSingleGoal {
         return this.priority;
     }
 
+    public boolean isSaveGoal() {
+        return this.saveGoal;
+    }
+
     @Override
     public String toString() {
-        return "GoalState{" +
-                "goalDescription='" + goalPredicate + '\'' +
+        return "PDDLSingleGoal{" +
+                "goalPredicate='" + goalPredicate + '\'' +
                 ", priority=" + priority +
+                ", saveGoal=" + saveGoal +
                 '}';
     }
 }
