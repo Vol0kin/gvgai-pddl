@@ -65,6 +65,11 @@ def get_game_elements(game_file):
         for line in f:
             if 'img' in line:
                 element  = re.sub(r'\s+', ' ', line).split()[0]
+
+                # Change floor for background (floor is not used)
+                if element == 'floor':
+                    element = 'background'
+
                 game_elements.append(element)
 
 
