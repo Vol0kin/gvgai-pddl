@@ -153,7 +153,7 @@ if __name__ == '__main__':
     game_information['actionsCorrespondence'] = actions_correspondence
 
     # Add goals template
-    goals = [{'goalPredicate': None, 'priority': 0, 'saveGoal': False}]
+    goals = [{'goalPredicate': None, 'priority': 0, 'saveGoal': False, 'removeReachedGoalsList': [None]}]
     game_information['goals'] = goals
 
 
@@ -161,8 +161,5 @@ if __name__ == '__main__':
     output = args.output if args.output is not None else 'template.yaml'
     with open(output, 'w') as out:
         yaml.dump(game_information, out, default_flow_style=False, sort_keys=False)
-
-
-
 
 

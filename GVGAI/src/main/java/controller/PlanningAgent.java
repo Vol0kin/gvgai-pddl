@@ -63,7 +63,7 @@ public class PlanningAgent extends AbstractPlayer {
         //GameInformation a = new GameInformation("planning/prueba.yaml");
         Yaml yaml = new Yaml(new Constructor(GameInformation.class));
         try {
-            InputStream inputStream = new FileInputStream(new File("games-information/boulderdash.yaml"));
+            InputStream inputStream = new FileInputStream(new File("games-information/labyrinth-dual2.yaml"));
             this.gameInformation = yaml.load(inputStream);
             System.out.println(this.gameInformation.domainName);
             System.out.println(this.gameInformation.gameElementsCorrespondence);
@@ -101,7 +101,7 @@ public class PlanningAgent extends AbstractPlayer {
         this.connectionSet = new LinkedHashSet<>();
 
         // Get the observations of the game state as elements of the VGDDLRegistry
-        String[][] gameMap = this.getGameElementsMatrix(stateObservation);
+        HashSet<String>[][] gameMap = this.getGameElementsMatrix(stateObservation, false);
 
         final int X_MAX = gameMap.length, Y_MAX = gameMap[0].length;
 
@@ -225,9 +225,19 @@ public class PlanningAgent extends AbstractPlayer {
             action = nextPDDLAction.getGVGAIAction();
 
             if (!this.iterPlan.hasNext()) {
+                // Save the reached goal in case it has to be saved
                 if (this.agenda.getCurrentGoal().isSaveGoal()) {
                     this.savedGoalPredicates.add(this.agenda.getCurrentGoal().getGoalPredicate());
                 }
+
+                // Remove other reached goals if the current reached goal needs to do it
+                if (this.agenda.getCurrentGoal().getRemoveReachedGoalsList() != null) {
+                    for (String reachedGoal: this.agenda.getCurrentGoal().getRemoveReachedGoalsList()) {
+                        this.savedGoalPredicates.remove(reachedGoal);
+                    }
+                }
+
+                // Update reached goals
                 this.agenda.updateReachedGoals();
                 System.out.println(this.agenda);
                 this.mustReplan = true;
@@ -239,6 +249,8 @@ public class PlanningAgent extends AbstractPlayer {
                 this.agenda.removeFirst();
             }*/
         }
+
+        System.out.println(this.savedGoalPredicates);
 
         //Return the action.
         return action;
@@ -380,7 +392,7 @@ public class PlanningAgent extends AbstractPlayer {
 
     public void translateGameStateToPDDL(StateObservation stateObservation) {
         // Get the observations of the game state as elements of the VGDDLRegistry
-        String[][] gameMap = this.getGameElementsMatrix(stateObservation);
+        HashSet<String>[][] gameMap = this.getGameElementsMatrix(stateObservation, false);
 
         // Clear the list of predicates and objects
         this.PDDLGameStatePredicates.clear();
@@ -390,63 +402,63 @@ public class PlanningAgent extends AbstractPlayer {
 
         for (int y = 0; y < Y_MAX; y++) {
             for (int x = 0; x < X_MAX; x++) {
-                // Get the observation in the current cell
-                String cellObservation = gameMap[x][y];
+                for (String cellObservation: gameMap[x][y]) {
 
-                // If the observation is in the domain, instantiate its predicates
-                if (this.gameInformation.gameElementsCorrespondence.containsKey(cellObservation)) {
-                    List<String> predicateList = this.gameInformation.gameElementsCorrespondence.get(cellObservation);
+                    // If the observation is in the domain, instantiate its predicates
+                    if (this.gameInformation.gameElementsCorrespondence.containsKey(cellObservation)) {
+                        List<String> predicateList = this.gameInformation.gameElementsCorrespondence.get(cellObservation);
 
-                    // Instantiate each predicate
-                    for (String predicate: predicateList) {
-                        String predicateInstance = predicate;
+                        // Instantiate each predicate
+                        for (String predicate : predicateList) {
+                            String predicateInstance = predicate;
 
-                        // Iterate over all the variables associated to the game element and
-                        // instantiate those who appear in the predicate
-                        for (String variable: this.gameElementVars.get(cellObservation)) {
-                            if (predicate.contains(variable)) {
-                                String variableInstance;
+                            // Iterate over all the variables associated to the game element and
+                            // instantiate those who appear in the predicate
+                            for (String variable : this.gameElementVars.get(cellObservation)) {
+                                if (predicate.contains(variable)) {
+                                    String variableInstance;
 
-                                if (variable.equals(this.gameInformation.avatarVariable)) {
-                                    variableInstance = variable.replace("?", "");
+                                    if (variable.equals(this.gameInformation.avatarVariable)) {
+                                        variableInstance = variable.replace("?", "");
 
-                                    // If orientations are being used, add predicate associated
-                                    // to the player's orientation
-                                    if (this.gameInformation.orientationCorrespondence != null) {
-                                        Vector2d avatarOrientation = stateObservation.getAvatarOrientation();
-                                        Position orientation = null;
+                                        // If orientations are being used, add predicate associated
+                                        // to the player's orientation
+                                        if (this.gameInformation.orientationCorrespondence != null) {
+                                            Vector2d avatarOrientation = stateObservation.getAvatarOrientation();
+                                            Position orientation = null;
 
-                                        if (avatarOrientation.x == 1.0) {
-                                            orientation = Position.RIGHT;
-                                        } else if (avatarOrientation.x == -1.0) {
-                                            orientation = Position.LEFT;
-                                        } else if (avatarOrientation.y == 1.0) {
-                                            orientation = Position.DOWN;
-                                        } else if (avatarOrientation.y == -1.0) {
-                                            orientation = Position.UP;
+                                            if (avatarOrientation.x == 1.0) {
+                                                orientation = Position.RIGHT;
+                                            } else if (avatarOrientation.x == -1.0) {
+                                                orientation = Position.LEFT;
+                                            } else if (avatarOrientation.y == 1.0) {
+                                                orientation = Position.DOWN;
+                                            } else if (avatarOrientation.y == -1.0) {
+                                                orientation = Position.UP;
+                                            }
+
+                                            this.PDDLGameStatePredicates.add(this.gameInformation.orientationCorrespondence
+                                                    .get(orientation)
+                                                    .replace(variable, variableInstance));
                                         }
+                                    } else {
+                                        variableInstance = String.format("%s_%d_%d", variable, x, y).replace("?", "");
+                                        if (cellObservation.equals("floor")) {
+                                            System.out.println(variableInstance);
+                                        }
+                                    }
 
-                                        this.PDDLGameStatePredicates.add(this.gameInformation.orientationCorrespondence
-                                                .get(orientation)
-                                                .replace(variable, variableInstance));
-                                    }
-                                } else {
-                                    variableInstance = String.format("%s_%d_%d", variable, x, y).replace("?", "");
-                                    if (cellObservation.equals("floor")) {
-                                        System.out.println(variableInstance);
-                                    }
+                                    // Add instantiated variables to the predicate
+                                    predicateInstance = predicateInstance.replace(variable, variableInstance);
+
+                                    // Save instantiated variable
+                                    this.PDDLGameStateObjects.get(variable).add(variableInstance);
                                 }
-
-                                // Add instantiated variables to the predicate
-                                predicateInstance = predicateInstance.replace(variable, variableInstance);
-
-                                // Save instantiated variable
-                                this.PDDLGameStateObjects.get(variable).add(variableInstance);
                             }
-                        }
 
-                        // Save instantiated predicate
-                        this.PDDLGameStatePredicates.add(predicateInstance);
+                            // Save instantiated predicate
+                            this.PDDLGameStatePredicates.add(predicateInstance);
+                        }
                     }
                 }
             }
@@ -459,8 +471,7 @@ public class PlanningAgent extends AbstractPlayer {
         this.savedGoalPredicates.stream().forEach(goal -> this.PDDLGameStatePredicates.add(goal));
     }
 
-    public String[][] getGameElementsMatrix(StateObservation so) {
-
+    public HashSet<String>[][] getGameElementsMatrix(StateObservation so, boolean debug) {
         // Get the current game state
         ArrayList<Observation>[][] gameState = so.getObservationGrid();
 
@@ -468,35 +479,38 @@ public class PlanningAgent extends AbstractPlayer {
         final int X_MAX = gameState.length, Y_MAX = gameState[0].length;
 
         // Create a new matrix, representing the game's map
-        String[][] gameStringMap = new String[X_MAX][Y_MAX];
+        HashSet<String>[][] gameStringMap = new HashSet[X_MAX][Y_MAX];
 
         /*
-         * Iterate over the map and transform it to string
-         * The VGDLRegistry contains information that will allow us to transform
-         * the current StateObservation to a matrix
+         * Iterate over the map and transform the observations in a [x, y] cell
+         * to a HashSet of Strings. In case there's no observation, add a
+         * "background" string. The VGDLRegistry contains the needed information
+         * to transform the StateObservation to a matrix.
          */
         for (int y = 0; y < Y_MAX; y++) {
             for (int x = 0; x < X_MAX; x++) {
-                /*
-                 * If there's an observation, get its name using the itype
-                 * information
-                 */
+                gameStringMap[x][y] = new HashSet<>();
+                
                 if (gameState[x][y].size() > 0) {
-                    int itype = gameState[x][y].get(0).itype;
-                    gameStringMap[x][y] = VGDLRegistry.GetInstance().getRegisteredSpriteKey(itype);
+                    for (int i = 0; i < gameState[x][y].size(); i++) {
+                        int itype = gameState[x][y].get(i).itype;
+                        gameStringMap[x][y].add(VGDLRegistry.GetInstance().getRegisteredSpriteKey(itype));
+                    }
                 } else {
-                    gameStringMap[x][y] = "background";
+                    gameStringMap[x][y].add("background");
                 }
             }
         }
 
-
-        /*for (int y = 0; y < Y_MAX; y++) {
-            for (int x = 0; x < X_MAX; x++) {
-                System.out.print(gameStringMap[x][y] + " ");
+        // Show map in case it has to be debugged
+        if (debug) {
+            for (int y = 0; y < Y_MAX; y++) {
+                for (int x = 0; x < X_MAX; x++) {
+                    System.out.print(gameStringMap[x][y] + " ");
+                }
+                System.out.println();
             }
-            System.out.println();
-        }*/
+        }
 
         return gameStringMap;
     }

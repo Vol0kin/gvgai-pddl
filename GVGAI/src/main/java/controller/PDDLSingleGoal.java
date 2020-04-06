@@ -19,6 +19,8 @@
 
 package controller;
 
+import java.util.List;
+
 /**
  * Class that represents a PDDL goal. A PDDLSingleGoal object contains a PDDL predicate
  * and its priority with regard to other goals.
@@ -29,6 +31,7 @@ public class PDDLSingleGoal {
     private String goalPredicate;
     private int priority;
     private boolean saveGoal;
+    private List<String> removeReachedGoalsList;
 
     /**
      * Class constructor. Creates a new PDDLSingleGoal instance with a given PDDL predicate and a priority.
@@ -76,12 +79,21 @@ public class PDDLSingleGoal {
         return this.saveGoal;
     }
 
+    public List<String> getRemoveReachedGoalsList() {
+        return removeReachedGoalsList;
+    }
+
+    public void setRemoveReachedGoalsList(List<String> removeReachedGoalsList) {
+        this.removeReachedGoalsList = removeReachedGoalsList;
+    }
+
     @Override
     public String toString() {
         return "PDDLSingleGoal{" +
                 "goalPredicate='" + goalPredicate + '\'' +
                 ", priority=" + priority +
                 ", saveGoal=" + saveGoal +
+                ", removeReachedGoalsList=" + removeReachedGoalsList +
                 '}';
     }
 }
