@@ -1,0 +1,76 @@
+domainFile: domains/labyrinth-dual-domain.pddl
+domainName: LabyrinthDual
+gameElementsCorrespondence:
+  background:
+  - (traversable ?c)
+  trap:
+  - (at ?t ?c)
+  exit:
+  - (at ?e ?c)
+  - (traversable ?c)
+  normalWall:
+  - (at ?w ?c)
+  redWall:
+  - (at ?rw ?c)
+  - (traversable ?c)
+  - (needs-suit ?c)
+  blueWall:
+  - (at ?bw ?c)
+  - (traversable ?c)
+  - (needs-suit ?c)
+  redcoat:
+  - (at ?rs ?c)
+  - (red-suit ?rs)
+  - (traversable ?c)
+  bluecoat:
+  - (at ?bs ?c)
+  - (blue-suit ?bs)
+  - (traversable ?c)
+  avatarNormal:
+  - (at ?a ?c)
+  avatarRed:
+  - (at ?a ?c)
+  avatarBlue:
+  - (at ?a ?c)
+variablesTypes:
+  ?a: Avatar
+  ?t: Trap
+  ?w : Wall
+  ?bw: BlueWall
+  ?rw: RedWall
+  ?e: Exit
+  ?bs: Suit
+  ?rs: Suit
+  ?c: Cell
+cellVariable: ?c
+avatarVariable: ?a
+connections:
+  UP: (connected-up ?c ?p)
+  DOWN: (connected-down ?c ?n)
+  LEFT: (connected-left ?c ?p)
+  RIGHT: (connected-right ?c ?n)
+actionsCorrespondence:
+  MOVE-UP: ACTION_UP
+  MOVE-DOWN: ACTION_DOWN
+  MOVE-LEFT: ACTION_LEFT
+  MOVE-RIGHT: ACTION_RIGHT
+  MOVE-UP-BLUE: ACTION_UP
+  MOVE-DOWN-BLUE: ACTION_DOWN
+  MOVE-LEFT-BLUE: ACTION_LEFT
+  MOVE-RIGHT-BLUE: ACTION_RIGHT
+  MOVE-UP-RED: ACTION_UP
+  MOVE-DOWN-RED: ACTION_DOWN
+  MOVE-LEFT-RED: ACTION_LEFT
+  MOVE-RIGHT-RED: ACTION_RIGHT
+goals:
+- goalPredicate: (has-blue-suit a)
+  priority: 1
+  saveGoal: true
+- goalPredicate: (has-red-suit a)
+  priority: 2
+  saveGoal: true
+  removeReachedGoalsList:
+  - (has-blue-suit a)
+- goalPredicate: (exited-level a)
+  priority: 3
+  saveGoal: false
