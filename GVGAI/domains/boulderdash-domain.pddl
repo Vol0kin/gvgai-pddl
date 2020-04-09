@@ -119,7 +119,7 @@
       (at ?p ?c1)
       (oriented-up ?p)
       (connected-up ?c1 ?c2)
-      (not (exists (?b - Boulder) (at ?b ?c2)))
+      (not (occupied ?c2))
       (not (terrain-wall ?c2))
     )
     :effect (and
