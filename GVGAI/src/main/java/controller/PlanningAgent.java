@@ -44,26 +44,35 @@ import kong.unirest.Unirest;
 import org.yaml.snakeyaml.Yaml;
 
 public class PlanningAgent extends AbstractPlayer {
+    // Agenda that contains preempted, current and reached goals
     protected Agenda agenda;
 
+    // PDDL predicates and objects
     protected List<String> PDDLGameStatePredicates;
     protected Map<String, Set<String>> PDDLGameStateObjects;
 
+    // Plan to the current goal and iterator to iterate over it
     protected PDDLPlan PDDLPlan;
     protected Iterator<PDDLAction> iterPlan;
+    
+    // Game information data structure (loaded from a .yaml file) and file path
     protected GameInformation gameInformation;
-    protected List<String> savedGoalPredicates;
+    protected final static String GAME_PATH = "games-information/labyrinth-dual2.yaml";
+    
+    // List of reached goal predicates that have to be saved
+    protected List<String> reachedSavedGoalPredicates;
 
-    protected boolean mustReplan;
+    // Variable that indicates whether the agent has to find a new plan or not
+    protected boolean mustPlan;
 
+    // Set of connections between cells
     protected Set<String> connectionSet;
     protected Map<String, Set<String>> gameElementVars;
 
     public PlanningAgent(StateObservation stateObservation, ElapsedCpuTimer elapsedCpuTimer) {
-        //GameInformation a = new GameInformation("planning/prueba.yaml");
         Yaml yaml = new Yaml(new Constructor(GameInformation.class));
         try {
-            InputStream inputStream = new FileInputStream(new File("games-information/labyrinth-dual2.yaml"));
+            InputStream inputStream = new FileInputStream(new File(PlanningAgent.GAME_PATH));
             this.gameInformation = yaml.load(inputStream);
             System.out.println(this.gameInformation.domainName);
             System.out.println(this.gameInformation.gameElementsCorrespondence);
@@ -73,7 +82,7 @@ public class PlanningAgent extends AbstractPlayer {
         }
 
         // Initialize PDDL game state information
-        this.savedGoalPredicates = new ArrayList<>();
+        this.reachedSavedGoalPredicates = new ArrayList<>();
         this.PDDLGameStatePredicates = new ArrayList<>();
         this.PDDLGameStateObjects = new HashMap<>();
         this.gameInformation.variablesTypes
@@ -86,7 +95,7 @@ public class PlanningAgent extends AbstractPlayer {
 
         this.agenda = new Agenda(this.gameInformation.goals);
 
-        this.mustReplan = true;
+        this.mustPlan = true;
 
         this.extractVariablesFromPredicates();
         System.out.println(this.gameElementVars);
@@ -187,10 +196,8 @@ public class PlanningAgent extends AbstractPlayer {
 
         this.translateGameStateToPDDL(stateObservation);
 
-        if (this.mustReplan) {
+        if (this.mustPlan) {
             System.out.println("I need to find a plan!");
-            //System.out.println(Parser.<String, ArrayList<String>>parseJSONFile("correspondence.json").get("A").get(0));
-            //System.out.println(VGDLRegistry.GetInstance().getRegisteredSpriteKey(10));
 
             long time = elapsedCpuTimer.remainingTimeMillis();
             this.agenda.setCurrentGoal();
@@ -203,7 +210,7 @@ public class PlanningAgent extends AbstractPlayer {
             time = elapsedCpuTimer.remainingTimeMillis();
             this.PDDLPlan = callOnlinePlanner();
             this.iterPlan = PDDLPlan.iterator();
-            this.mustReplan = false;
+            this.mustPlan = false;
             System.out.println("Consumed time waiting for planner's response: " + (time - elapsedCpuTimer.remainingTimeMillis()));
             //this.actionList = translateOutputPlan();
         } else {
@@ -219,7 +226,7 @@ public class PlanningAgent extends AbstractPlayer {
                 System.out.println("//////////////////////////////One or more preconditions hasn't been satisfied. ERROR.");
                 this.agenda.haltCurrentGoal();
                 System.out.println(this.agenda);
-                this.mustReplan = true;
+                this.mustPlan = true;
             }
 
             action = nextPDDLAction.getGVGAIAction();
@@ -227,30 +234,24 @@ public class PlanningAgent extends AbstractPlayer {
             if (!this.iterPlan.hasNext()) {
                 // Save the reached goal in case it has to be saved
                 if (this.agenda.getCurrentGoal().isSaveGoal()) {
-                    this.savedGoalPredicates.add(this.agenda.getCurrentGoal().getGoalPredicate());
+                    this.reachedSavedGoalPredicates.add(this.agenda.getCurrentGoal().getGoalPredicate());
                 }
 
                 // Remove other reached goals if the current reached goal needs to do it
                 if (this.agenda.getCurrentGoal().getRemoveReachedGoalsList() != null) {
                     for (String reachedGoal: this.agenda.getCurrentGoal().getRemoveReachedGoalsList()) {
-                        this.savedGoalPredicates.remove(reachedGoal);
+                        this.reachedSavedGoalPredicates.remove(reachedGoal);
                     }
                 }
 
                 // Update reached goals
                 this.agenda.updateReachedGoals();
                 System.out.println(this.agenda);
-                this.mustReplan = true;
+                this.mustPlan = true;
             }
-            /*
-            action = this.iterPlan.next().getGVGAIAction();
-
-            if (!this.iterPlan.hasNext()) {
-                this.agenda.removeFirst();
-            }*/
         }
 
-        System.out.println(this.savedGoalPredicates);
+        System.out.println(this.reachedSavedGoalPredicates);
 
         //Return the action.
         return action;
@@ -468,7 +469,7 @@ public class PlanningAgent extends AbstractPlayer {
         this.connectionSet.stream().forEach(connection -> this.PDDLGameStatePredicates.add(connection));
 
         // Add saved goals
-        this.savedGoalPredicates.stream().forEach(goal -> this.PDDLGameStatePredicates.add(goal));
+        this.reachedSavedGoalPredicates.stream().forEach(goal -> this.PDDLGameStatePredicates.add(goal));
     }
 
     public HashSet<String>[][] getGameElementsMatrix(StateObservation so, boolean debug) {
@@ -485,7 +486,7 @@ public class PlanningAgent extends AbstractPlayer {
          * Iterate over the map and transform the observations in a [x, y] cell
          * to a HashSet of Strings. In case there's no observation, add a
          * "background" string. The VGDLRegistry contains the needed information
-         * to transform the StateObservation to a matrix.
+         * to transform the StateObservation to a matrix of sets of Strings.
          */
         for (int y = 0; y < Y_MAX; y++) {
             for (int x = 0; x < X_MAX; x++) {
@@ -520,12 +521,10 @@ public class PlanningAgent extends AbstractPlayer {
 
         try (BufferedWriter bf = new BufferedWriter(new FileWriter("planning/problem.pddl"))) {
             // Write problem name
-            // THIS LINE HAS TO BE CHANGED LATER ON, ALLOWING TO CHANGE THE PROBLEM
-            bf.write("(define (problem Boulders)");
+            bf.write(String.format("(define (problem %sProblem)", this.gameInformation.domainName));
             bf.newLine();
 
             // Write domain that is used
-            // THIS LINE HAS TO BE CHANGED LATER ON, ALLOWING AUTOMATIC CHANGE
             bf.write(String.format("(:domain %s)", this.gameInformation.domainName));
             bf.newLine();
 

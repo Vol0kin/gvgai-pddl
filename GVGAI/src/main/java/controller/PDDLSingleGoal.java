@@ -34,49 +34,32 @@ public class PDDLSingleGoal {
     private List<String> removeReachedGoalsList;
 
     /**
-     * Class constructor. Creates a new PDDLSingleGoal instance with a given PDDL predicate and a priority.
-     * @param goalPredicate A PDDL predicate which represents a goal.
-     * @param priority The goal's priority with regard to other goals. A smaller priority
-     *                 value means that the goal has more priority whereas a higher one means
-     *                 that it has less priority.
+     * Class default constructor. Creates a new PDDLSingleGoal instance.
      */
-    public PDDLSingleGoal(String goalPredicate, int priority) {
-        this.goalPredicate = goalPredicate;
-        this.priority = priority;
-    }
-
     public  PDDLSingleGoal() {}
+
+    public String getGoalPredicate() {
+        return this.goalPredicate;
+    }
 
     public void setGoalPredicate(String goalPredicate) {
         this.goalPredicate = goalPredicate;
+    }
+
+    public int getPriority() {
+        return this.priority;
     }
 
     public void setPriority(int priority) {
         this.priority = priority;
     }
 
-    public void setSaveGoal(boolean saveGoal) {
-        this.saveGoal = saveGoal;
-    }
-
-    /**
-     * Goal predicate getter.
-     * @return Returns the PDDL goal predicate.
-     */
-    public String getGoalPredicate() {
-        return this.goalPredicate;
-    }
-
-    /**
-     * Goal priority getter.
-     * @return Returns the goal's priority.
-     */
-    public int getPriority() {
-        return this.priority;
-    }
-
     public boolean isSaveGoal() {
         return this.saveGoal;
+    }
+
+    public void setSaveGoal(boolean saveGoal) {
+        this.saveGoal = saveGoal;
     }
 
     public List<String> getRemoveReachedGoalsList() {
