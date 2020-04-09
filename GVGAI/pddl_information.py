@@ -124,6 +124,12 @@ if __name__ == '__main__':
     # Add domain name
     game_information['domainName'] = get_domain_name(domain_content)
 
+    # Add cell variable template
+    game_information['cellVariable'] = None
+
+    # Add avatar variable template
+    game_information['avatarVariable'] = None
+
     # Add a template of the correspondence between the game elements and the
     # PDDL predicates
     game_elements_correspondence = get_game_elements(args.game)
@@ -132,12 +138,6 @@ if __name__ == '__main__':
     # Add a template of the PDDL types of the variables found in the predicates
     variables_types = {'?variable': 'Type'}
     game_information['variablesTypes'] = variables_types
-
-    # Add cell variable template
-    game_information['cellVariable'] = None
-
-    # Add avatar variable template
-    game_information['avatarVariable'] = None
 
     # Add a template of the orientations correspondence to PDDL predicates
     if args.orientations:
