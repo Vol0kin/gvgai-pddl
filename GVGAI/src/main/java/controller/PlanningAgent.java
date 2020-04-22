@@ -23,6 +23,7 @@ import core.game.Observation;
 import core.player.AbstractPlayer;
 import core.game.StateObservation;
 import core.vgdl.VGDLRegistry;
+import kong.unirest.json.JSONObject;
 import org.yaml.snakeyaml.constructor.Constructor;
 import tools.ElapsedCpuTimer;
 
@@ -42,6 +43,7 @@ import kong.unirest.JsonNode;
 import kong.unirest.Unirest;
 
 import org.yaml.snakeyaml.Yaml;
+import tools.com.google.gson.JsonObject;
 
 public class PlanningAgent extends AbstractPlayer {
     // Agenda that contains preempted, current and reached goals
@@ -58,6 +60,7 @@ public class PlanningAgent extends AbstractPlayer {
     // Game information data structure (loaded from a .yaml file) and file path
     protected GameInformation gameInformation;
     protected final static String GAME_PATH = "games-information/labyrinth-dual2.yaml";
+    protected final static boolean DEBUG_MODE_ENABLED = true;
     
     // List of reached goal predicates that have to be saved
     protected List<String> reachedSavedGoalPredicates;
@@ -187,6 +190,17 @@ public class PlanningAgent extends AbstractPlayer {
         this.gameElementVars = varsFromPredicates;
     }
 
+    private void showMessages(String[] messages) {
+        for (String m: messages) {
+            System.out.println(m);
+        }
+
+        System.out.println("Press ENTER to continue");
+
+        Scanner scanner = new Scanner(System.in);
+        scanner.nextLine();
+    }
+
     @Override
     public Types.ACTIONS act(StateObservation stateObservation, ElapsedCpuTimer elapsedCpuTimer) {
         Types.ACTIONS action;
@@ -197,7 +211,10 @@ public class PlanningAgent extends AbstractPlayer {
         this.translateGameStateToPDDL(stateObservation);
 
         if (this.mustPlan) {
-            System.out.println("I need to find a plan!");
+            // SHOW DEBUG INFORMATION
+            if (PlanningAgent.DEBUG_MODE_ENABLED) {
+                this.showMessages(new String[]{"I don't have a plan to the current goal or I must replan!"});
+            }
 
             long time = elapsedCpuTimer.remainingTimeMillis();
             this.agenda.setCurrentGoal();
@@ -325,7 +342,7 @@ public class PlanningAgent extends AbstractPlayer {
         System.out.println("###############################" + b);
     }
 
-    public PDDLPlan callOnlinePlanner() {
+    public PDDLPlan callOnlinePlanner() throws PlanNotFoundException {
         // Read domain and problem files
         String domain = readFile(this.gameInformation.domainFile),
                problem = readFile("planning/problem.pddl");
@@ -338,9 +355,21 @@ public class PlanningAgent extends AbstractPlayer {
                 .asJson();
 
         // Here the response should be checked in case there's been an error
+        JSONObject responseBody =  response.getBody().getObject();
+
+        if (PlanningAgent.DEBUG_MODE_ENABLED) {
+            this.showMessages(new String[]{"--- Planner response ---",
+                    String.format("Response status: %s", responseBody.getString("status")),
+                    String.format("Result:\n%s", responseBody.getJSONObject("result").getString("output"))
+            });
+        }
+
+        if (!responseBody.getString("status").equals("ok")) {
+            throw new PlanNotFoundException(responseBody.getJSONObject("result").getString("output"));
+        }
 
         // Create a new PDDLPlan instance if a valid plan has been found
-        PDDLPlan PDDLPlan = new PDDLPlan(response.getBody().getObject(), this.gameInformation.actionsCorrespondence);
+        PDDLPlan PDDLPlan = new PDDLPlan(responseBody, this.gameInformation.actionsCorrespondence);
 
         return PDDLPlan;
     }
