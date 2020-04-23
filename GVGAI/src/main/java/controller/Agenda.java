@@ -31,7 +31,7 @@ import java.util.stream.Collectors;
  * the current goal, which is the one that the agent is trying to achieve.
  *
  * The lists of pending goals and preempted goals are sorted by priority. See
- * {@link PDDLSingleGoal#PDDLSingleGoal(String, int)} to get more information.
+ * {@link PDDLSingleGoal#PDDLSingleGoal()} to get more information.
  *
  * @author Vladislav Nikolov Vasilev
  */
@@ -150,12 +150,37 @@ public class Agenda {
 
     @Override
     public String toString() {
-        return "Agenda{" +
-                "notPlannedGoals=" + pendingGoals +
-                ", haltedGoals=" + preemptedGoals +
-                ", reachedGoals=" + reachedGoals +
-                ", currentGoal='" + currentGoal + '\'' +
-                '}';
+        StringBuilder builder = new StringBuilder();
+        builder.append("\n--------------------------------------------------------------------------------\n");
+        builder.append("\n-----------------------------------  AGENDA  -----------------------------------\n");
+
+        builder.append("\nList of NOT PLANNED goals:");
+
+        for (PDDLSingleGoal pending: this.pendingGoals) {
+            builder.append(pending.toString());
+        }
+
+        builder.append("\n\nList of PREEMPTED (halted) goals:");
+
+        for (PDDLSingleGoal preempted: this.preemptedGoals) {
+            builder.append(preempted.toString());
+        }
+
+        builder.append("\n\nList of REACHED goals:");
+
+        for (PDDLSingleGoal reached: this.reachedGoals) {
+            builder.append(reached.toString());
+        }
+
+        builder.append("\n\nCURRENT goal:");
+
+        if (this.currentGoal != null) {
+            builder.append(this.currentGoal.toString());
+        }
+
+        builder.append("\n\n--------------------------------------------------------------------------------\n");
+
+        return builder.toString();
     }
 
     /**

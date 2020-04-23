@@ -72,11 +72,14 @@ public class PDDLSingleGoal {
 
     @Override
     public String toString() {
-        return "PDDLSingleGoal{" +
-                "goalPredicate='" + goalPredicate + '\'' +
-                ", priority=" + priority +
-                ", saveGoal=" + saveGoal +
-                ", removeReachedGoalsList=" + removeReachedGoalsList +
-                '}';
+        StringBuilder builder = new StringBuilder();
+
+        builder.append("\n\n\t### PDDL single goal ###\n");
+        builder.append(String.format("\t|--- Goal predicate: %s\n", this.goalPredicate));
+        builder.append(String.format("\t|--- Priority: %d\n", this.priority));
+        builder.append(String.format("\t|--- Save goal: %s\n", this.saveGoal));
+        builder.append(String.format("\t|--- List of reached goals to remove: %s", this.removeReachedGoalsList));
+
+        return builder.toString();
     }
 }

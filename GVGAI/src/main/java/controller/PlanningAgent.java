@@ -72,14 +72,13 @@ public class PlanningAgent extends AbstractPlayer {
     protected Set<String> connectionSet;
     protected Map<String, Set<String>> gameElementVars;
 
+    protected int turn;
+
     public PlanningAgent(StateObservation stateObservation, ElapsedCpuTimer elapsedCpuTimer) {
         Yaml yaml = new Yaml(new Constructor(GameInformation.class));
         try {
             InputStream inputStream = new FileInputStream(new File(PlanningAgent.GAME_PATH));
             this.gameInformation = yaml.load(inputStream);
-            System.out.println(this.gameInformation.domainName);
-            System.out.println(this.gameInformation.gameElementsCorrespondence);
-            System.out.println(this.gameInformation.avatarVariable);
         } catch (FileNotFoundException e) {
             System.out.println(e.getStackTrace());
         }
@@ -101,11 +100,12 @@ public class PlanningAgent extends AbstractPlayer {
         this.mustPlan = true;
 
         this.extractVariablesFromPredicates();
-        System.out.println(this.gameElementVars);
+        //System.out.println(this.gameElementVars);
 
         this.setConnectionSet(stateObservation);
-        System.out.println(this.connectionSet);
-        System.out.println(this.PDDLGameStateObjects);
+        //System.out.println(this.connectionSet);
+        //System.out.println(this.PDDLGameStateObjects);
+        this.turn = -1;
     }
 
     private void setConnectionSet(StateObservation stateObservation) {
@@ -190,46 +190,97 @@ public class PlanningAgent extends AbstractPlayer {
         this.gameElementVars = varsFromPredicates;
     }
 
-    private void showMessages(String[] messages) {
+    private void displayInformation(String[] messages) {
+        // Show messages
         for (String m: messages) {
             System.out.println(m);
         }
 
-        System.out.println("Press ENTER to continue");
+        // Request input
+        Scanner scanner = new Scanner(System.in);
+        int option = 0;
+        final int EXIT_OPTION = 3;
+
+        while (option != EXIT_OPTION) {
+            System.out.println("\nSelect what information you want to display:");
+            System.out.println("[1] : Agenda");
+            System.out.println("[2] : Current plan");
+            System.out.println("[3] : Continue execution");
+            System.out.print("\n$ ");
+
+            // Ignore option if it's not an integer
+            while (!scanner.hasNextInt()) {
+                scanner.next();
+                System.out.print("\n$ ");
+            }
+
+            // Get input
+            option = scanner.nextInt();
+
+            switch (option) {
+                case 1:
+                    System.out.println(this.agenda);
+                    break;
+                case 2:
+                    System.out.println(this.PDDLPlan.getPDDLActions());
+                    break;
+                case EXIT_OPTION:
+                    break;
+                default:
+                    System.out.println("Incorrect option!");
+                    break;
+            }
+        }
+    }
+
+    private void showMessages(String[] messages) {
+        // Show messages
+        for (String m: messages) {
+            System.out.println(m);
+        }
 
         Scanner scanner = new Scanner(System.in);
+
+        System.out.println("Press [ENTER] to continue");
         scanner.nextLine();
     }
 
     @Override
     public Types.ACTIONS act(StateObservation stateObservation, ElapsedCpuTimer elapsedCpuTimer) {
-        Types.ACTIONS action;
+        Types.ACTIONS action = Types.ACTIONS.ACTION_NIL;
+        this.turn++;
 
-        // Get the player's orientation
-        Vector2d orientation = stateObservation.getAvatarOrientation();
+        // SHOW DEBUG INFORMATION
+        // show turn number
+        if (PlanningAgent.DEBUG_MODE_ENABLED) {
+            System.out.println(String.format("\n ---------- Turn %d ----------\n", this.turn));
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
 
+        // Translate game state to PDDL predicates
         this.translateGameStateToPDDL(stateObservation);
 
         if (this.mustPlan) {
+            // Set current goal
+            this.agenda.setCurrentGoal();
+
             // SHOW DEBUG INFORMATION
             if (PlanningAgent.DEBUG_MODE_ENABLED) {
-                this.showMessages(new String[]{"I don't have a plan to the current goal or I must replan!"});
+                this.displayInformation(new String[]{"I don't have a plan to the current goal or I must replan!"});
             }
 
-            long time = elapsedCpuTimer.remainingTimeMillis();
-            this.agenda.setCurrentGoal();
+            // Write PDDL predicates into the problem file
             this.writePDDLGameStateProblem();
-            System.out.println("Consumed time: " + (time - elapsedCpuTimer.remainingTimeMillis()));
 
-            //Determine an index randomly and get the action to return.
-            action = Types.ACTIONS.ACTION_NIL;
-
-            time = elapsedCpuTimer.remainingTimeMillis();
             this.PDDLPlan = callOnlinePlanner();
             this.iterPlan = PDDLPlan.iterator();
             this.mustPlan = false;
-            System.out.println("Consumed time waiting for planner's response: " + (time - elapsedCpuTimer.remainingTimeMillis()));
-            //this.actionList = translateOutputPlan();
+
+            this.displayInformation(new String[]{"Translated output plan"});
         } else {
             //System.out.println(this.actionList);
             PDDLAction nextPDDLAction = this.iterPlan.next();
@@ -267,8 +318,6 @@ public class PlanningAgent extends AbstractPlayer {
                 this.mustPlan = true;
             }
         }
-
-        System.out.println(this.reachedSavedGoalPredicates);
 
         //Return the action.
         return action;
@@ -354,9 +403,10 @@ public class PlanningAgent extends AbstractPlayer {
                 .field("problem", problem)
                 .asJson();
 
-        // Here the response should be checked in case there's been an error
+        // Get the JSON from the body of the HTTP response
         JSONObject responseBody =  response.getBody().getObject();
 
+        // SHOW DEBUG INFORMATION
         if (PlanningAgent.DEBUG_MODE_ENABLED) {
             this.showMessages(new String[]{"--- Planner response ---",
                     String.format("Response status: %s", responseBody.getString("status")),
@@ -364,6 +414,7 @@ public class PlanningAgent extends AbstractPlayer {
             });
         }
 
+        // Throw exception if the status is not ok
         if (!responseBody.getString("status").equals("ok")) {
             throw new PlanNotFoundException(responseBody.getJSONObject("result").getString("output"));
         }
