@@ -214,7 +214,6 @@ public class PlanningAgent extends AbstractPlayer {
                 System.out.print("\n$ ");
             }
 
-            // Get input
             option = scanner.nextInt();
 
             switch (option) {
@@ -222,7 +221,7 @@ public class PlanningAgent extends AbstractPlayer {
                     System.out.println(this.agenda);
                     break;
                 case 2:
-                    System.out.println(this.PDDLPlan.getPDDLActions());
+                    System.out.println(this.PDDLPlan);
                     break;
                 case EXIT_OPTION:
                     break;
@@ -251,7 +250,6 @@ public class PlanningAgent extends AbstractPlayer {
         this.turn++;
 
         // SHOW DEBUG INFORMATION
-        // show turn number
         if (PlanningAgent.DEBUG_MODE_ENABLED) {
             System.out.println(String.format("\n ---------- Turn %d ----------\n", this.turn));
             try {
@@ -264,6 +262,7 @@ public class PlanningAgent extends AbstractPlayer {
         // Translate game state to PDDL predicates
         this.translateGameStateToPDDL(stateObservation);
 
+        // If there's no plan, spend one turn searching for one
         if (this.mustPlan) {
             // Set current goal
             this.agenda.setCurrentGoal();
@@ -280,11 +279,13 @@ public class PlanningAgent extends AbstractPlayer {
             this.iterPlan = PDDLPlan.iterator();
             this.mustPlan = false;
 
-            this.displayInformation(new String[]{"Translated output plan"});
+            // SHOW DEBUG INFORMATION
+            if (PlanningAgent.DEBUG_MODE_ENABLED) {
+                this.displayInformation(new String[]{"Translated output plan"});
+            }
         } else {
-            //System.out.println(this.actionList);
+            // Check preconditions for next action
             PDDLAction nextPDDLAction = this.iterPlan.next();
-
             boolean satisfiedPrec = this.checkPreconditions(nextPDDLAction);
 
 
@@ -316,6 +317,17 @@ public class PlanningAgent extends AbstractPlayer {
                 this.agenda.updateReachedGoals();
                 System.out.println(this.agenda);
                 this.mustPlan = true;
+            }
+        }
+
+        // SHOW DEBUG INFORMATION
+        if (PlanningAgent.DEBUG_MODE_ENABLED) {
+            System.out.println("The following action is going to be executed in this turn: " + action);
+
+            try {
+                Thread.sleep(1750);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
         }
 
@@ -524,6 +536,7 @@ public class PlanningAgent extends AbstractPlayer {
                                         }
                                     } else {
                                         variableInstance = String.format("%s_%d_%d", variable, x, y).replace("?", "");
+
                                         if (cellObservation.equals("floor")) {
                                             System.out.println(variableInstance);
                                         }

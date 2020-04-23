@@ -67,7 +67,6 @@ public class PDDLAction {
 
         // Get match of the pattern
         Matcher preconditionMatcher = preconditionPattern.matcher(actionDescription);
-        // Should this call be controlled in case no match is found?
         preconditionMatcher.find();
 
         // The preconditions are in the first match since there's only one
@@ -105,7 +104,6 @@ public class PDDLAction {
 
         // Get match of the pattern
         Matcher actionMatcher = actionPattern.matcher(this.actionInstance);
-        // Should this call be controlled in case no match is found?
         actionMatcher.find();
 
         // The action is the first element
@@ -141,10 +139,13 @@ public class PDDLAction {
 
     @Override
     public String toString() {
-        return "Action{" +
-                "actionName='" + this.actionInstance + '\'' +
-                ", GVGAIAction= '" + this.GVGAIAction + '\'' +
-                ", preconditions='" + this.preconditions + '\'' +
-                '}';
+        StringBuilder builder = new StringBuilder();
+
+        builder.append("\n\n\t### Action ###");
+        builder.append(String.format("\n\t|--- Instance: %s", this.actionInstance));
+        builder.append(String.format("\n\t|--- GVGAI action: %s", this.GVGAIAction));
+        builder.append(String.format("\n\t|--- List of preconditions: %s", this.preconditions));
+
+        return builder.toString();
     }
 }

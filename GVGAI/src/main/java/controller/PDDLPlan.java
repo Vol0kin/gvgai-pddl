@@ -95,6 +95,23 @@ public class PDDLPlan implements Iterable<PDDLAction>{
         return this.PDDLActions;
     }
 
+
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder();
+
+        builder.append("\n--------------------------------------------------------------------------------\n");
+        builder.append("\n------------------------------------  PLAN  ------------------------------------\n");
+
+        for (PDDLAction action: this.PDDLActions) {
+            builder.append(action.toString());
+        }
+
+        builder.append("\n\n--------------------------------------------------------------------------------\n");
+
+        return builder.toString();
+    }
+
     /**
      * Method that returns an iterator which allows to iterate over the plan's actions.
      *

@@ -103,11 +103,9 @@ public class Agenda {
             // If there are only preempted goals, choose the first one
             this.currentGoal = this.preemptedGoals.removeFirst();
         } else if (!this.pendingGoals.isEmpty() && !this.preemptedGoals.isEmpty()) {
-            /*
-                If there are both pending and preempted goals, choose the best one according
-                to their priority. Pending goals are preferred over preempted goals in case
-                their priorities are equal.
-            */
+            // If there are both pending and preempted goals, choose the best one according
+            // to their priority. Pending goals are preferred over preempted goals in case
+            // their priorities are equal
             PDDLSingleGoal firstPending = this.pendingGoals.getFirst(),
                            firstPreempted = this.preemptedGoals.getFirst();
 
