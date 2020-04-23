@@ -46,6 +46,10 @@ import org.yaml.snakeyaml.Yaml;
 import tools.com.google.gson.JsonObject;
 
 public class PlanningAgent extends AbstractPlayer {
+    // The following attributes can be modified
+    protected final static String GAME_PATH = "games-information/labyrinth-dual2.yaml";
+    protected final static boolean DEBUG_MODE_ENABLED = false;
+
     // Agenda that contains preempted, current and reached goals
     protected Agenda agenda;
 
@@ -59,8 +63,6 @@ public class PlanningAgent extends AbstractPlayer {
     
     // Game information data structure (loaded from a .yaml file) and file path
     protected GameInformation gameInformation;
-    protected final static String GAME_PATH = "games-information/labyrinth-dual2.yaml";
-    protected final static boolean DEBUG_MODE_ENABLED = true;
     
     // List of reached goal predicates that have to be saved
     protected List<String> reachedSavedGoalPredicates;
@@ -192,9 +194,7 @@ public class PlanningAgent extends AbstractPlayer {
 
     private void displayInformation(String[] messages) {
         // Show messages
-        for (String m: messages) {
-            System.out.println(m);
-        }
+        this.printMessages(messages);
 
         // Request input
         Scanner scanner = new Scanner(System.in);
@@ -234,14 +234,18 @@ public class PlanningAgent extends AbstractPlayer {
 
     private void showMessages(String[] messages) {
         // Show messages
-        for (String m: messages) {
-            System.out.println(m);
-        }
+        this.printMessages(messages);
 
         Scanner scanner = new Scanner(System.in);
 
         System.out.println("Press [ENTER] to continue");
         scanner.nextLine();
+    }
+
+    private void printMessages(String[] messages) {
+        for (String m: messages) {
+            System.out.println(m);
+        }
     }
 
     @Override
@@ -286,37 +290,83 @@ public class PlanningAgent extends AbstractPlayer {
         } else {
             // Check preconditions for next action
             PDDLAction nextPDDLAction = this.iterPlan.next();
-            boolean satisfiedPrec = this.checkPreconditions(nextPDDLAction);
 
+            // SHOW DEBUG INFORMATION
+            if (PlanningAgent.DEBUG_MODE_ENABLED) {
+                System.out.println("The agent will try to execute the following action:" + nextPDDLAction.toString());
+                System.out.println("\nChecking preconditions...");
 
-            if (satisfiedPrec) {
-                System.out.println("//////////////////////////////All preconditions satisfied");
-            } else {
-                System.out.println("//////////////////////////////One or more preconditions hasn't been satisfied. ERROR.");
-                this.agenda.haltCurrentGoal();
-                System.out.println(this.agenda);
-                this.mustPlan = true;
+                try {
+                    Thread.sleep(2500);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
 
-            action = nextPDDLAction.getGVGAIAction();
+            boolean satisfiedPreconditions = this.checkPreconditions(nextPDDLAction);
 
-            if (!this.iterPlan.hasNext()) {
-                // Save the reached goal in case it has to be saved
-                if (this.agenda.getCurrentGoal().isSaveGoal()) {
-                    this.reachedSavedGoalPredicates.add(this.agenda.getCurrentGoal().getGoalPredicate());
-                }
+            if (satisfiedPreconditions) {
+                // SHOW DEBUG INFORMATION
+                if (PlanningAgent.DEBUG_MODE_ENABLED) {
+                    System.out.println("All preconditions satisfied!");
 
-                // Remove other reached goals if the current reached goal needs to do it
-                if (this.agenda.getCurrentGoal().getRemoveReachedGoalsList() != null) {
-                    for (String reachedGoal: this.agenda.getCurrentGoal().getRemoveReachedGoalsList()) {
-                        this.reachedSavedGoalPredicates.remove(reachedGoal);
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
                     }
                 }
 
-                // Update reached goals
-                this.agenda.updateReachedGoals();
-                System.out.println(this.agenda);
+                action = nextPDDLAction.getGVGAIAction();
+
+                if (!this.iterPlan.hasNext()) {
+                    // SHOW DEBUG INFORMATION
+                    if (PlanningAgent.DEBUG_MODE_ENABLED) {
+                        this.showMessages(new String[]{
+                                String.format("The following goal is going the be reached after executing the next action: %s", this.agenda.getCurrentGoal()),
+                                "\nIn the next turn I am going to search for a new plan!"
+                        });
+                    }
+                    // Save the reached goal in case it has to be saved
+                    if (this.agenda.getCurrentGoal().isSaveGoal()) {
+                        this.reachedSavedGoalPredicates.add(this.agenda.getCurrentGoal().getGoalPredicate());
+                    }
+
+                    // Remove other reached goals if the current reached goal needs to do it
+                    if (this.agenda.getCurrentGoal().getRemoveReachedGoalsList() != null) {
+                        for (String reachedGoal: this.agenda.getCurrentGoal().getRemoveReachedGoalsList()) {
+                            this.reachedSavedGoalPredicates.remove(reachedGoal);
+                        }
+                    }
+
+                    // Update reached goals
+                    this.agenda.updateReachedGoals();
+                    this.mustPlan = true;
+                    this.PDDLPlan.getPDDLActions().clear();
+
+                    // SHOW DEBUG INFORMATION
+                    if (PlanningAgent.DEBUG_MODE_ENABLED) {
+                        this.displayInformation(new String[]{"\nThe agenda has been updated!"});
+                    }
+                }
+            } else {
+                // SHOW DEBUG INFORMATION
+                if (PlanningAgent.DEBUG_MODE_ENABLED) {
+                    this.showMessages(new String[]{
+                            "One or more preconditions couldn't be satisfied",
+                            String.format("The following goal will be halted:", this.agenda.getCurrentGoal()),
+                            "\nI am going to select a new goal and find a plan to it in the following turn!"
+                    });
+                }
+
+                this.agenda.haltCurrentGoal();
                 this.mustPlan = true;
+                this.PDDLPlan.getPDDLActions().clear();
+
+                // SHOW DEBUG INFORMATION
+                if (PlanningAgent.DEBUG_MODE_ENABLED) {
+                    this.displayInformation(new String[]{"\nThe agenda has been updated!"});
+                }
             }
         }
 
@@ -325,7 +375,7 @@ public class PlanningAgent extends AbstractPlayer {
             System.out.println("The following action is going to be executed in this turn: " + action);
 
             try {
-                Thread.sleep(1750);
+                Thread.sleep(2250);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -337,7 +387,6 @@ public class PlanningAgent extends AbstractPlayer {
 
     public boolean checkPreconditions(PDDLAction PDDLAction) {
         boolean satisfiedPreconditions = true;
-        System.out.println(PDDLAction.getPreconditions());
 
         // Check whether all preconditions are satisfied
         for (String precondition: PDDLAction.getPreconditions()) {
@@ -536,10 +585,6 @@ public class PlanningAgent extends AbstractPlayer {
                                         }
                                     } else {
                                         variableInstance = String.format("%s_%d_%d", variable, x, y).replace("?", "");
-
-                                        if (cellObservation.equals("floor")) {
-                                            System.out.println(variableInstance);
-                                        }
                                     }
 
                                     // Add instantiated variables to the predicate

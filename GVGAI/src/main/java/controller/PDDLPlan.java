@@ -54,7 +54,6 @@ public class PDDLPlan implements Iterable<PDDLAction>{
      *                             GVGAI actions.
      */
     public PDDLPlan(JSONObject plannerResponse, Map<String, Types.ACTIONS> actionCorrespondence) {
-        System.out.println(plannerResponse);
         // Get the plan from the JSON object
         JSONArray plan = plannerResponse.getJSONObject("result").getJSONArray("plan");
 
@@ -82,8 +81,6 @@ public class PDDLPlan implements Iterable<PDDLAction>{
                         .stream()
                         .filter(PDDLAction -> PDDLAction.getGVGAIAction() != null)
                         .collect(Collectors.toList());
-
-        System.out.println(this.PDDLActions);
     }
 
     /**
