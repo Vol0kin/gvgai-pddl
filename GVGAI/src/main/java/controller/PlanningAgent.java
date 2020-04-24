@@ -43,12 +43,11 @@ import kong.unirest.JsonNode;
 import kong.unirest.Unirest;
 
 import org.yaml.snakeyaml.Yaml;
-import tools.com.google.gson.JsonObject;
 
 public class PlanningAgent extends AbstractPlayer {
     // The following attributes can be modified
-    protected final static String GAME_PATH = "games-information/labyrinth-dual2.yaml";
-    protected final static boolean DEBUG_MODE_ENABLED = false;
+    protected final static String GAME_PATH = "games-information/boulderdash.yaml";
+    protected final static boolean DEBUG_MODE_ENABLED = true;
 
     // Agenda that contains preempted, current and reached goals
     protected Agenda agenda;
@@ -232,7 +231,7 @@ public class PlanningAgent extends AbstractPlayer {
         }
     }
 
-    private void showMessages(String[] messages) {
+    private void showMessagesWait(String[] messages) {
         // Show messages
         this.printMessages(messages);
 
@@ -322,7 +321,7 @@ public class PlanningAgent extends AbstractPlayer {
                 if (!this.iterPlan.hasNext()) {
                     // SHOW DEBUG INFORMATION
                     if (PlanningAgent.DEBUG_MODE_ENABLED) {
-                        this.showMessages(new String[]{
+                        this.showMessagesWait(new String[]{
                                 String.format("The following goal is going the be reached after executing the next action: %s", this.agenda.getCurrentGoal()),
                                 "\nIn the next turn I am going to search for a new plan!"
                         });
@@ -352,9 +351,9 @@ public class PlanningAgent extends AbstractPlayer {
             } else {
                 // SHOW DEBUG INFORMATION
                 if (PlanningAgent.DEBUG_MODE_ENABLED) {
-                    this.showMessages(new String[]{
+                    this.showMessagesWait(new String[]{
                             "One or more preconditions couldn't be satisfied",
-                            String.format("The following goal will be halted:", this.agenda.getCurrentGoal()),
+                            "The following goal is going to be halted:"+ this.agenda.getCurrentGoal(),
                             "\nI am going to select a new goal and find a plan to it in the following turn!"
                     });
                 }
@@ -387,6 +386,7 @@ public class PlanningAgent extends AbstractPlayer {
 
     public boolean checkPreconditions(PDDLAction PDDLAction) {
         boolean satisfiedPreconditions = true;
+        List<String> falsePreconditions = new ArrayList<>();
 
         // Check whether all preconditions are satisfied
         for (String precondition: PDDLAction.getPreconditions()) {
@@ -396,15 +396,22 @@ public class PlanningAgent extends AbstractPlayer {
                 positivePred = positivePred.substring(0, positivePred.length() - 1);
 
                 if (this.PDDLGameStatePredicates.contains(positivePred)) {
-                    System.out.println(precondition);
+                    falsePreconditions.add(precondition);
                     satisfiedPreconditions = false;
                 }
             } else {
                 if (!this.PDDLGameStatePredicates.contains(precondition)) {
-                    System.out.println(precondition);
+                    falsePreconditions.add(precondition);
                     satisfiedPreconditions = false;
                 }
             }
+        }
+
+        // SHOW DEBUG INFORMATION
+        if (!falsePreconditions.isEmpty() && PlanningAgent.DEBUG_MODE_ENABLED) {
+            falsePreconditions.add(0, "\nOne or more preconditions haven't been met:");
+            falsePreconditions.add("\n");
+            this.showMessagesWait(falsePreconditions.toArray(new String[0]));
         }
 
         return satisfiedPreconditions;
@@ -469,11 +476,13 @@ public class PlanningAgent extends AbstractPlayer {
 
         // SHOW DEBUG INFORMATION
         if (PlanningAgent.DEBUG_MODE_ENABLED) {
-            this.showMessages(new String[]{"--- Planner response ---",
+            this.showMessagesWait(new String[]{"--- Planner response ---",
                     String.format("Response status: %s", responseBody.getString("status")),
                     String.format("Result:\n%s", responseBody.getJSONObject("result").getString("output"))
             });
         }
+
+        System.out.println(responseBody);
 
         // Throw exception if the status is not ok
         if (!responseBody.getString("status").equals("ok")) {
