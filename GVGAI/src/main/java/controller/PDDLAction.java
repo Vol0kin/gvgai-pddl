@@ -19,11 +19,9 @@
 
 package controller;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.*;
-import java.util.ArrayList;
+
 import ontology.Types;
 
 /**
@@ -52,6 +50,7 @@ public class PDDLAction {
         this.actionInstance = actionInstance;
         this.translateActionInstanceToGVGAI(actionCorrespondence);
         this.processPreconditionsFromActionDescription(actionDescription);
+        this.processEffectsFromActionDescription(actionDescription);
     }
 
     /**
@@ -62,27 +61,10 @@ public class PDDLAction {
      *                          (parameters, preconditions and effects).
      */
     private void processPreconditionsFromActionDescription(String actionDescription) {
-        // Crete pattern
-        Pattern preconditionPattern = Pattern.compile(":precondition[^:]+");
-
-        // Get match of the pattern
-        Matcher preconditionMatcher = preconditionPattern.matcher(actionDescription);
-        preconditionMatcher.find();
-
-        // The preconditions are in the first match since there's only one
-        String preconditionsMatch = preconditionMatcher.group(0);
-
-        // Remove all extra spaces, spaces between consequent parentheses and ":precondition" at the beginning
-        preconditionsMatch = preconditionsMatch.replaceAll("\\s+", " ");
-        preconditionsMatch = preconditionsMatch.substring(0, preconditionsMatch.length() - 1);
-        preconditionsMatch = preconditionsMatch.replaceAll(" \\)", ")");
-        preconditionsMatch = preconditionsMatch.replaceAll(":precondition\\s+", "");
-
-        // Remove and statement, if there's any. Also removes last parenthesis
-        if (preconditionsMatch.contains("and")) {
-            preconditionsMatch = preconditionsMatch.replaceFirst("\\(and ", "");
-            preconditionsMatch = preconditionsMatch.substring(0, preconditionsMatch.length() - 1);
-        }
+        // Get preconditions match
+        String preconditionsMatch = this.matchFormatPattern(Pattern.compile(":precondition[^:]+"),
+                actionDescription,
+                ":precondition");
 
         // Split preconditions in different lines
         preconditionsMatch = preconditionsMatch.replaceAll("\\) \\(", "\\)\n\\(");
@@ -111,6 +93,81 @@ public class PDDLAction {
 
         // Get the GVGAI Action
         this.GVGAIAction = actionCorrespondence.get(action);
+    }
+
+    private void processEffectsFromActionDescription(String actionDescription){
+        // Get effects match
+        String effectsMatch = this.matchFormatPattern(Pattern.compile(":effect[^:]+"),
+                actionDescription,
+                ":effect");
+
+
+        List<String> effectsList = this.splitEffects(effectsMatch);
+        System.out.println(effectsList);
+
+        Scanner sc = new Scanner(System.in);
+        sc.nextLine();
+    }
+
+    private String matchFormatPattern(Pattern pattern, String description, String actionPart) {
+        // Get match of the pattern
+        Matcher matcher = pattern.matcher(description);
+        matcher.find();
+
+        String match = matcher.group(0);
+
+        System.out.println(match);
+
+        // Remove all extra spaces, spaces between consequent parentheses and ":effect" at the beginning
+        match = match.replaceAll("\\s+", " ");
+        match = match.substring(0, match.length() - 1);
+        match = match.replaceAll(" \\)", ")");
+        match = match.replaceAll(String.format("%s\\s+", actionPart), "");
+
+        // Remove and statement, if there's any. Also removes last parenthesis
+        if (match.contains("and")) {
+            match = match.replaceFirst("\\(and ", "");
+            match = match.substring(0, match.length() - 1);
+        }
+
+        // Remove all extra parentheses
+        int numOpenParentheses = match.length() - match.replace("(", "").length();
+        int numCloseParentheses = match.length() - match.replace(")", "").length();
+        int diffParentheses = numOpenParentheses - numCloseParentheses;
+
+        if (numOpenParentheses - numCloseParentheses != 0) {
+            match = match.substring(0, match.length() - Math.abs(diffParentheses));
+        }
+
+        return match;
+    }
+
+    private List<String> splitEffects(String effects) {
+        List<String> effectsList = new ArrayList<>();
+        StringBuilder builder = new StringBuilder();
+        int numParentheses = 0;
+
+        for (char c: effects.toCharArray()) {
+            boolean changed = false;
+
+            if (c == '(') {
+                numParentheses++;
+                changed = true;
+            } else if (c == ')') {
+                numParentheses--;
+                changed = true;
+            }
+
+            builder.append(c);
+
+            // Convert builder to string if a final closing parenthesis is found
+            if (numParentheses == 0 && changed) {
+                effectsList.add(builder.toString().trim());
+                builder.setLength(0);
+            }
+        }
+
+        return effectsList;
     }
 
     /**
