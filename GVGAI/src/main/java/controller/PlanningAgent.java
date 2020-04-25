@@ -46,7 +46,7 @@ import org.yaml.snakeyaml.Yaml;
 
 public class PlanningAgent extends AbstractPlayer {
     // The following attributes can be modified
-    protected final static String GAME_PATH = "games-information/boulderdash.yaml";
+    protected final static String GAME_PATH = "game-config-files/boulderdash.yaml";
     protected final static boolean DEBUG_MODE_ENABLED = true;
 
     // Agenda that contains preempted, current and reached goals

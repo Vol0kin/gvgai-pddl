@@ -13,6 +13,7 @@ gameElementsCorrespondence:
   diamond:
   - (at ?g ?c)
   - (terrain-empty ?c)
+  - (occupied ?c)
   boulder:
   - (at ?boulder ?c)
   - (terrain-empty ?c)
@@ -57,6 +58,10 @@ actionsCorrespondence:
   MOVE-DOWN: ACTION_DOWN
   MOVE-LEFT: ACTION_LEFT
   MOVE-RIGHT: ACTION_RIGHT
+  MOVE-UP-GET-GEM: ACTION_UP
+  MOVE-DOWN-GET-GEM: ACTION_DOWN
+  MOVE-LEFT-GET-GEM: ACTION_LEFT
+  MOVE-RIGHT-GET-GEM: ACTION_RIGHT
   DIG-UP: ACTION_USE
   DIG-DOWN: ACTION_USE
   DIG-LEFT: ACTION_USE
