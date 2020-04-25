@@ -47,7 +47,7 @@ import org.yaml.snakeyaml.Yaml;
 public class PlanningAgent extends AbstractPlayer {
     // The following attributes can be modified
     protected final static String GAME_PATH = "games-information/boulderdash.yaml";
-    protected final static boolean DEBUG_MODE_ENABLED = false;
+    protected final static boolean DEBUG_MODE_ENABLED = true;
 
     // Agenda that contains preempted, current and reached goals
     protected Agenda agenda;
@@ -302,7 +302,7 @@ public class PlanningAgent extends AbstractPlayer {
                 }
             }
 
-            boolean satisfiedPreconditions = this.checkPreconditions(nextPDDLAction.getPreconditions());
+            boolean satisfiedPreconditions = this.checkPreconditions(nextPDDLAction.getPreconditions(), PlanningAgent.DEBUG_MODE_ENABLED);
 
             if (satisfiedPreconditions) {
                 // SHOW DEBUG INFORMATION
@@ -316,11 +316,32 @@ public class PlanningAgent extends AbstractPlayer {
                     }
                 }
 
+                // SHOW DEBUG INFORMATION
+                if (PlanningAgent.DEBUG_MODE_ENABLED) {
+                    System.out.println("\nChecking effects...");
+
+                    try {
+                        Thread.sleep(1500);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+
                 // Check action effects
                 boolean modifiedAgenda = this.checkEffects(nextPDDLAction.getEffects());
 
+                // SHOW DEBUG INFORMATION
+                if (PlanningAgent.DEBUG_MODE_ENABLED && modifiedAgenda) {
+                    this.displayInformation(new String[]{
+                            "\nThe agenda has been updated!"
+                    });
+                } else if (PlanningAgent.DEBUG_MODE_ENABLED && !modifiedAgenda) {
+                    System.out.println("No goal has been reached beforehand!\n");
+                }
+
                 action = nextPDDLAction.getGVGAIAction();
 
+                // If no actions are left, that means that the current goal has been reached
                 if (!this.iterPlan.hasNext()) {
                     // SHOW DEBUG INFORMATION
                     if (PlanningAgent.DEBUG_MODE_ENABLED) {
@@ -387,7 +408,7 @@ public class PlanningAgent extends AbstractPlayer {
         return action;
     }
 
-    public boolean checkPreconditions(List<String> preconditions) {
+    public boolean checkPreconditions(List<String> preconditions, boolean showInformation) {
         boolean satisfiedPreconditions = true;
         List<String> falsePreconditions = new ArrayList<>();
 
@@ -411,7 +432,7 @@ public class PlanningAgent extends AbstractPlayer {
         }
 
         // SHOW DEBUG INFORMATION
-        if (!falsePreconditions.isEmpty() && PlanningAgent.DEBUG_MODE_ENABLED) {
+        if (!falsePreconditions.isEmpty() && showInformation) {
             falsePreconditions.add(0, "\nOne or more preconditions haven't been met:");
             falsePreconditions.add("\n");
             this.showMessagesWait(falsePreconditions.toArray(new String[0]));
@@ -449,7 +470,7 @@ public class PlanningAgent extends AbstractPlayer {
                     modifiedGoals.add(modifiedGoal);
                 }
             } else {
-                boolean conditionsSatisfied = this.checkPreconditions(effect.getConditions());
+                boolean conditionsSatisfied = this.checkPreconditions(effect.getConditions(), false);
 
                 if (conditionsSatisfied) {
                     PDDLSingleGoal modifiedGoal = this.checkSingleEffect(effect.getEffectPredicate());
@@ -463,10 +484,15 @@ public class PlanningAgent extends AbstractPlayer {
 
         boolean modifiedAgenda = !modifiedGoals.isEmpty();
 
+        // SHOW DEBUG INFORMATION
         if (PlanningAgent.DEBUG_MODE_ENABLED && modifiedAgenda) {
+            StringBuilder builder = new StringBuilder();
+            modifiedGoals.stream().forEach(goal -> builder.append(goal.toString()));
+            builder.append("\n");
+
             this.showMessagesWait(new String[]{
-                    "One or more goals have been reached beforehand",
-                    modifiedGoals.toString()
+                    "The following goals have been reached beforehand:",
+                    builder.toString()
             });
         }
 
@@ -537,8 +563,6 @@ public class PlanningAgent extends AbstractPlayer {
                     String.format("Result:\n%s", responseBody.getJSONObject("result").getString("output"))
             });
         }
-
-        System.out.println(responseBody);
 
         // Throw exception if the status is not ok
         if (!responseBody.getString("status").equals("ok")) {
