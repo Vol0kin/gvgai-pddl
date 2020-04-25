@@ -23,6 +23,7 @@ import java.util.*;
 import java.util.regex.*;
 
 import ontology.Types;
+import tools.Pair;
 
 /**
  * Class that represents a PDDL action. A PDDLAction object contains a PDDL instantiated
@@ -35,6 +36,36 @@ public class PDDLAction {
     private String actionInstance;
     private Types.ACTIONS GVGAIAction;
     private List<String> preconditions;
+    private List<Effect> effects;
+
+    public class Effect {
+        private String effectPredicate;
+        private List<String> conditions;
+
+        public Effect(String effectPredicate, List<String> conditions) {
+            this.effectPredicate = effectPredicate;
+            this.conditions = conditions;
+        }
+
+        public Effect(String effectPredicate) {
+            this.effectPredicate = effectPredicate;
+            this.conditions = new ArrayList<>();
+        }
+
+        public String getEffectPredicate() {
+            return this.effectPredicate;
+        }
+
+        public List<String> getConditions() {
+            return this.conditions;
+        }
+
+        @Override
+        public String toString() {
+            return "{ Effect predicate: " + this.effectPredicate + ", Conditions: " + this.conditions + " }";
+        }
+
+    }
 
     /**
      * Class constructor.
@@ -48,9 +79,9 @@ public class PDDLAction {
      */
     public PDDLAction(String actionInstance, String actionDescription, Map<String, Types.ACTIONS> actionCorrespondence) {
         this.actionInstance = actionInstance;
-        this.translateActionInstanceToGVGAI(actionCorrespondence);
-        this.processPreconditionsFromActionDescription(actionDescription);
-        this.processEffectsFromActionDescription(actionDescription);
+        this.GVGAIAction = this.translateActionInstanceToGVGAI(actionCorrespondence);
+        this.preconditions = this.processPreconditionsFromActionDescription(actionDescription);
+        this.effects = this.processEffectsFromActionDescription(actionDescription);
     }
 
     /**
@@ -59,8 +90,9 @@ public class PDDLAction {
      *
      * @param actionDescription String that contains the description of an action
      *                          (parameters, preconditions and effects).
+     * @return
      */
-    private void processPreconditionsFromActionDescription(String actionDescription) {
+    private ArrayList<String> processPreconditionsFromActionDescription(String actionDescription) {
         // Get preconditions match
         String preconditionsMatch = this.matchFormatPattern(Pattern.compile(":precondition[^:]+"),
                 actionDescription,
@@ -70,7 +102,7 @@ public class PDDLAction {
         preconditionsMatch = preconditionsMatch.replaceAll("\\) \\(", "\\)\n\\(");
 
         // Get preconditions as a list
-        this.preconditions = new ArrayList<>(Arrays.asList(preconditionsMatch.split("\n")));
+        return new ArrayList<>(Arrays.asList(preconditionsMatch.split("\n")));
     }
 
     /**
@@ -79,8 +111,9 @@ public class PDDLAction {
      * is associated to a GVGAI action.
      *
      * @param actionCorrespondence Correspondence between PDDL and GVGAI actions.
+     * @return
      */
-    private void translateActionInstanceToGVGAI(Map<String, Types.ACTIONS> actionCorrespondence) {
+    private Types.ACTIONS translateActionInstanceToGVGAI(Map<String, Types.ACTIONS> actionCorrespondence) {
         // Create pattern
         Pattern actionPattern = Pattern.compile("[^( ]+");
 
@@ -92,21 +125,32 @@ public class PDDLAction {
         String action = actionMatcher.group(0).toUpperCase();
 
         // Get the GVGAI Action
-        this.GVGAIAction = actionCorrespondence.get(action);
+        return actionCorrespondence.get(action);
     }
 
-    private void processEffectsFromActionDescription(String actionDescription){
+    private List<Effect> processEffectsFromActionDescription(String actionDescription){
         // Get effects match
         String effectsMatch = this.matchFormatPattern(Pattern.compile(":effect[^:]+"),
                 actionDescription,
                 ":effect");
 
 
-        List<String> effectsList = this.splitEffects(effectsMatch);
-        System.out.println(effectsList);
+        List<String> splitEffectsList = this.splitDescriptionIntoBlocks(effectsMatch);
+        List<Effect> actionEffects = new ArrayList<>();
 
-        Scanner sc = new Scanner(System.in);
-        sc.nextLine();
+        for (String effect: splitEffectsList) {
+            if (effect.contains("when")) {
+                Pair<List<String>, List<String>> conditionsEffectsPair = this.splitConditionsFromEffects(effect);
+                List<String> conditionsList = conditionsEffectsPair.first;
+                List<String> effectsList = conditionsEffectsPair.second;
+
+                effectsList.stream().forEach(e -> actionEffects.add(new Effect(e, conditionsList)));
+            } else {
+                actionEffects.add(new Effect(effect));
+            }
+        }
+
+        return actionEffects;
     }
 
     private String matchFormatPattern(Pattern pattern, String description, String actionPart) {
@@ -115,8 +159,6 @@ public class PDDLAction {
         matcher.find();
 
         String match = matcher.group(0);
-
-        System.out.println(match);
 
         // Remove all extra spaces, spaces between consequent parentheses and ":effect" at the beginning
         match = match.replaceAll("\\s+", " ");
@@ -142,12 +184,12 @@ public class PDDLAction {
         return match;
     }
 
-    private List<String> splitEffects(String effects) {
-        List<String> effectsList = new ArrayList<>();
+    private List<String> splitDescriptionIntoBlocks(String description) {
+        List<String> descriptionList = new ArrayList<>();
         StringBuilder builder = new StringBuilder();
         int numParentheses = 0;
 
-        for (char c: effects.toCharArray()) {
+        for (char c: description.toCharArray()) {
             boolean changed = false;
 
             if (c == '(') {
@@ -162,12 +204,42 @@ public class PDDLAction {
 
             // Convert builder to string if a final closing parenthesis is found
             if (numParentheses == 0 && changed) {
-                effectsList.add(builder.toString().trim());
+                descriptionList.add(builder.toString().trim());
                 builder.setLength(0);
             }
         }
 
-        return effectsList;
+        return descriptionList;
+    }
+
+    private Pair<List<String>, List<String>> splitConditionsFromEffects(String description) {
+
+        // Process description removing (when and last parenthesis
+        String processedDescription = description.replace("(when ", "");
+        processedDescription = processedDescription.substring(0, processedDescription.length() - 1);
+
+        // Separate effects and conditions in two blocks
+        List<String> effectsConditionsBlocks = this.splitDescriptionIntoBlocks(processedDescription);
+        String conditions = effectsConditionsBlocks.get(0);
+        String effects = effectsConditionsBlocks.get(1);
+
+        // Remove "(and" and last parenthesis, if there's any
+        if (conditions.contains("(and")) {
+            conditions = conditions.replace("(and", "");
+            conditions = conditions.substring(0, conditions.length() - 1);
+        }
+
+        if (effects.contains("(and")) {
+            effects = effects.replace("(and", "");
+            effects = effects.substring(0, effects.length() - 1);
+        }
+
+        List<String> conditionsList = this.splitDescriptionIntoBlocks(conditions);
+        List<String> effectsList = this.splitDescriptionIntoBlocks(effects);
+
+        Pair<List<String>, List<String>> conditionsEffectsPair = new Pair(conditionsList, effectsList);
+
+        return conditionsEffectsPair;
     }
 
     /**
@@ -202,6 +274,7 @@ public class PDDLAction {
         builder.append(String.format("\n\t|--- Instance: %s", this.actionInstance));
         builder.append(String.format("\n\t|--- GVGAI action: %s", this.GVGAIAction));
         builder.append(String.format("\n\t|--- List of preconditions: %s", this.preconditions));
+        builder.append(String.format("\n\t|--- List of effects: %s", this.effects));
 
         return builder.toString();
     }
