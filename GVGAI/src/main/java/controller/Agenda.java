@@ -146,6 +146,39 @@ public class Agenda {
         this.currentGoal = null;
     }
 
+    private PDDLSingleGoal containedPredicateInGoalsList(String predicate, LinkedList<PDDLSingleGoal> goalsList) {
+        PDDLSingleGoal containedGoal = null;
+
+        for (PDDLSingleGoal goal: goalsList) {
+            if (goal.getGoalPredicate().equals(predicate)) {
+                containedGoal = goal;
+            }
+        }
+
+        return containedGoal;
+    }
+
+    public PDDLSingleGoal containedPredicateInPendingGoals(String predicate) {
+        return this.containedPredicateInGoalsList(predicate, this.pendingGoals);
+    }
+
+    public PDDLSingleGoal containedPredicateInPreemptedGoals(String predicate) {
+        return this.containedPredicateInGoalsList(predicate, this.preemptedGoals);
+    }
+
+    private void removeGoalFromList(PDDLSingleGoal goal, LinkedList<PDDLSingleGoal> goalsList) {
+        goalsList.remove(goal);
+        this.reachedGoals.addLast(goal);
+    }
+
+    public void removeGoalFromPending(PDDLSingleGoal goal) {
+        this.removeGoalFromList(goal, this.pendingGoals);
+    }
+
+    public void removeGoalFromPreempted(PDDLSingleGoal goal) {
+        this.removeGoalFromList(goal, this.preemptedGoals);
+    }
+
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();

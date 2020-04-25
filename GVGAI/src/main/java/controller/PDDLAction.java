@@ -266,6 +266,10 @@ public class PDDLAction {
         return this.GVGAIAction;
     }
 
+    public List<Effect> getEffects() {
+        return this.effects;
+    }
+
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();

@@ -13,6 +13,7 @@ gameElementsCorrespondence:
   diamond:
   - (at ?g ?c)
   - (terrain-empty ?c)
+  - (occupied ?c)
   boulder:
   - (at ?boulder ?c)
   - (terrain-empty ?c)
@@ -57,21 +58,22 @@ actionsCorrespondence:
   MOVE-DOWN: ACTION_DOWN
   MOVE-LEFT: ACTION_LEFT
   MOVE-RIGHT: ACTION_RIGHT
+  MOVE-UP-GET-GEM: ACTION_UP
+  MOVE-DOWN-GET-GEM: ACTION_DOWN
+  MOVE-LEFT-GET-GEM: ACTION_LEFT
+  MOVE-RIGHT-GET-GEM: ACTION_RIGHT
   DIG-UP: ACTION_USE
   DIG-DOWN: ACTION_USE
   DIG-LEFT: ACTION_USE
   DIG-RIGHT: ACTION_USE
 goals:
-- goalPredicate: (got g_16_9)
-  priority: 1
-  saveGoal: no
-- goalPredicate: (got g_7_3)
+- goalPredicate: (got g_5_3)
   priority: 1
   saveGoal: no
 - goalPredicate: (got g_6_3)
   priority: 1
   saveGoal: no
-- goalPredicate: (got g_5_3)
+- goalPredicate: (got g_7_3)
   priority: 1
   saveGoal: no
 - goalPredicate: (got g_1_4)
@@ -91,4 +93,7 @@ goals:
   saveGoal: no
 - goalPredicate: (exited-level)
   priority: 2
+  saveGoal: no
+- goalPredicate: (got g_16_9)
+  priority: 1
   saveGoal: no

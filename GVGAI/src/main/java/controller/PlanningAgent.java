@@ -47,7 +47,7 @@ import org.yaml.snakeyaml.Yaml;
 public class PlanningAgent extends AbstractPlayer {
     // The following attributes can be modified
     protected final static String GAME_PATH = "games-information/boulderdash.yaml";
-    protected final static boolean DEBUG_MODE_ENABLED = true;
+    protected final static boolean DEBUG_MODE_ENABLED = false;
 
     // Agenda that contains preempted, current and reached goals
     protected Agenda agenda;
@@ -302,7 +302,7 @@ public class PlanningAgent extends AbstractPlayer {
                 }
             }
 
-            boolean satisfiedPreconditions = this.checkPreconditions(nextPDDLAction);
+            boolean satisfiedPreconditions = this.checkPreconditions(nextPDDLAction.getPreconditions());
 
             if (satisfiedPreconditions) {
                 // SHOW DEBUG INFORMATION
@@ -315,6 +315,9 @@ public class PlanningAgent extends AbstractPlayer {
                         e.printStackTrace();
                     }
                 }
+
+                // Check action effects
+                boolean modifiedAgenda = this.checkEffects(nextPDDLAction.getEffects());
 
                 action = nextPDDLAction.getGVGAIAction();
 
@@ -384,12 +387,12 @@ public class PlanningAgent extends AbstractPlayer {
         return action;
     }
 
-    public boolean checkPreconditions(PDDLAction PDDLAction) {
+    public boolean checkPreconditions(List<String> preconditions) {
         boolean satisfiedPreconditions = true;
         List<String> falsePreconditions = new ArrayList<>();
 
         // Check whether all preconditions are satisfied
-        for (String precondition: PDDLAction.getPreconditions()) {
+        for (String precondition: preconditions) {
             // If the precondition is negative, it has to be checked that the positive can't be found
             if (precondition.contains("not")) {
                 String positivePred = precondition.replace("(not ", "");
@@ -415,6 +418,59 @@ public class PlanningAgent extends AbstractPlayer {
         }
 
         return satisfiedPreconditions;
+    }
+
+    private PDDLSingleGoal checkSingleEffect(String predicate) {
+        PDDLSingleGoal modifiedGoal = null;
+        PDDLSingleGoal pendingGoal = agenda.containedPredicateInPendingGoals(predicate);
+        PDDLSingleGoal preemptedGoal = agenda.containedPredicateInPreemptedGoals(predicate);
+
+        if (pendingGoal != null) {
+            agenda.removeGoalFromPending(pendingGoal);
+            modifiedGoal = pendingGoal;
+        } else if (preemptedGoal != null) {
+            agenda.removeGoalFromPreempted(preemptedGoal);
+            modifiedGoal = preemptedGoal;
+        }
+
+        return modifiedGoal;
+    }
+
+    public boolean checkEffects(List<PDDLAction.Effect> effects) {
+        List<PDDLSingleGoal> modifiedGoals = new ArrayList<>();
+
+        // Check not planned goals
+        for (PDDLAction.Effect effect: effects) {
+            if (effect.getConditions().isEmpty()) {
+                // Check both lists and update them acorrdingly
+                PDDLSingleGoal modifiedGoal = this.checkSingleEffect(effect.getEffectPredicate());
+
+                if (modifiedGoal != null) {
+                    modifiedGoals.add(modifiedGoal);
+                }
+            } else {
+                boolean conditionsSatisfied = this.checkPreconditions(effect.getConditions());
+
+                if (conditionsSatisfied) {
+                    PDDLSingleGoal modifiedGoal = this.checkSingleEffect(effect.getEffectPredicate());
+
+                    if (modifiedGoal != null) {
+                        modifiedGoals.add(modifiedGoal);
+                    }
+                }
+            }
+        }
+
+        boolean modifiedAgenda = !modifiedGoals.isEmpty();
+
+        if (PlanningAgent.DEBUG_MODE_ENABLED && modifiedAgenda) {
+            this.showMessagesWait(new String[]{
+                    "One or more goals have been reached beforehand",
+                    modifiedGoals.toString()
+            });
+        }
+
+        return modifiedAgenda;
     }
 
     public void callPlanner() {
