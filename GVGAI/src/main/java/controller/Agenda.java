@@ -31,7 +31,7 @@ import java.util.stream.Collectors;
  * the current goal, which is the one that the agent is trying to achieve.
  *
  * The lists of pending goals and preempted goals are sorted by priority. See
- * {@link PDDLSingleGoal#PDDLSingleGoal(String, int)} to get more information.
+ * {@link PDDLSingleGoal#PDDLSingleGoal()} to get more information.
  *
  * @author Vladislav Nikolov Vasilev
  */
@@ -103,11 +103,9 @@ public class Agenda {
             // If there are only preempted goals, choose the first one
             this.currentGoal = this.preemptedGoals.removeFirst();
         } else if (!this.pendingGoals.isEmpty() && !this.preemptedGoals.isEmpty()) {
-            /*
-                If there are both pending and preempted goals, choose the best one according
-                to their priority. Pending goals are preferred over preempted goals in case
-                their priorities are equal.
-            */
+            // If there are both pending and preempted goals, choose the best one according
+            // to their priority. Pending goals are preferred over preempted goals in case
+            // their priorities are equal
             PDDLSingleGoal firstPending = this.pendingGoals.getFirst(),
                            firstPreempted = this.preemptedGoals.getFirst();
 
@@ -148,14 +146,72 @@ public class Agenda {
         this.currentGoal = null;
     }
 
+    private PDDLSingleGoal containedPredicateInGoalsList(String predicate, LinkedList<PDDLSingleGoal> goalsList) {
+        PDDLSingleGoal containedGoal = null;
+
+        for (PDDLSingleGoal goal: goalsList) {
+            if (goal.getGoalPredicate().equals(predicate)) {
+                containedGoal = goal;
+            }
+        }
+
+        return containedGoal;
+    }
+
+    public PDDLSingleGoal containedPredicateInPendingGoals(String predicate) {
+        return this.containedPredicateInGoalsList(predicate, this.pendingGoals);
+    }
+
+    public PDDLSingleGoal containedPredicateInPreemptedGoals(String predicate) {
+        return this.containedPredicateInGoalsList(predicate, this.preemptedGoals);
+    }
+
+    private void removeGoalFromList(PDDLSingleGoal goal, LinkedList<PDDLSingleGoal> goalsList) {
+        goalsList.remove(goal);
+        this.reachedGoals.addLast(goal);
+    }
+
+    public void removeGoalFromPending(PDDLSingleGoal goal) {
+        this.removeGoalFromList(goal, this.pendingGoals);
+    }
+
+    public void removeGoalFromPreempted(PDDLSingleGoal goal) {
+        this.removeGoalFromList(goal, this.preemptedGoals);
+    }
+
     @Override
     public String toString() {
-        return "Agenda{" +
-                "notPlannedGoals=" + pendingGoals +
-                ", haltedGoals=" + preemptedGoals +
-                ", reachedGoals=" + reachedGoals +
-                ", currentGoal='" + currentGoal + '\'' +
-                '}';
+        StringBuilder builder = new StringBuilder();
+        builder.append("\n--------------------------------------------------------------------------------\n");
+        builder.append("\n-----------------------------------  AGENDA  -----------------------------------\n");
+
+        builder.append("\nList of NOT PLANNED goals:");
+
+        for (PDDLSingleGoal pending: this.pendingGoals) {
+            builder.append(pending.toString());
+        }
+
+        builder.append("\n\nList of PREEMPTED (halted) goals:");
+
+        for (PDDLSingleGoal preempted: this.preemptedGoals) {
+            builder.append(preempted.toString());
+        }
+
+        builder.append("\n\nList of REACHED goals:");
+
+        for (PDDLSingleGoal reached: this.reachedGoals) {
+            builder.append(reached.toString());
+        }
+
+        builder.append("\n\nCURRENT goal:");
+
+        if (this.currentGoal != null) {
+            builder.append(this.currentGoal.toString());
+        }
+
+        builder.append("\n\n--------------------------------------------------------------------------------\n");
+
+        return builder.toString();
     }
 
     /**

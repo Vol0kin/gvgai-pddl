@@ -54,7 +54,6 @@ public class PDDLPlan implements Iterable<PDDLAction>{
      *                             GVGAI actions.
      */
     public PDDLPlan(JSONObject plannerResponse, Map<String, Types.ACTIONS> actionCorrespondence) {
-        System.out.println(plannerResponse);
         // Get the plan from the JSON object
         JSONArray plan = plannerResponse.getJSONObject("result").getJSONArray("plan");
 
@@ -82,8 +81,6 @@ public class PDDLPlan implements Iterable<PDDLAction>{
                         .stream()
                         .filter(PDDLAction -> PDDLAction.getGVGAIAction() != null)
                         .collect(Collectors.toList());
-
-        System.out.println(this.PDDLActions);
     }
 
     /**
@@ -93,6 +90,23 @@ public class PDDLPlan implements Iterable<PDDLAction>{
      */
     public List<PDDLAction> getPDDLActions() {
         return this.PDDLActions;
+    }
+
+
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder();
+
+        builder.append("\n--------------------------------------------------------------------------------\n");
+        builder.append("\n------------------------------------  PLAN  ------------------------------------\n");
+
+        for (PDDLAction action: this.PDDLActions) {
+            builder.append(action.toString());
+        }
+
+        builder.append("\n\n--------------------------------------------------------------------------------\n");
+
+        return builder.toString();
     }
 
     /**

@@ -188,17 +188,76 @@
       (at ?p ?c2)
     )
   )
-
-  (:action get-gem
-    :parameters (?p - Player ?c - Cell ?g - Gem)
+  
+  (:action move-up-get-gem
+    :parameters (?p - Player ?c1 ?c2 - Cell ?g - Gem)
     :precondition (and
-      (at ?p ?c)
-      (at ?g ?c)
-      (not (got ?g))
+      (at ?p ?c1)
+      (oriented-up ?p)
+      (connected-up ?c1 ?c2)
+      (occupied ?c2)
+      (at ?g ?c2)
+      (not (terrain-wall ?c2))
     )
     :effect (and
-      (not (at ?g ?c))
+      (not (at ?p ?c1))
+      (at ?p ?c2)
       (got ?g)
+      (not (at ?g ?c2))
+    )
+  )
+
+  (:action move-down-get-gem
+    :parameters (?p - Player ?c1 ?c2 - Cell ?g - Gem)
+    :precondition (and
+      (at ?p ?c1)
+      (oriented-down ?p)
+      (connected-down ?c1 ?c2)
+      (occupied ?c2)
+      (at ?g ?c2)
+      (not (terrain-wall ?c2))
+    )
+    :effect (and
+      (not (at ?p ?c1))
+      (at ?p ?c2)
+      (got ?g)
+      (not (at ?g ?c2))
+    )
+  )
+
+  (:action move-left-get-gem
+    :parameters (?p - Player ?c1 ?c2 - Cell ?g - Gem)
+    :precondition (and
+      (at ?p ?c1)
+      (oriented-left ?p)
+      (connected-left ?c1 ?c2)
+      (occupied ?c2)
+      (at ?g ?c2)
+      (not (terrain-wall ?c2))
+    )
+    :effect (and
+      (not (at ?p ?c1))
+      (at ?p ?c2)
+      (got ?g)
+      (not (at ?g ?c2))
+    )
+  )
+
+  (:action move-right-get-gem
+    :parameters (?p - Player ?c1 ?c2 - Cell ?g - Gem)
+    :precondition (and
+      (at ?p ?c1)
+      (oriented-right ?p)
+      (connected-right ?c1 ?c2)
+      (occupied ?c2)
+      (at ?g ?c2)
+      (not (terrain-wall ?c2))
+    )
+    :effect (and
+      (not (at ?p ?c1))
+      (at ?p ?c2)
+      (got ?g)
+      (not (at ?g ?c2))
     )
   )
 

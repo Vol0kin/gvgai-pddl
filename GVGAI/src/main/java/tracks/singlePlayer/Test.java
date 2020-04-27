@@ -33,8 +33,12 @@ public class Test {
 		boolean visuals = true;
 		int seed = new Random().nextInt();
 
+		// FOR TEST PURPOSE ONLY
+		//int levelIdx = 5; // level names from 0 to 4 (game_lvlN.txt).
+		//int seed = 0;
+
 		// Game and level to play
-		int gameIdx = 59;
+		int gameIdx = 11;
 		int levelIdx = 0; // level names from 0 to 4 (game_lvlN.txt).
 		String gameName = games[gameIdx][1];
 		String game = games[gameIdx][0];

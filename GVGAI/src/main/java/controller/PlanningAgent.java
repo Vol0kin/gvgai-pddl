@@ -23,6 +23,7 @@ import core.game.Observation;
 import core.player.AbstractPlayer;
 import core.game.StateObservation;
 import core.vgdl.VGDLRegistry;
+import kong.unirest.json.JSONObject;
 import org.yaml.snakeyaml.constructor.Constructor;
 import tools.ElapsedCpuTimer;
 
@@ -44,6 +45,10 @@ import kong.unirest.Unirest;
 import org.yaml.snakeyaml.Yaml;
 
 public class PlanningAgent extends AbstractPlayer {
+    // The following attributes can be modified
+    protected final static String GAME_PATH = "game-config-files/boulderdash.yaml";
+    protected final static boolean DEBUG_MODE_ENABLED = true;
+
     // Agenda that contains preempted, current and reached goals
     protected Agenda agenda;
 
@@ -57,7 +62,6 @@ public class PlanningAgent extends AbstractPlayer {
     
     // Game information data structure (loaded from a .yaml file) and file path
     protected GameInformation gameInformation;
-    protected final static String GAME_PATH = "games-information/labyrinth-dual2.yaml";
     
     // List of reached goal predicates that have to be saved
     protected List<String> reachedSavedGoalPredicates;
@@ -69,14 +73,13 @@ public class PlanningAgent extends AbstractPlayer {
     protected Set<String> connectionSet;
     protected Map<String, Set<String>> gameElementVars;
 
+    protected int turn;
+
     public PlanningAgent(StateObservation stateObservation, ElapsedCpuTimer elapsedCpuTimer) {
         Yaml yaml = new Yaml(new Constructor(GameInformation.class));
         try {
             InputStream inputStream = new FileInputStream(new File(PlanningAgent.GAME_PATH));
             this.gameInformation = yaml.load(inputStream);
-            System.out.println(this.gameInformation.domainName);
-            System.out.println(this.gameInformation.gameElementsCorrespondence);
-            System.out.println(this.gameInformation.avatarVariable);
         } catch (FileNotFoundException e) {
             System.out.println(e.getStackTrace());
         }
@@ -98,11 +101,12 @@ public class PlanningAgent extends AbstractPlayer {
         this.mustPlan = true;
 
         this.extractVariablesFromPredicates();
-        System.out.println(this.gameElementVars);
+        //System.out.println(this.gameElementVars);
 
         this.setConnectionSet(stateObservation);
-        System.out.println(this.connectionSet);
-        System.out.println(this.PDDLGameStateObjects);
+        //System.out.println(this.connectionSet);
+        //System.out.println(this.PDDLGameStateObjects);
+        this.turn = -1;
     }
 
     private void setConnectionSet(StateObservation stateObservation) {
@@ -187,100 +191,312 @@ public class PlanningAgent extends AbstractPlayer {
         this.gameElementVars = varsFromPredicates;
     }
 
-    @Override
-    public Types.ACTIONS act(StateObservation stateObservation, ElapsedCpuTimer elapsedCpuTimer) {
-        Types.ACTIONS action;
+    private void displayInformation(String[] messages) {
+        // Show messages
+        this.printMessages(messages);
 
-        // Get the player's orientation
-        Vector2d orientation = stateObservation.getAvatarOrientation();
+        // Request input
+        Scanner scanner = new Scanner(System.in);
+        int option = 0;
+        final int EXIT_OPTION = 3;
 
-        this.translateGameStateToPDDL(stateObservation);
+        while (option != EXIT_OPTION) {
+            System.out.println("\nSelect what information you want to display:");
+            System.out.println("[1] : Agenda");
+            System.out.println("[2] : Current plan");
+            System.out.println("[3] : Continue execution");
+            System.out.print("\n$ ");
 
-        if (this.mustPlan) {
-            System.out.println("I need to find a plan!");
-
-            long time = elapsedCpuTimer.remainingTimeMillis();
-            this.agenda.setCurrentGoal();
-            this.writePDDLGameStateProblem();
-            System.out.println("Consumed time: " + (time - elapsedCpuTimer.remainingTimeMillis()));
-
-            //Determine an index randomly and get the action to return.
-            action = Types.ACTIONS.ACTION_NIL;
-
-            time = elapsedCpuTimer.remainingTimeMillis();
-            this.PDDLPlan = callOnlinePlanner();
-            this.iterPlan = PDDLPlan.iterator();
-            this.mustPlan = false;
-            System.out.println("Consumed time waiting for planner's response: " + (time - elapsedCpuTimer.remainingTimeMillis()));
-            //this.actionList = translateOutputPlan();
-        } else {
-            //System.out.println(this.actionList);
-            PDDLAction nextPDDLAction = this.iterPlan.next();
-
-            boolean satisfiedPrec = this.checkPreconditions(nextPDDLAction);
-
-
-            if (satisfiedPrec) {
-                System.out.println("//////////////////////////////All preconditions satisfied");
-            } else {
-                System.out.println("//////////////////////////////One or more preconditions hasn't been satisfied. ERROR.");
-                this.agenda.haltCurrentGoal();
-                System.out.println(this.agenda);
-                this.mustPlan = true;
+            // Ignore option if it's not an integer
+            while (!scanner.hasNextInt()) {
+                scanner.next();
+                System.out.print("\n$ ");
             }
 
-            action = nextPDDLAction.getGVGAIAction();
+            option = scanner.nextInt();
 
-            if (!this.iterPlan.hasNext()) {
-                // Save the reached goal in case it has to be saved
-                if (this.agenda.getCurrentGoal().isSaveGoal()) {
-                    this.reachedSavedGoalPredicates.add(this.agenda.getCurrentGoal().getGoalPredicate());
-                }
+            switch (option) {
+                case 1:
+                    System.out.println(this.agenda);
+                    break;
+                case 2:
+                    System.out.println(this.PDDLPlan);
+                    break;
+                case EXIT_OPTION:
+                    break;
+                default:
+                    System.out.println("Incorrect option!");
+                    break;
+            }
+        }
+    }
 
-                // Remove other reached goals if the current reached goal needs to do it
-                if (this.agenda.getCurrentGoal().getRemoveReachedGoalsList() != null) {
-                    for (String reachedGoal: this.agenda.getCurrentGoal().getRemoveReachedGoalsList()) {
-                        this.reachedSavedGoalPredicates.remove(reachedGoal);
-                    }
-                }
+    private void showMessagesWait(String[] messages) {
+        // Show messages
+        this.printMessages(messages);
 
-                // Update reached goals
-                this.agenda.updateReachedGoals();
-                System.out.println(this.agenda);
-                this.mustPlan = true;
+        Scanner scanner = new Scanner(System.in);
+
+        System.out.println("Press [ENTER] to continue");
+        scanner.nextLine();
+    }
+
+    private void printMessages(String[] messages) {
+        for (String m: messages) {
+            System.out.println(m);
+        }
+    }
+
+    @Override
+    public Types.ACTIONS act(StateObservation stateObservation, ElapsedCpuTimer elapsedCpuTimer) {
+        Types.ACTIONS action = Types.ACTIONS.ACTION_NIL;
+        this.turn++;
+
+        // SHOW DEBUG INFORMATION
+        if (PlanningAgent.DEBUG_MODE_ENABLED) {
+            System.out.println(String.format("\n ---------- Turn %d ----------\n", this.turn));
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
         }
 
-        System.out.println(this.reachedSavedGoalPredicates);
+        // Translate game state to PDDL predicates
+        this.translateGameStateToPDDL(stateObservation);
+
+        // If there's no plan, spend one turn searching for one
+        if (this.mustPlan) {
+            // Set current goal
+            this.agenda.setCurrentGoal();
+
+            // SHOW DEBUG INFORMATION
+            if (PlanningAgent.DEBUG_MODE_ENABLED) {
+                this.displayInformation(new String[]{"I don't have a plan to the current goal or I must replan!"});
+            }
+
+            // Write PDDL predicates into the problem file
+            this.writePDDLGameStateProblem();
+
+            this.PDDLPlan = callOnlinePlanner();
+            this.iterPlan = PDDLPlan.iterator();
+            this.mustPlan = false;
+
+            // SHOW DEBUG INFORMATION
+            if (PlanningAgent.DEBUG_MODE_ENABLED) {
+                this.displayInformation(new String[]{"Translated output plan"});
+            }
+        } else {
+            // Check preconditions for next action
+            PDDLAction nextPDDLAction = this.iterPlan.next();
+
+            // SHOW DEBUG INFORMATION
+            if (PlanningAgent.DEBUG_MODE_ENABLED) {
+                System.out.println("The agent will try to execute the following action:" + nextPDDLAction.toString());
+                System.out.println("\nChecking preconditions...");
+
+                try {
+                    Thread.sleep(2500);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            boolean satisfiedPreconditions = this.checkPreconditions(nextPDDLAction.getPreconditions(), PlanningAgent.DEBUG_MODE_ENABLED);
+
+            if (satisfiedPreconditions) {
+                // SHOW DEBUG INFORMATION
+                if (PlanningAgent.DEBUG_MODE_ENABLED) {
+                    System.out.println("All preconditions satisfied!");
+
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                // SHOW DEBUG INFORMATION
+                if (PlanningAgent.DEBUG_MODE_ENABLED) {
+                    System.out.println("\nChecking effects...");
+
+                    try {
+                        Thread.sleep(1500);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                // Check action effects
+                boolean modifiedAgenda = this.checkEffects(nextPDDLAction.getEffects());
+
+                // SHOW DEBUG INFORMATION
+                if (PlanningAgent.DEBUG_MODE_ENABLED && modifiedAgenda) {
+                    this.displayInformation(new String[]{
+                            "\nThe agenda has been updated!"
+                    });
+                } else if (PlanningAgent.DEBUG_MODE_ENABLED && !modifiedAgenda) {
+                    System.out.println("No goal has been reached beforehand!\n");
+                }
+
+                action = nextPDDLAction.getGVGAIAction();
+
+                // If no actions are left, that means that the current goal has been reached
+                if (!this.iterPlan.hasNext()) {
+                    // SHOW DEBUG INFORMATION
+                    if (PlanningAgent.DEBUG_MODE_ENABLED) {
+                        this.showMessagesWait(new String[]{
+                                String.format("The following goal is going the be reached after executing the next action: %s", this.agenda.getCurrentGoal()),
+                                "\nIn the next turn I am going to search for a new plan!"
+                        });
+                    }
+                    // Save the reached goal in case it has to be saved
+                    if (this.agenda.getCurrentGoal().isSaveGoal()) {
+                        this.reachedSavedGoalPredicates.add(this.agenda.getCurrentGoal().getGoalPredicate());
+                    }
+
+                    // Remove other reached goals if the current reached goal needs to do it
+                    if (this.agenda.getCurrentGoal().getRemoveReachedGoalsList() != null) {
+                        for (String reachedGoal: this.agenda.getCurrentGoal().getRemoveReachedGoalsList()) {
+                            this.reachedSavedGoalPredicates.remove(reachedGoal);
+                        }
+                    }
+
+                    // Update reached goals
+                    this.agenda.updateReachedGoals();
+                    this.mustPlan = true;
+                    this.PDDLPlan.getPDDLActions().clear();
+
+                    // SHOW DEBUG INFORMATION
+                    if (PlanningAgent.DEBUG_MODE_ENABLED) {
+                        this.displayInformation(new String[]{"\nThe agenda has been updated!"});
+                    }
+                }
+            } else {
+                // SHOW DEBUG INFORMATION
+                if (PlanningAgent.DEBUG_MODE_ENABLED) {
+                    this.showMessagesWait(new String[]{
+                            "One or more preconditions couldn't be satisfied",
+                            "The following goal is going to be halted:"+ this.agenda.getCurrentGoal(),
+                            "\nI am going to select a new goal and find a plan to it in the following turn!"
+                    });
+                }
+
+                this.agenda.haltCurrentGoal();
+                this.mustPlan = true;
+                this.PDDLPlan.getPDDLActions().clear();
+
+                // SHOW DEBUG INFORMATION
+                if (PlanningAgent.DEBUG_MODE_ENABLED) {
+                    this.displayInformation(new String[]{"\nThe agenda has been updated!"});
+                }
+            }
+        }
+
+        // SHOW DEBUG INFORMATION
+        if (PlanningAgent.DEBUG_MODE_ENABLED) {
+            System.out.println("The following action is going to be executed in this turn: " + action);
+
+            try {
+                Thread.sleep(2250);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
 
         //Return the action.
         return action;
     }
 
-    public boolean checkPreconditions(PDDLAction PDDLAction) {
+    public boolean checkPreconditions(List<String> preconditions, boolean showInformation) {
         boolean satisfiedPreconditions = true;
-        System.out.println(PDDLAction.getPreconditions());
+        List<String> falsePreconditions = new ArrayList<>();
 
         // Check whether all preconditions are satisfied
-        for (String precondition: PDDLAction.getPreconditions()) {
+        for (String precondition: preconditions) {
             // If the precondition is negative, it has to be checked that the positive can't be found
             if (precondition.contains("not")) {
                 String positivePred = precondition.replace("(not ", "");
                 positivePred = positivePred.substring(0, positivePred.length() - 1);
 
                 if (this.PDDLGameStatePredicates.contains(positivePred)) {
-                    System.out.println(precondition);
+                    falsePreconditions.add(precondition);
                     satisfiedPreconditions = false;
                 }
             } else {
                 if (!this.PDDLGameStatePredicates.contains(precondition)) {
-                    System.out.println(precondition);
+                    falsePreconditions.add(precondition);
                     satisfiedPreconditions = false;
                 }
             }
         }
 
+        // SHOW DEBUG INFORMATION
+        if (!falsePreconditions.isEmpty() && showInformation) {
+            falsePreconditions.add(0, "\nOne or more preconditions haven't been met:");
+            falsePreconditions.add("\n");
+            this.showMessagesWait(falsePreconditions.toArray(new String[0]));
+        }
+
         return satisfiedPreconditions;
+    }
+
+    private PDDLSingleGoal checkSingleEffect(String predicate) {
+        PDDLSingleGoal modifiedGoal = null;
+        PDDLSingleGoal pendingGoal = agenda.containedPredicateInPendingGoals(predicate);
+        PDDLSingleGoal preemptedGoal = agenda.containedPredicateInPreemptedGoals(predicate);
+
+        if (pendingGoal != null) {
+            agenda.removeGoalFromPending(pendingGoal);
+            modifiedGoal = pendingGoal;
+        } else if (preemptedGoal != null) {
+            agenda.removeGoalFromPreempted(preemptedGoal);
+            modifiedGoal = preemptedGoal;
+        }
+
+        return modifiedGoal;
+    }
+
+    public boolean checkEffects(List<PDDLAction.Effect> effects) {
+        List<PDDLSingleGoal> modifiedGoals = new ArrayList<>();
+
+        // Check not planned goals
+        for (PDDLAction.Effect effect: effects) {
+            if (effect.getConditions().isEmpty()) {
+                // Check both lists and update them acorrdingly
+                PDDLSingleGoal modifiedGoal = this.checkSingleEffect(effect.getEffectPredicate());
+
+                if (modifiedGoal != null) {
+                    modifiedGoals.add(modifiedGoal);
+                }
+            } else {
+                boolean conditionsSatisfied = this.checkPreconditions(effect.getConditions(), false);
+
+                if (conditionsSatisfied) {
+                    PDDLSingleGoal modifiedGoal = this.checkSingleEffect(effect.getEffectPredicate());
+
+                    if (modifiedGoal != null) {
+                        modifiedGoals.add(modifiedGoal);
+                    }
+                }
+            }
+        }
+
+        boolean modifiedAgenda = !modifiedGoals.isEmpty();
+
+        // SHOW DEBUG INFORMATION
+        if (PlanningAgent.DEBUG_MODE_ENABLED && modifiedAgenda) {
+            StringBuilder builder = new StringBuilder();
+            modifiedGoals.stream().forEach(goal -> builder.append(goal.toString()));
+            builder.append("\n");
+
+            this.showMessagesWait(new String[]{
+                    "The following goals have been reached beforehand:",
+                    builder.toString()
+            });
+        }
+
+        return modifiedAgenda;
     }
 
     public void callPlanner() {
@@ -325,7 +541,7 @@ public class PlanningAgent extends AbstractPlayer {
         System.out.println("###############################" + b);
     }
 
-    public PDDLPlan callOnlinePlanner() {
+    public PDDLPlan callOnlinePlanner() throws PlanNotFoundException {
         // Read domain and problem files
         String domain = readFile(this.gameInformation.domainFile),
                problem = readFile("planning/problem.pddl");
@@ -337,10 +553,24 @@ public class PlanningAgent extends AbstractPlayer {
                 .field("problem", problem)
                 .asJson();
 
-        // Here the response should be checked in case there's been an error
+        // Get the JSON from the body of the HTTP response
+        JSONObject responseBody =  response.getBody().getObject();
+
+        // SHOW DEBUG INFORMATION
+        if (PlanningAgent.DEBUG_MODE_ENABLED) {
+            this.showMessagesWait(new String[]{"--- Planner response ---",
+                    String.format("Response status: %s", responseBody.getString("status")),
+                    String.format("Result:\n%s", responseBody.getJSONObject("result").getString("output"))
+            });
+        }
+
+        // Throw exception if the status is not ok
+        if (!responseBody.getString("status").equals("ok")) {
+            throw new PlanNotFoundException(responseBody.getJSONObject("result").getString("output"));
+        }
 
         // Create a new PDDLPlan instance if a valid plan has been found
-        PDDLPlan PDDLPlan = new PDDLPlan(response.getBody().getObject(), this.gameInformation.actionsCorrespondence);
+        PDDLPlan PDDLPlan = new PDDLPlan(responseBody, this.gameInformation.actionsCorrespondence);
 
         return PDDLPlan;
     }
@@ -444,9 +674,6 @@ public class PlanningAgent extends AbstractPlayer {
                                         }
                                     } else {
                                         variableInstance = String.format("%s_%d_%d", variable, x, y).replace("?", "");
-                                        if (cellObservation.equals("floor")) {
-                                            System.out.println(variableInstance);
-                                        }
                                     }
 
                                     // Add instantiated variables to the predicate

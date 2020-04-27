@@ -20,6 +20,7 @@
 package controller;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Class that represents a PDDL goal. A PDDLSingleGoal object contains a PDDL predicate
@@ -72,11 +73,32 @@ public class PDDLSingleGoal {
 
     @Override
     public String toString() {
-        return "PDDLSingleGoal{" +
-                "goalPredicate='" + goalPredicate + '\'' +
-                ", priority=" + priority +
-                ", saveGoal=" + saveGoal +
-                ", removeReachedGoalsList=" + removeReachedGoalsList +
-                '}';
+        StringBuilder builder = new StringBuilder();
+
+        builder.append("\n\n\t### PDDL single goal ###\n");
+        builder.append(String.format("\t|--- Goal predicate: %s\n", this.goalPredicate));
+        builder.append(String.format("\t|--- Priority: %d\n", this.priority));
+        builder.append(String.format("\t|--- Save goal: %s\n", this.saveGoal));
+        builder.append(String.format("\t|--- List of reached goals to remove: %s", this.removeReachedGoalsList));
+
+        return builder.toString();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+
+        if (o == null || this.getClass() != o.getClass()) {
+            return false;
+        }
+        PDDLSingleGoal that = (PDDLSingleGoal) o;
+
+        return this.goalPredicate.equals(that.goalPredicate) &&
+                this.priority == that.priority &&
+                this.saveGoal == that.saveGoal &&
+                this.removeReachedGoalsList.equals(that.removeReachedGoalsList);
+
     }
 }
