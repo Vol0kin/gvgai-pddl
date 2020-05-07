@@ -24,6 +24,10 @@ import java.util.LinkedList;
 import java.util.Map;
 import ontology.Types;
 
+/**
+ * Class that contains the game's information. It is loaded a YAML configuration
+ * file.
+ */
 public class GameInformation {
     public String domainFile;
     public String domainName;

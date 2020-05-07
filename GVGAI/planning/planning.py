@@ -4,7 +4,7 @@ import time
 
 ini = time.time()
 
-with open("domain.pddl") as f:
+with open("../domains/boulderdash-domain.pddl") as f:
     domain = f.read()
 
 with open("problem.pddl") as f:
@@ -12,13 +12,6 @@ with open("problem.pddl") as f:
 
 data = {"domain": domain, "problem": problem}
 
-resp = requests.post("http://solver.planning.domains/solve", data=data)
+resp = requests.post("http://127.0.0.1:5000/solve", json=data)
+print(resp)
 print(resp.json())
-for i in resp.json()["result"]["PDDLPlan"]:
-    a = re.sub(" +", " ", i["PDDLAction"].strip().replace("\n", ""))
-    print(a)
-    a = re.sub(" \)", ")", a)
-    print(a)
-#print(resp.json()["result"]["PDDLPlan"])
-b = time.time() - ini
-print(b)

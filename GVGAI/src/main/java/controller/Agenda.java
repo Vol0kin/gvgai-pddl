@@ -28,7 +28,8 @@ import java.util.stream.Collectors;
  * of a list of pending goals (those goals that haven't been explored yet),
  * a list of preempted goals (those goals that have been suspended due to a discrepancy)
  * and a list of reached goals (those goals that have been completed). Also, it stores
- * the current goal, which is the one that the agent is trying to achieve.
+ * the current goal, which is the one that the agent is trying to achieve at
+ * the moment.
  *
  * The lists of pending goals and preempted goals are sorted by priority. See
  * {@link PDDLSingleGoal#PDDLSingleGoal()} to get more information.
@@ -53,34 +54,18 @@ public class Agenda {
         this.currentGoal = null;
     }
 
-    /**
-     * Pending goals list getter.
-     * @return Returns the list of pending goals.
-     */
     public LinkedList<PDDLSingleGoal> getPendingGoals() {
         return this.pendingGoals;
     }
 
-    /**
-     * Preempted goals list getter.
-     * @return Returns the list of preempted goals.
-     */
     public LinkedList<PDDLSingleGoal> getPreemptedGoals() {
         return this.preemptedGoals;
     }
 
-    /**
-     * Reached goals list getter.
-     * @return Returns the list of reached goals.
-     */
     public LinkedList<PDDLSingleGoal> getReachedGoals() {
         return this.reachedGoals;
     }
 
-    /**
-     * Current goal getter.
-     * @return Returns the current goal.
-     */
     public PDDLSingleGoal getCurrentGoal() {
         return this.currentGoal;
     }
@@ -146,37 +131,44 @@ public class Agenda {
         this.currentGoal = null;
     }
 
-    private PDDLSingleGoal containedPredicateInGoalsList(String predicate, LinkedList<PDDLSingleGoal> goalsList) {
-        PDDLSingleGoal containedGoal = null;
-
-        for (PDDLSingleGoal goal: goalsList) {
-            if (goal.getGoalPredicate().equals(predicate)) {
-                containedGoal = goal;
-            }
-        }
-
-        return containedGoal;
-    }
-
+    /**
+     * Method that allows to check whether a predicate is contained in the pending
+     * goals list.
+     * @param predicate Predicate to be searched.
+     * @return Returns a PDDLSingleGoal instance containing the predicate if it is
+     * found and null otherwise.
+     */
     public PDDLSingleGoal containedPredicateInPendingGoals(String predicate) {
         return this.containedPredicateInGoalsList(predicate, this.pendingGoals);
     }
 
+    /**
+     * Method that allows to check whether a predicate is contained in the preempted
+     * goals list.
+     * @param predicate Predicate to be searched.
+     * @return Returns a PDDLSingleGoal instance containing the predicate if it is
+     * found and null otherwise.
+     */
     public PDDLSingleGoal containedPredicateInPreemptedGoals(String predicate) {
         return this.containedPredicateInGoalsList(predicate, this.preemptedGoals);
     }
 
-    private void removeGoalFromList(PDDLSingleGoal goal, LinkedList<PDDLSingleGoal> goalsList) {
-        goalsList.remove(goal);
-        this.reachedGoals.addLast(goal);
+    /**
+     * Method that allows to move a goal instance from the pending goals list
+     * to the reached goals list.
+     * @param goal PDDLSingleGoal instance to be moved.
+     */
+    public void setReachedFromPending(PDDLSingleGoal goal) {
+        this.setReachedFromList(goal, this.pendingGoals);
     }
 
-    public void removeGoalFromPending(PDDLSingleGoal goal) {
-        this.removeGoalFromList(goal, this.pendingGoals);
-    }
-
-    public void removeGoalFromPreempted(PDDLSingleGoal goal) {
-        this.removeGoalFromList(goal, this.preemptedGoals);
+    /**
+     * Method that allows to move a goal instance from the preempted goals list
+     * to the reached goals list.
+     * @param goal PDDLSingleGoal instance to be moved.
+     */
+    public void setReachedFromPreempted(PDDLSingleGoal goal) {
+        this.setReachedFromList(goal, this.preemptedGoals);
     }
 
     @Override
@@ -224,5 +216,36 @@ public class Agenda {
                 .stream()
                 .sorted(Comparator.comparingInt(PDDLSingleGoal::getPriority))
                 .collect(Collectors.toCollection(LinkedList::new));
+    }
+
+    /**
+     * Method used to check if a PDDL predicate is contained in some list of the
+     * agenda.
+     * @param predicate Predicate to be searched in a given list.
+     * @param goalsList List of PDDLSingleGoal in which the predicate is searched.
+     * @return Returns a PDDLSingleGoal instance containing the predicate if it is
+     * found and null otherwise.
+     */
+    private PDDLSingleGoal containedPredicateInGoalsList(String predicate, LinkedList<PDDLSingleGoal> goalsList) {
+        PDDLSingleGoal containedGoal = null;
+
+        for (PDDLSingleGoal goal: goalsList) {
+            if (goal.getGoalPredicate().equals(predicate)) {
+                containedGoal = goal;
+            }
+        }
+
+        return containedGoal;
+    }
+
+    /**
+     * Method that allows to move a goal instance from a given list to the reached
+     * goals list.
+     * @param goal PDDLSingleGoal instance to be moved.
+     * @param goalsList List from which the goal will be removed.
+     */
+    private void setReachedFromList(PDDLSingleGoal goal, LinkedList<PDDLSingleGoal> goalsList) {
+        goalsList.remove(goal);
+        this.reachedGoals.addLast(goal);
     }
 }

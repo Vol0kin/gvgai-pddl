@@ -447,10 +447,10 @@ public class PlanningAgent extends AbstractPlayer {
         PDDLSingleGoal preemptedGoal = agenda.containedPredicateInPreemptedGoals(predicate);
 
         if (pendingGoal != null) {
-            agenda.removeGoalFromPending(pendingGoal);
+            agenda.setReachedFromPending(pendingGoal);
             modifiedGoal = pendingGoal;
         } else if (preemptedGoal != null) {
-            agenda.removeGoalFromPreempted(preemptedGoal);
+            agenda.setReachedFromPreempted(preemptedGoal);
             modifiedGoal = preemptedGoal;
         }
 
