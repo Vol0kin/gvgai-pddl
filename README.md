@@ -12,3 +12,6 @@ This project makes use of the *PDDL Solver* from [planning.domains](http://plann
 If you want to have more information about this solver and how you can use it in
 your own project, please check [the following page](http://solver.planning.domains/).
 
+## Installation
+
+TODO
