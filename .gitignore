@@ -101,3 +101,4 @@ problem.pddl
 
 # Virtual environment
 env/
+.idea/
