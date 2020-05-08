@@ -23,8 +23,10 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * Class that represents a PDDL goal. A PDDLSingleGoal object contains a PDDL predicate
- * and its priority with regard to other goals.
+ * Class that represents a PDDL goal. A PDDLSingleGoal object contains a PDDL
+ * predicate, a priority with regards to other goals, a flag that indicates
+ * whether the goal has to be saved or not and a list of goals to be removed
+ * once that goal is reached, if any.
  *
  * @author Vladislav Nikolov Vasilev
  */

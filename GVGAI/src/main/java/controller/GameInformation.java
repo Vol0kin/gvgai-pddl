@@ -27,6 +27,8 @@ import ontology.Types;
 /**
  * Class that contains the game's information. It is loaded a YAML configuration
  * file.
+ *
+ * @author Vladislav Nikolov Vasilev
  */
 public class GameInformation {
     public String domainFile;

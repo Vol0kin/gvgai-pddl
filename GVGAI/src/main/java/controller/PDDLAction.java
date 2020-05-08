@@ -26,9 +26,9 @@ import ontology.Types;
 import tools.Pair;
 
 /**
- * Class that represents a PDDL action. A PDDLAction object contains a PDDL instantiated
- * action, the corresponding GVGAI action and all the preconditions that must be meet in order
- * to execute the action.
+ * Class that represents a PDDL action. A PDDLAction object contains a PDDL
+ * action instance and its corresponding GVGAI action, a list of instantiated
+ * preconditions and a list of instantiated effects.
  *
  * @author Vladislav Nikolov Vasilev
  */
@@ -38,18 +38,34 @@ public class PDDLAction {
     private List<String> preconditions;
     private List<Effect> effects;
 
+    /**
+     * Class that represents an effect of a PDDL action. An effect is consists of
+     * an instantiated effect predicate and a list of conditions that must be met
+     * for the effect to take place.
+     */
     public class Effect {
         private String effectPredicate;
         private List<String> conditions;
 
+        /**
+         * Class constructor. Creates a new instance with a given effect predicate
+         * and a list of conditions.
+         * @param effectPredicate Instantiated effect predicate.
+         * @param conditions List of conditions that must be met for the effect to
+         *                   take place.
+         */
         public Effect(String effectPredicate, List<String> conditions) {
             this.effectPredicate = effectPredicate;
             this.conditions = conditions;
         }
 
+        /**
+         * Class constructor. Creates a new instance from a given effect predicate.
+         * The list of conditions will be empty, since there are none.
+         * @param effectPredicate Instantiated effect predicate.
+         */
         public Effect(String effectPredicate) {
-            this.effectPredicate = effectPredicate;
-            this.conditions = new ArrayList<>();
+            this(effectPredicate, new ArrayList<>());
         }
 
         public String getEffectPredicate() {
@@ -64,16 +80,13 @@ public class PDDLAction {
         public String toString() {
             return "{ Effect predicate: " + this.effectPredicate + ", Conditions: " + this.conditions + " }";
         }
-
     }
 
     /**
      * Class constructor.
-     *
-     * @param actionInstance String that contains the name of the PDDL action and its
-     *                       parameters.
+     * @param actionInstance String that contains an instantiated PDDL action.
      * @param actionDescription String that contains the description of an action
-     *                          (parameters, preconditions and effects).
+     *                          (action name, parameters, preconditions and effects).
      * @param actionCorrespondence Map that contains the correspondence from a PDDL
      *                             action to a GVGAI action.
      */
@@ -84,15 +97,67 @@ public class PDDLAction {
         this.effects = this.processEffectsFromActionDescription(actionDescription);
     }
 
+    public String getActionInstance() {
+        return this.actionInstance;
+    }
+
+    public List<String> getPreconditions() {
+        return this.preconditions;
+    }
+
+    public Types.ACTIONS getGVGAIAction() {
+        return this.GVGAIAction;
+    }
+
+    public List<Effect> getEffects() {
+        return this.effects;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder();
+
+        builder.append("\n\n\t### Action ###");
+        builder.append(String.format("\n\t|--- Instance: %s", this.actionInstance));
+        builder.append(String.format("\n\t|--- GVGAI action: %s", this.GVGAIAction));
+        builder.append(String.format("\n\t|--- List of preconditions: %s", this.preconditions));
+        builder.append(String.format("\n\t|--- List of effects: %s", this.effects));
+
+        return builder.toString();
+    }
+
+    /**
+     * Method that transforms the PDDL action instance into a GVGAI action.
+     * It used a Map that is passed as parameter in which each PDDL action
+     * is associated to a GVGAI action.
+     *
+     * @param actionCorrespondence Map that contains the correspondence from a PDDL
+     *                             action to a GVGAI action.
+     * @return Returns the corresponding GVGAI action.
+     */
+    private Types.ACTIONS translateActionInstanceToGVGAI(Map<String, Types.ACTIONS> actionCorrespondence) {
+        // Create pattern
+        Pattern actionPattern = Pattern.compile("[^( ]+");
+
+        // Find a match of the pattern
+        Matcher actionMatcher = actionPattern.matcher(this.actionInstance);
+        actionMatcher.find();
+
+        // Get the action (the first element) and transform it to upper case
+        String action = actionMatcher.group(0).toUpperCase();
+
+        return actionCorrespondence.get(action);
+    }
+
     /**
      * Method that reads an action's description and obtains all the preconditions
      * associated to that action. All of the preconditions are instantiated.
      *
      * @param actionDescription String that contains the description of an action
-     *                          (parameters, preconditions and effects).
-     * @return
+     *                          (action name, parameters, preconditions and effects).
+     * @return Returns a list containing all the instantiated preconditions.
      */
-    private ArrayList<String> processPreconditionsFromActionDescription(String actionDescription) {
+    private List<String> processPreconditionsFromActionDescription(String actionDescription) {
         // Get preconditions match
         String preconditionsMatch = this.matchFormatPattern(Pattern.compile(":precondition[^:]+"),
                 actionDescription,
@@ -106,40 +171,26 @@ public class PDDLAction {
     }
 
     /**
-     * Method that transforms the PDDL action instance into a GVGAI action.
-     * It used a Map that is passed as parameter in which each PDDL action
-     * is associated to a GVGAI action.
-     *
-     * @param actionCorrespondence Correspondence between PDDL and GVGAI actions.
-     * @return
+     * Method that reads an action's description and obtains all the effects
+     * associated to that action. All of the effects are instantiated.
+     * @param actionDescription String that contains the description of an action
+     *                          (action name, parameters, preconditions and effects).
+     * @return Returns a list containing the instantiated effects.
      */
-    private Types.ACTIONS translateActionInstanceToGVGAI(Map<String, Types.ACTIONS> actionCorrespondence) {
-        // Create pattern
-        Pattern actionPattern = Pattern.compile("[^( ]+");
-
-        // Get match of the pattern
-        Matcher actionMatcher = actionPattern.matcher(this.actionInstance);
-        actionMatcher.find();
-
-        // The action is the first element
-        String action = actionMatcher.group(0).toUpperCase();
-
-        // Get the GVGAI Action
-        return actionCorrespondence.get(action);
-    }
-
     private List<Effect> processEffectsFromActionDescription(String actionDescription){
         // Get effects match
         String effectsMatch = this.matchFormatPattern(Pattern.compile(":effect[^:]+"),
                 actionDescription,
                 ":effect");
 
-
+        // Split effects string into a list of effects
         List<String> splitEffectsList = this.splitDescriptionIntoBlocks(effectsMatch);
         List<Effect> actionEffects = new ArrayList<>();
 
+        // Process each effect
         for (String effect: splitEffectsList) {
             if (effect.contains("when")) {
+                // Split effect into a list of conditions and a list of effects
                 Pair<List<String>, List<String>> conditionsEffectsPair = this.splitConditionsFromEffects(effect);
                 List<String> conditionsList = conditionsEffectsPair.first;
                 List<String> effectsList = conditionsEffectsPair.second;
@@ -153,7 +204,16 @@ public class PDDLAction {
         return actionEffects;
     }
 
-    private String matchFormatPattern(Pattern pattern, String description, String actionPart) {
+    /**
+     * Method that matches a part of an action description, removing all extra
+     * spaces and parentheses. It can be used to retrieve the effects and the
+     * preconditions from an action description.
+     * @param pattern Pattern to be found in the description.
+     * @param description String containing the action's description.
+     * @param removeElement Element to be removed from the string.
+     * @return Returns a formatted string containing the match.
+     */
+    private String matchFormatPattern(Pattern pattern, String description, String removeElement) {
         // Get match of the pattern
         Matcher matcher = pattern.matcher(description);
         matcher.find();
@@ -164,7 +224,7 @@ public class PDDLAction {
         match = match.replaceAll("\\s+", " ");
         match = match.substring(0, match.length() - 1);
         match = match.replaceAll(" \\)", ")");
-        match = match.replaceAll(String.format("%s\\s+", actionPart), "");
+        match = match.replaceAll(String.format("%s\\s+", removeElement), "");
 
         // Remove and statement, if there's any. Also removes last parenthesis
         if (match.contains("and")) {
@@ -184,36 +244,13 @@ public class PDDLAction {
         return match;
     }
 
-    private List<String> splitDescriptionIntoBlocks(String description) {
-        List<String> descriptionList = new ArrayList<>();
-        StringBuilder builder = new StringBuilder();
-        int numParentheses = 0;
-
-        for (char c: description.toCharArray()) {
-            boolean changed = false;
-
-            if (c == '(') {
-                numParentheses++;
-                changed = true;
-            } else if (c == ')') {
-                numParentheses--;
-                changed = true;
-            }
-
-            builder.append(c);
-
-            // Convert builder to string if a final closing parenthesis is found
-            if (numParentheses == 0 && changed) {
-                descriptionList.add(builder.toString().trim());
-                builder.setLength(0);
-            }
-        }
-
-        return descriptionList;
-    }
-
+    /**
+     * Method that splits the conditions from the effects.
+     * @param description String which contains the conditions and the effects.
+     * @return Returns a pair containing a list of conditions and a list of
+     * effects which depend on those conditions.
+     */
     private Pair<List<String>, List<String>> splitConditionsFromEffects(String description) {
-
         // Process description removing (when and last parenthesis
         String processedDescription = description.replace("(when ", "");
         processedDescription = processedDescription.substring(0, processedDescription.length() - 1);
@@ -243,43 +280,36 @@ public class PDDLAction {
     }
 
     /**
-     * PDDL action instance getter.
-     * @return Returns the PDDL action instance.
+     * Method that allows to split a given description into parenthesized blocks
+     * according to the opened and closed parentheses found in the string.
+     * @param description String to be split into blocks.
+     * @return Returns a list of parenthesized blocks.
      */
-    public String getActionInstance() {
-        return this.actionInstance;
-    }
-
-    /**
-     * Preconditions getter.
-     * @return Returns the instantiated preconditions of a given PDDL actions.
-     */
-    public List<String> getPreconditions() {
-        return this.preconditions;
-    }
-
-    /**
-     * GVGAI action getter.
-     * @return Returns the GVGAI action associated to the given PDDL action.
-     */
-    public Types.ACTIONS getGVGAIAction() {
-        return this.GVGAIAction;
-    }
-
-    public List<Effect> getEffects() {
-        return this.effects;
-    }
-
-    @Override
-    public String toString() {
+    private List<String> splitDescriptionIntoBlocks(String description) {
+        List<String> descriptionList = new ArrayList<>();
         StringBuilder builder = new StringBuilder();
+        int numParentheses = 0;
 
-        builder.append("\n\n\t### Action ###");
-        builder.append(String.format("\n\t|--- Instance: %s", this.actionInstance));
-        builder.append(String.format("\n\t|--- GVGAI action: %s", this.GVGAIAction));
-        builder.append(String.format("\n\t|--- List of preconditions: %s", this.preconditions));
-        builder.append(String.format("\n\t|--- List of effects: %s", this.effects));
+        for (char c: description.toCharArray()) {
+            boolean changed = false;
 
-        return builder.toString();
+            if (c == '(') {
+                numParentheses++;
+                changed = true;
+            } else if (c == ')') {
+                numParentheses--;
+                changed = true;
+            }
+
+            builder.append(c);
+
+            // Convert builder to string if a final closing parenthesis is found
+            if (numParentheses == 0 && changed) {
+                descriptionList.add(builder.toString().trim());
+                builder.setLength(0);
+            }
+        }
+
+        return descriptionList;
     }
 }

@@ -83,15 +83,9 @@ public class PDDLPlan implements Iterable<PDDLAction>{
                         .collect(Collectors.toList());
     }
 
-    /**
-     * Plan getter.
-     *
-     * @return Returns the list of actions that make up the plan.
-     */
     public List<PDDLAction> getPDDLActions() {
         return this.PDDLActions;
     }
-
 
     @Override
     public String toString() {
