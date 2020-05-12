@@ -17,8 +17,16 @@
  * along with this program.  If not, see https://www.gnu.org/licenses/gpl-3.0.html.
  */
 
+/**
+ * Package that contains the planning agent along with its data structures.
+ */
 package controller;
 
+/**
+ * Positions of cells and agent's orientation.
+ *
+ * @author Vladislav Nikolov Vasilev
+ */
 public enum Position {
     UP,
     DOWN,

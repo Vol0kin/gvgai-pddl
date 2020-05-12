@@ -1,5 +1,5 @@
 /*
- * PlanNotFoundException.java
+ * PlannerException.java
  *
  * Copyright (C) 2020 Vladislav Nikolov Vasilev
  *
@@ -17,10 +17,18 @@
  * along with this program.  If not, see https://www.gnu.org/licenses/gpl-3.0.html.
  */
 
+/**
+ * Package that contains the planning agent along with its data structures.
+ */
 package controller;
 
-public class PlanNotFoundException extends RuntimeException {
-    public PlanNotFoundException(String message) {
+/**
+ * Exception thrown when there's some kind of problem while calling the planner.
+ *
+ * @author Vladislav Nikolov Vasielv
+ */
+public class PlannerException extends RuntimeException {
+    public PlannerException(String message) {
         super(message);
     }
 }

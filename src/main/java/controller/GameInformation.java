@@ -17,6 +17,9 @@
  * along with this program.  If not, see https://www.gnu.org/licenses/gpl-3.0.html.
  */
 
+/**
+ * Package that contains the planning agent along with its data structures.
+ */
 package controller;
 
 import java.util.ArrayList;
@@ -25,7 +28,7 @@ import java.util.Map;
 import ontology.Types;
 
 /**
- * Class that contains the game's information. It is loaded a YAML configuration
+ * Class that contains the game's information. It is loaded from a YAML configuration
  * file.
  *
  * @author Vladislav Nikolov Vasilev

@@ -17,6 +17,9 @@
  * along with this program.  If not, see https://www.gnu.org/licenses/gpl-3.0.html.
  */
 
+/**
+ * Package that contains the planning agent along with its data structures.
+ */
 package controller;
 
 import java.util.Comparator;
@@ -32,7 +35,7 @@ import java.util.stream.Collectors;
  * the moment.
  *
  * The lists of pending goals and preempted goals are sorted by priority. See
- * {@link PDDLSingleGoal#PDDLSingleGoal()} to get more information.
+ * {@link PDDLSingleGoal} to get more information.
  *
  * @author Vladislav Nikolov Vasilev
  */

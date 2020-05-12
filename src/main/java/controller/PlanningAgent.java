@@ -17,6 +17,9 @@
  * along with this program.  If not, see https://www.gnu.org/licenses/gpl-3.0.html.
  */
 
+/**
+ * Package that contains the planning agent along with its data structures.
+ */
 package controller;
 
 import core.game.Observation;
@@ -541,7 +544,7 @@ public class PlanningAgent extends AbstractPlayer {
         System.out.println("###############################" + b);
     }
 
-    public PDDLPlan callOnlinePlanner() throws PlanNotFoundException {
+    public PDDLPlan callOnlinePlanner() throws PlannerException {
         // Read domain and problem files
         String domain = readFile(this.gameInformation.domainFile),
                problem = readFile("planning/problem.pddl");
@@ -566,7 +569,7 @@ public class PlanningAgent extends AbstractPlayer {
 
         // Throw exception if the status is not ok
         if (!responseBody.getString("status").equals("ok")) {
-            throw new PlanNotFoundException(responseBody.getJSONObject("result").getString("output"));
+            throw new PlannerException(responseBody.getJSONObject("result").getString("output"));
         }
 
         // Create a new PDDLPlan instance if a valid plan has been found
