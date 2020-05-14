@@ -47,6 +47,12 @@ import kong.unirest.Unirest;
 
 import org.yaml.snakeyaml.Yaml;
 
+/**
+ * Planning agent class. It represents an agent which uses a planner to reach
+ * a set of goals. See {@link Agenda} to find out how goals are structured.
+ *
+ * @author Vladislav Nikolov Vasilev
+ */
 public class PlanningAgent extends AbstractPlayer {
     // The following attributes can be modified
     protected final static String GAME_PATH = "game-config-files/boulderdash.yaml";
@@ -78,8 +84,15 @@ public class PlanningAgent extends AbstractPlayer {
 
     protected int turn;
 
+    /**
+     * Class constructor. Creates a new planning agent.
+     * @param stateObservation State observation of the game.
+     * @param elapsedCpuTimer Elapsed CPU time.
+     */
     public PlanningAgent(StateObservation stateObservation, ElapsedCpuTimer elapsedCpuTimer) {
+        // Load game information
         Yaml yaml = new Yaml(new Constructor(GameInformation.class));
+
         try {
             InputStream inputStream = new FileInputStream(new File(PlanningAgent.GAME_PATH));
             this.gameInformation = yaml.load(inputStream);
@@ -95,161 +108,29 @@ public class PlanningAgent extends AbstractPlayer {
                 .keySet()
                 .stream()
                 .forEach(key -> this.PDDLGameStateObjects.put(key, new LinkedHashSet<>()));
+        this.gameElementVars = this.extractVariablesFromPredicates();
+        this.connectionSet = this.generateConnectionPredicates(stateObservation);
 
+        // Initialize plan and iterator
         this.PDDLPlan = new PDDLPlan();
         this.iterPlan = PDDLPlan.iterator();
 
+        // Initialize agenda
         this.agenda = new Agenda(this.gameInformation.goals);
 
+        // Set plan variable and turn
         this.mustPlan = true;
-
-        this.extractVariablesFromPredicates();
-        //System.out.println(this.gameElementVars);
-
-        this.setConnectionSet(stateObservation);
-        //System.out.println(this.connectionSet);
-        //System.out.println(this.PDDLGameStateObjects);
         this.turn = -1;
     }
 
-    private void setConnectionSet(StateObservation stateObservation) {
-        // Initialize connection set
-        this.connectionSet = new LinkedHashSet<>();
-
-        // Get the observations of the game state as elements of the VGDDLRegistry
-        HashSet<String>[][] gameMap = this.getGameElementsMatrix(stateObservation, false);
-
-        final int X_MAX = gameMap.length, Y_MAX = gameMap[0].length;
-
-        for (int y = 0; y < Y_MAX; y++) {
-            for (int x = 0; x < X_MAX; x++) {
-                // Create string containing the current cell
-                String currentCell = String.format("%s_%d_%d", this.gameInformation.cellVariable, x, y).replace("?", "");
-
-                if (y - 1 >= 0) {
-                    String connection = this.gameInformation.connections.get(Position.UP);
-                    connection = connection.replace("?c", currentCell);
-                    connection = connection.replace("?p", String
-                                    .format("%s_%d_%d", this.gameInformation.cellVariable, x, y - 1)
-                                    .replace("?", ""));
-
-                    this.connectionSet.add(connection);
-                }
-
-                if (y + 1 < Y_MAX) {
-                    String connection = this.gameInformation.connections.get(Position.DOWN);
-                    connection = connection.replace("?c", currentCell);
-                    connection = connection.replace("?n", String
-                            .format("%s_%d_%d", this.gameInformation.cellVariable, x, y + 1)
-                            .replace("?", ""));
-
-                    this.connectionSet.add(connection);
-                }
-
-                if (x - 1 >= 0) {
-                    String connection = this.gameInformation.connections.get(Position.LEFT);
-                    connection = connection.replace("?c", currentCell);
-                    connection = connection.replace("?p", String
-                            .format("%s_%d_%d", this.gameInformation.cellVariable, x - 1, y)
-                            .replace("?", ""));
-
-                    this.connectionSet.add(connection);
-                }
-
-                if (x + 1 < X_MAX) {
-                    String connection = this.gameInformation.connections.get(Position.RIGHT);
-                    connection = connection.replace("?c", currentCell);
-                    connection = connection.replace("?n", String
-                            .format("%s_%d_%d", this.gameInformation.cellVariable, x + 1, y)
-                            .replace("?", ""));
-
-                    this.connectionSet.add(connection);
-                }
-            }
-        }
-    }
-
-    private void extractVariablesFromPredicates() {
-        Map<String, Set<String>> varsFromPredicates = new HashMap<>();
-
-        Pattern variablePattern = Pattern.compile("\\?[a-zA-Z]+");
-
-        for (Map.Entry<String, ArrayList<String>> entry: this.gameInformation.gameElementsCorrespondence.entrySet()) {
-            String gameObservation = entry.getKey();
-            Set<String> variables = new HashSet<>();
-
-            for (String observation: entry.getValue()) {
-                Matcher variableMatcher = variablePattern.matcher(observation);
-                //System.out.println(variableMatcher.find());
-                while (variableMatcher.find()) {
-                    for (int i = 0; i <= variableMatcher.groupCount(); i++) {
-                        variables.add(variableMatcher.group(i));
-                    }
-                }
-            }
-
-            varsFromPredicates.put(gameObservation, variables);
-        }
-
-        this.gameElementVars = varsFromPredicates;
-    }
-
-    private void displayInformation(String[] messages) {
-        // Show messages
-        this.printMessages(messages);
-
-        // Request input
-        Scanner scanner = new Scanner(System.in);
-        int option = 0;
-        final int EXIT_OPTION = 3;
-
-        while (option != EXIT_OPTION) {
-            System.out.println("\nSelect what information you want to display:");
-            System.out.println("[1] : Agenda");
-            System.out.println("[2] : Current plan");
-            System.out.println("[3] : Continue execution");
-            System.out.print("\n$ ");
-
-            // Ignore option if it's not an integer
-            while (!scanner.hasNextInt()) {
-                scanner.next();
-                System.out.print("\n$ ");
-            }
-
-            option = scanner.nextInt();
-
-            switch (option) {
-                case 1:
-                    System.out.println(this.agenda);
-                    break;
-                case 2:
-                    System.out.println(this.PDDLPlan);
-                    break;
-                case EXIT_OPTION:
-                    break;
-                default:
-                    System.out.println("Incorrect option!");
-                    break;
-            }
-        }
-    }
-
-    private void showMessagesWait(String[] messages) {
-        // Show messages
-        this.printMessages(messages);
-
-        Scanner scanner = new Scanner(System.in);
-
-        System.out.println("Press [ENTER] to continue");
-        scanner.nextLine();
-    }
-
-    private void printMessages(String[] messages) {
-        for (String m: messages) {
-            System.out.println(m);
-        }
-    }
-
+    /**
+     * Method called in each turn that returns the next action that the agent
+     * will execute. It is responsible for controlling the agent's behaviour.
+     * @param stateObservation State observation of the game.
+     * @param elapsedCpuTimer Elapsed CPU time
+     * @return Returns the action that will be executed by the agent in the
+     * current turn.
+     */
     @Override
     public Types.ACTIONS act(StateObservation stateObservation, ElapsedCpuTimer elapsedCpuTimer) {
         Types.ACTIONS action = Types.ACTIONS.ACTION_NIL;
@@ -275,19 +156,19 @@ public class PlanningAgent extends AbstractPlayer {
 
             // SHOW DEBUG INFORMATION
             if (PlanningAgent.DEBUG_MODE_ENABLED) {
-                this.displayInformation(new String[]{"I don't have a plan to the current goal or I must replan!"});
+                this.displayDebugInformation(new String[]{"I don't have a plan to the current goal or I must replan!"});
             }
 
             // Write PDDL predicates into the problem file
-            this.writePDDLGameStateProblem();
+            this.createProblemFile();
 
-            this.PDDLPlan = callOnlinePlanner();
+            this.PDDLPlan = findPlan();
             this.iterPlan = PDDLPlan.iterator();
             this.mustPlan = false;
 
             // SHOW DEBUG INFORMATION
             if (PlanningAgent.DEBUG_MODE_ENABLED) {
-                this.displayInformation(new String[]{"Translated output plan"});
+                this.displayDebugInformation(new String[]{"Translated output plan"});
             }
         } else {
             // Check preconditions for next action
@@ -331,11 +212,11 @@ public class PlanningAgent extends AbstractPlayer {
                 }
 
                 // Check action effects
-                boolean modifiedAgenda = this.checkEffects(nextPDDLAction.getEffects());
+                boolean modifiedAgenda = this.checkEarlyReachedGoals(nextPDDLAction.getEffects());
 
                 // SHOW DEBUG INFORMATION
                 if (PlanningAgent.DEBUG_MODE_ENABLED && modifiedAgenda) {
-                    this.displayInformation(new String[]{
+                    this.displayDebugInformation(new String[]{
                             "\nThe agenda has been updated!"
                     });
                 } else if (PlanningAgent.DEBUG_MODE_ENABLED && !modifiedAgenda) {
@@ -372,7 +253,7 @@ public class PlanningAgent extends AbstractPlayer {
 
                     // SHOW DEBUG INFORMATION
                     if (PlanningAgent.DEBUG_MODE_ENABLED) {
-                        this.displayInformation(new String[]{"\nThe agenda has been updated!"});
+                        this.displayDebugInformation(new String[]{"\nThe agenda has been updated!"});
                     }
                 }
             } else {
@@ -391,7 +272,7 @@ public class PlanningAgent extends AbstractPlayer {
 
                 // SHOW DEBUG INFORMATION
                 if (PlanningAgent.DEBUG_MODE_ENABLED) {
-                    this.displayInformation(new String[]{"\nThe agenda has been updated!"});
+                    this.displayDebugInformation(new String[]{"\nThe agenda has been updated!"});
                 }
             }
         }
@@ -407,10 +288,18 @@ public class PlanningAgent extends AbstractPlayer {
             }
         }
 
-        //Return the action.
         return action;
     }
 
+    /**
+     * Method that checks whether the preconditions of an action are satisfied or
+     * not. In this case, the preconditions are going to be satisfied if all the
+     * positive preconditions are contained in the list of PDDL predicates and
+     * all the negative ones aren't contained.
+     * @param preconditions List of preconditions to check.
+     * @param showInformation Boolean telling whether to show or not debug information.
+     * @return Returns true if all preconditions are satisfied and false otherwise.
+     */
     public boolean checkPreconditions(List<String> preconditions, boolean showInformation) {
         boolean satisfiedPreconditions = true;
         List<String> falsePreconditions = new ArrayList<>();
@@ -444,23 +333,17 @@ public class PlanningAgent extends AbstractPlayer {
         return satisfiedPreconditions;
     }
 
-    private PDDLSingleGoal checkSingleEffect(String predicate) {
-        PDDLSingleGoal modifiedGoal = null;
-        PDDLSingleGoal pendingGoal = agenda.containedPredicateInPendingGoals(predicate);
-        PDDLSingleGoal preemptedGoal = agenda.containedPredicateInPreemptedGoals(predicate);
-
-        if (pendingGoal != null) {
-            agenda.setReachedFromPending(pendingGoal);
-            modifiedGoal = pendingGoal;
-        } else if (preemptedGoal != null) {
-            agenda.setReachedFromPreempted(preemptedGoal);
-            modifiedGoal = preemptedGoal;
-        }
-
-        return modifiedGoal;
-    }
-
-    public boolean checkEffects(List<PDDLAction.Effect> effects) {
+    /**
+     * Method that checks whether a goal is reached beforehand by checking
+     * the effects of an action. In case some goal is reached beforehand, the
+     * agenda is updated accordingly.
+     * updates the agenda accordingly
+     * @param effects List that contains the effect predicates of an action that
+     *                will be checked.
+     * @return Returns true if some goal has been reached beforehand and false
+     * otherwise.
+     */
+    public boolean checkEarlyReachedGoals(List<PDDLAction.Effect> effects) {
         List<PDDLSingleGoal> modifiedGoals = new ArrayList<>();
 
         // Check not planned goals
@@ -502,49 +385,14 @@ public class PlanningAgent extends AbstractPlayer {
         return modifiedAgenda;
     }
 
-    public void callPlanner() {
-        // Strings that containt the paths for the planner, the domain file,
-        // the problem file and the log file
-        String plannerRoute = "planning/ff",
-                domainFile = "planning/domain.pddl",
-                problemFile = "planning/problem.pddl",
-                logFileRoute = "planning/plan.txt";
-
-        // Create new process which will run the planner
-        ProcessBuilder pb = new ProcessBuilder(plannerRoute, "-o", domainFile,
-                "-f", problemFile, "-O", "-g", "1", "-h", "1");
-        File log = new File(logFileRoute);
-
-        // Clear log file
-        try {
-            PrintWriter writer = new PrintWriter(log);
-            writer.print("");
-            writer.close();
-        } catch (FileNotFoundException ex) {
-            System.out.println("Error: archivo no encontrado " + ex);
-        }
-
-
-        // Redirect error and output streams
-        pb.redirectErrorStream(true);
-        pb.redirectOutput(ProcessBuilder.Redirect.appendTo(log));
-
-        // Run process and wait until it finishes
-        try {
-            Process process = pb.start();
-            process.waitFor();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        long a = System.currentTimeMillis();
-        callOnlinePlanner();
-        long b = System.currentTimeMillis() - a;
-        System.out.println("###############################" + b);
-    }
-
-    public PDDLPlan callOnlinePlanner() throws PlannerException {
+    /**
+     * Method that allows the agent to find a plan to the current given goal. It calls
+     * the planner and translates its output, generating in the process a new PDDLPlan
+     * instance.
+     * @return Returns a new PDDLPlan instance.
+     * @throws PlannerException Thrown when the planner's response status is not OK.
+     */
+    public PDDLPlan findPlan() throws PlannerException {
         // Read domain and problem files
         String domain = readFile(this.gameInformation.domainFile),
                problem = readFile("planning/problem.pddl");
@@ -578,55 +426,13 @@ public class PlanningAgent extends AbstractPlayer {
         return PDDLPlan;
     }
 
-    private String readFile(String filename) {
-        // Create builder that will contain the file's content
-        StringBuilder contentBuilder = new StringBuilder();
-
-        // Get content from file line per line
-        try (Stream<String> stream = Files.lines(Paths.get(filename))) {
-            stream.forEach(s -> contentBuilder.append(s).append("\n"));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        return contentBuilder.toString();
-    }
-
-    /*
-    public List<Types.ACTIONS> translateOutputPlan() {
-        // ArrayList of actions
-        List<Types.ACTIONS> actions = new ArrayList<>();
-
-        // Plan file
-        File planFile = new File("planning/plan.txt");
-
-        try {
-            BufferedReader br = new BufferedReader(new FileReader(planFile));
-
-            String line;
-
-            while ((line = br.readLine()) != null) {
-                String upperLine = line.toUpperCase();
-
-                for (String action: this.actionCorrespondence.keySet()) {
-                    if (upperLine.contains(action)) {
-                        actions.add(this.actionCorrespondence.get(action));
-                    }
-                }
-            }
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        return actions;
-    }
-    */
-
+    /**
+     * Method that translates a game state observation to PDDL predicates.
+     * @param stateObservation State observation of the game.
+     */
     public void translateGameStateToPDDL(StateObservation stateObservation) {
         // Get the observations of the game state as elements of the VGDDLRegistry
-        HashSet<String>[][] gameMap = this.getGameElementsMatrix(stateObservation, false);
+        HashSet<String>[][] gameMap = this.getGameElementsMatrix(stateObservation);
 
         // Clear the list of predicates and objects
         this.PDDLGameStatePredicates.clear();
@@ -634,10 +440,10 @@ public class PlanningAgent extends AbstractPlayer {
 
         final int X_MAX = gameMap.length, Y_MAX = gameMap[0].length;
 
+        // Process game elements
         for (int y = 0; y < Y_MAX; y++) {
             for (int x = 0; x < X_MAX; x++) {
                 for (String cellObservation: gameMap[x][y]) {
-
                     // If the observation is in the domain, instantiate its predicates
                     if (this.gameInformation.gameElementsCorrespondence.containsKey(cellObservation)) {
                         List<String> predicateList = this.gameInformation.gameElementsCorrespondence.get(cellObservation);
@@ -702,9 +508,16 @@ public class PlanningAgent extends AbstractPlayer {
         this.reachedSavedGoalPredicates.stream().forEach(goal -> this.PDDLGameStatePredicates.add(goal));
     }
 
-    public HashSet<String>[][] getGameElementsMatrix(StateObservation so, boolean debug) {
+    /**
+     * Method that translates a game state observation to a matrix of strings which
+     * represent the elements of the game in each position according to the VGDDL
+     * registry. There can be more than one game element in each position.
+     * @param stateObservation State observation of the game.
+     * @return Returns a matrix containing the elements of the game in each position.
+     */
+    public HashSet<String>[][] getGameElementsMatrix(StateObservation stateObservation) {
         // Get the current game state
-        ArrayList<Observation>[][] gameState = so.getObservationGrid();
+        ArrayList<Observation>[][] gameState = stateObservation.getObservationGrid();
 
         // Get the number of X tiles and Y tiles
         final int X_MAX = gameState.length, Y_MAX = gameState[0].length;
@@ -712,12 +525,10 @@ public class PlanningAgent extends AbstractPlayer {
         // Create a new matrix, representing the game's map
         HashSet<String>[][] gameStringMap = new HashSet[X_MAX][Y_MAX];
 
-        /*
-         * Iterate over the map and transform the observations in a [x, y] cell
-         * to a HashSet of Strings. In case there's no observation, add a
-         * "background" string. The VGDLRegistry contains the needed information
-         * to transform the StateObservation to a matrix of sets of Strings.
-         */
+        // Iterate over the map and transform the observations in a [x, y] cell
+        // to a HashSet of Strings. In case there's no observation, add a
+        // "background" string. The VGDLRegistry contains the needed information
+        // to transform the StateObservation to a matrix of sets of Strings.
         for (int y = 0; y < Y_MAX; y++) {
             for (int x = 0; x < X_MAX; x++) {
                 gameStringMap[x][y] = new HashSet<>();
@@ -733,20 +544,138 @@ public class PlanningAgent extends AbstractPlayer {
             }
         }
 
-        // Show map in case it has to be debugged
-        if (debug) {
-            for (int y = 0; y < Y_MAX; y++) {
-                for (int x = 0; x < X_MAX; x++) {
-                    System.out.print(gameStringMap[x][y] + " ");
-                }
-                System.out.println();
-            }
-        }
-
         return gameStringMap;
     }
 
-    private void writePDDLGameStateProblem() {
+    /**
+     * Method that generates the connection predicates between the cells of the
+     * map.
+     * @param stateObservation State observation of the game.
+     * @return Returns a set which preserves insertion order and contains
+     * the PDDL predicates associated to the cells connections.
+     */
+    private Set<String> generateConnectionPredicates(StateObservation stateObservation) {
+        // Initialize connection set
+        Set<String> connections = new LinkedHashSet<>();
+
+        // Get the observations of the game state as elements of the VGDDLRegistry
+        HashSet<String>[][] gameMap = this.getGameElementsMatrix(stateObservation);
+
+        final int X_MAX = gameMap.length, Y_MAX = gameMap[0].length;
+
+        for (int y = 0; y < Y_MAX; y++) {
+            for (int x = 0; x < X_MAX; x++) {
+                // Create string containing the current cell
+                String currentCell = String.format("%s_%d_%d", this.gameInformation.cellVariable, x, y).replace("?", "");
+
+                if (y - 1 >= 0) {
+                    String connection = this.gameInformation.connections.get(Position.UP);
+                    connection = connection.replace("?c", currentCell);
+                    connection = connection.replace("?p", String
+                            .format("%s_%d_%d", this.gameInformation.cellVariable, x, y - 1)
+                            .replace("?", ""));
+
+                    connections.add(connection);
+                }
+
+                if (y + 1 < Y_MAX) {
+                    String connection = this.gameInformation.connections.get(Position.DOWN);
+                    connection = connection.replace("?c", currentCell);
+                    connection = connection.replace("?n", String
+                            .format("%s_%d_%d", this.gameInformation.cellVariable, x, y + 1)
+                            .replace("?", ""));
+
+                    connections.add(connection);
+                }
+
+                if (x - 1 >= 0) {
+                    String connection = this.gameInformation.connections.get(Position.LEFT);
+                    connection = connection.replace("?c", currentCell);
+                    connection = connection.replace("?p", String
+                            .format("%s_%d_%d", this.gameInformation.cellVariable, x - 1, y)
+                            .replace("?", ""));
+
+                    connections.add(connection);
+                }
+
+                if (x + 1 < X_MAX) {
+                    String connection = this.gameInformation.connections.get(Position.RIGHT);
+                    connection = connection.replace("?c", currentCell);
+                    connection = connection.replace("?n", String
+                            .format("%s_%d_%d", this.gameInformation.cellVariable, x + 1, y)
+                            .replace("?", ""));
+
+                    connections.add(connection);
+                }
+            }
+        }
+
+        return connections;
+    }
+
+    /**
+     * Method used to extract the variables from the predicates associated to a game
+     * element and associate them to game elements directly.
+     * @return Returns a mapping between the game elements and the variables
+     * associated to them.
+     */
+    private Map<String, Set<String>> extractVariablesFromPredicates() {
+        Map<String, Set<String>> varsFromPredicates = new HashMap<>();
+
+        // Pattern that matches a variable
+        Pattern variablePattern = Pattern.compile("\\?[a-zA-Z]+");
+
+        // Iterate over all the pairs <game element: [predicates]>
+        for (Map.Entry<String, ArrayList<String>> entry: this.gameInformation.gameElementsCorrespondence.entrySet()) {
+            String gameObservation = entry.getKey();
+            Set<String> variables = new HashSet<>();
+
+            // Iterate over the predicates searching for variables
+            for (String observation: entry.getValue()) {
+                Matcher variableMatcher = variablePattern.matcher(observation);
+
+                while (variableMatcher.find()) {
+                    for (int i = 0; i <= variableMatcher.groupCount(); i++) {
+                        variables.add(variableMatcher.group(i));
+                    }
+                }
+            }
+
+            // Add the predicates associated to the game element
+            varsFromPredicates.put(gameObservation, variables);
+        }
+
+        return varsFromPredicates;
+    }
+
+    /**
+     * Method that checks whether a single effect predicate is contained
+     * in the agenda.
+     * @param effect Effect predicate to be checked.
+     * @return Returns a PDDLSingleGoal instance which contains the effect
+     * predicate if it has been found in the agenda and null otherwise.
+     */
+    private PDDLSingleGoal checkSingleEffect(String effect) {
+        PDDLSingleGoal modifiedGoal = null;
+        PDDLSingleGoal pendingGoal = agenda.containedPredicateInPendingGoals(effect);
+        PDDLSingleGoal preemptedGoal = agenda.containedPredicateInPreemptedGoals(effect);
+
+        if (pendingGoal != null) {
+            agenda.setReachedFromPending(pendingGoal);
+            modifiedGoal = pendingGoal;
+        } else if (preemptedGoal != null) {
+            agenda.setReachedFromPreempted(preemptedGoal);
+            modifiedGoal = preemptedGoal;
+        }
+
+        return modifiedGoal;
+    }
+
+    /**
+     * Method that creates a PDDL problem file. It writes the PDDL predicates, variables
+     * and the current goal to the problem file.
+     */
+    private void createProblemFile() {
         String outGoal = this.agenda.getCurrentGoal().getGoalPredicate();
 
         try (BufferedWriter bf = new BufferedWriter(new FileWriter("planning/problem.pddl"))) {
@@ -812,6 +741,98 @@ public class PlanningAgent extends AbstractPlayer {
             bf.write(")");
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    /**
+     * Method that reads the content of a given file.
+     * @param filename Path of the file to be read.
+     * @return Returns the content of the file.
+     */
+    private String readFile(String filename) {
+        // Create builder that will contain the file's content
+        StringBuilder contentBuilder = new StringBuilder();
+
+        // Get content from file line per line
+        try (Stream<String> stream = Files.lines(Paths.get(filename))) {
+            stream.forEach(s -> contentBuilder.append(s).append("\n"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return contentBuilder.toString();
+    }
+
+    /**
+     * Method that prints an array of messages and asks the user to select some
+     * of the available options. These options include displaying information about
+     * the agenda, displaying information about the current plan or continuing the
+     * program's execution. This method is used when the debug mode is enabled.
+     * @param messages Messages to be printed.
+     */
+    private void displayDebugInformation(String[] messages) {
+        // Show messages
+        this.printMessages(messages);
+
+        // Request input
+        Scanner scanner = new Scanner(System.in);
+        int option = 0;
+        final int EXIT_OPTION = 3;
+
+        while (option != EXIT_OPTION) {
+            System.out.println("\nSelect what information you want to display:");
+            System.out.println("[1] : Agenda");
+            System.out.println("[2] : Current plan");
+            System.out.println("[3] : Continue execution");
+            System.out.print("\n$ ");
+
+            // Ignore option if it's not an integer
+            while (!scanner.hasNextInt()) {
+                scanner.next();
+                System.out.print("\n$ ");
+            }
+
+            option = scanner.nextInt();
+
+            switch (option) {
+                case 1:
+                    System.out.println(this.agenda);
+                    break;
+                case 2:
+                    System.out.println(this.PDDLPlan);
+                    break;
+                case EXIT_OPTION:
+                    break;
+                default:
+                    System.out.println("Incorrect option!");
+                    break;
+            }
+        }
+    }
+
+    /**
+     * Method that prints an array of messages and waits for the user's input.
+     * This method is used when the debug mode is enabled.
+     * @param messages Messages to be printed.
+     */
+    private void showMessagesWait(String[] messages) {
+        // Show messages
+        this.printMessages(messages);
+
+        Scanner scanner = new Scanner(System.in);
+
+        System.out.println("Press [ENTER] to continue");
+        scanner.nextLine();
+    }
+
+    /**
+     * Method that prints an array of messages. This method is used when the debug
+     * mode is enabled.
+     * @param messages Messages to be printed.
+     */
+    private void printMessages(String[] messages) {
+        for (String m: messages) {
+            System.out.println(m);
         }
     }
 }
