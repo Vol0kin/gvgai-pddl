@@ -64,8 +64,6 @@
                     </archive>
                 </configuration>
             </plugin>
-
-
         </plugins>
     </build>
 
@@ -78,6 +76,7 @@
             <artifactId>unirest-java</artifactId>
             <version>3.4.01</version>
         </dependency>
+
         <!-- https://mvnrepository.com/artifact/org.yaml/snakeyaml -->
         <dependency>
             <groupId>org.yaml</groupId>
@@ -85,5 +84,11 @@
             <version>1.26</version>
         </dependency>
 
+        <!-- https://mvnrepository.com/artifact/info.picocli/picocli -->
+        <dependency>
+            <groupId>info.picocli</groupId>
+            <artifactId>picocli</artifactId>
+            <version>4.3.0</version>
+        </dependency>
     </dependencies>
 </project>
