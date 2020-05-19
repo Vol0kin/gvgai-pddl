@@ -416,11 +416,16 @@ public class PlanningAgent extends AbstractPlayer {
         JSONObject responseBody =  response.getBody().getObject();
 
         // SHOW DEBUG INFORMATION
-        if (PlanningAgent.DEBUG_MODE) {
-            this.showMessagesWait(new String[]{"--- Planner response ---",
-                    String.format("Response status: %s", responseBody.getString("status")),
-                    String.format("Result:\n%s", responseBody.getJSONObject("result").getString("output"))
-            });
+        if (!responseBody.getString("status").equals("ok")) {
+            String exceptionMessage = "";
+
+            try {
+                exceptionMessage = responseBody.getJSONObject("result").getString("output");
+            } catch (JSONException jsonException){
+                exceptionMessage = responseBody.getString("result");
+            } finally {
+                throw new PlannerException(exceptionMessage);
+            }
         }
 
         // Throw exception if the status is not ok
