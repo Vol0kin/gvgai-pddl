@@ -34,6 +34,7 @@ import ontology.Types;
 
 import java.io.*;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -57,6 +58,7 @@ public class PlanningAgent extends AbstractPlayer {
     // The following attributes can be modified
     protected static String GAME_CONFIG_FILE;
     protected static boolean DEBUG_MODE;
+    protected static boolean savePlans;
 
     // Agenda that contains preempted, current and reached goals
     protected Agenda agenda;
@@ -692,12 +694,12 @@ public class PlanningAgent extends AbstractPlayer {
             bf.newLine();
 
             // Write domain that is used
-            bf.write(String.format("(:domain %s)", this.gameInformation.domainName));
+            bf.write(String.format("    (:domain %s)", this.gameInformation.domainName));
             bf.newLine();
 
             // Write the objects
             // Each variable will be written
-            bf.write("(:objects");
+            bf.write("    (:objects");
             bf.newLine();
 
             // Write each object
@@ -705,50 +707,54 @@ public class PlanningAgent extends AbstractPlayer {
                 if (!this.PDDLGameStateObjects.get(key).isEmpty()) {
                     String objectsStr = String.join(" ", this.PDDLGameStateObjects.get(key));
                     objectsStr += String.format(" - %s", this.gameInformation.variablesTypes.get(key));
-                    bf.write(objectsStr);
+                    bf.write(String.format("        %s", objectsStr));
                     bf.newLine();
                 }
             }
 
             // Finish object writing
-            bf.write(")");
+            bf.write("    )");
             bf.newLine();
 
             // Start init writing
-            bf.write("(:init");
+            bf.write("    (:init");
             bf.newLine();
 
             // Write the predicates list into the file
             for (String predicate: this.PDDLGameStatePredicates) {
-                bf.write(predicate);
+                bf.write(String.format( "        %s", predicate));
                 bf.newLine();
             }
 
             // Finish init writing
-            bf.write(")");
+            bf.write("    )");
             bf.newLine();
 
             // Write goal
             // THIS HAS TO CHANGE
-            bf.write("(:goal");
+            bf.write("    (:goal");
             bf.newLine();
 
-            bf.write("(AND");
+            bf.write("        (AND");
             bf.newLine();
 
-            bf.write(outGoal);
+            bf.write(String.format("            %s", outGoal));
             bf.newLine();
 
-            bf.write(")");
+            bf.write("        )");
             bf.newLine();
 
-            bf.write(")");
+            bf.write("    )");
             bf.newLine();
 
             // Finish problem writing
             bf.write(")");
         } catch (IOException e) {
             e.printStackTrace();
+        }
+
+        if (PlanningAgent.savePlans) {
+            Path outputDirectory = Paths.get("problems");
         }
     }
 
