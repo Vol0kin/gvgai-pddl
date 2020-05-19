@@ -26,6 +26,7 @@ import core.game.Observation;
 import core.player.AbstractPlayer;
 import core.game.StateObservation;
 import core.vgdl.VGDLRegistry;
+import kong.unirest.json.JSONArray;
 import kong.unirest.json.JSONException;
 import kong.unirest.json.JSONObject;
 import org.yaml.snakeyaml.constructor.Constructor;
@@ -436,6 +437,10 @@ public class PlanningAgent extends AbstractPlayer {
         // Create a new PDDLPlan instance if a valid plan has been found
         PDDLPlan PDDLPlan = new PDDLPlan(responseBody, this.gameInformation.actionsCorrespondence);
 
+        if (PlanningAgent.saveInformation) {
+            this.savePlan(responseBody);
+        }
+
         return PDDLPlan;
     }
 
@@ -763,6 +768,10 @@ public class PlanningAgent extends AbstractPlayer {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        if (PlanningAgent.saveInformation) {
+            this.saveProblemFile();
+        }
     }
 
     /**
@@ -877,6 +886,37 @@ public class PlanningAgent extends AbstractPlayer {
         // Create output directories
         for (String dir: directories) {
             new File(dir).mkdir();
+        }
+    }
+
+    private void saveProblemFile() {
+        Path problemFile = Paths.get("planning/problem.pddl");
+        Path saveProblemFile = Paths.get(String.format("output/problems/problem_turn_%d.pddl", this.turn));
+
+        try {
+            Files.copy(problemFile, saveProblemFile);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void savePlan(JSONObject plannerResponse) {
+        StringBuilder sb = new StringBuilder();
+
+        // Get the plan from the JSON object
+        JSONArray plan = plannerResponse.getJSONObject("result").getJSONArray("plan");
+
+        // Transform each action to a PDDLAction instance
+        for (int i = 0; i < plan.length(); i++) {
+            String actionDescription = plan.getJSONObject(i).getString("action");
+            sb.append(String.format("\n%s\n", actionDescription));
+        }
+
+        try (BufferedWriter bf = new BufferedWriter(
+                new FileWriter(String.format("output/plans/plan_turn_%d.txt", this.turn)))) {
+            bf.write(sb.toString());
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 }
