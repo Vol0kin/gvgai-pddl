@@ -35,6 +35,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.logging.FileHandler;
+import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -60,7 +63,7 @@ public class PlanningAgent extends AbstractPlayer {
     // The following attributes can be modified
     protected static String GAME_CONFIG_FILE;
     protected static boolean DEBUG_MODE;
-    protected static boolean saveInformation = true;
+    protected static boolean saveInformation;
 
     // Agenda that contains preempted, current and reached goals
     protected Agenda agenda;
@@ -86,7 +89,11 @@ public class PlanningAgent extends AbstractPlayer {
     protected Set<String> connectionSet;
     protected Map<String, Set<String>> gameElementVars;
 
+    // Variable that indicates the game's turn
     protected int turn;
+
+    // Logger
+    private final static Logger LOGGER = Logger.getLogger(PlanningAgent.class.getName());
 
     /**
      * Class constructor. Creates a new planning agent.
@@ -126,8 +133,29 @@ public class PlanningAgent extends AbstractPlayer {
         this.mustPlan = true;
         this.turn = -1;
 
+        // If the agent must save the information, create directories and initialize logger
         if (PlanningAgent.saveInformation) {
             this.createOutputDirectories();
+
+            // Ignore handlers used by parent loggers
+            LOGGER.setUseParentHandlers(false);
+
+            // Set locale language to english (logs should be in English :) )
+            Locale.setDefault(Locale.ENGLISH);
+
+            try {
+                // Add a file handler to the logger
+                FileHandler fh = new FileHandler("output/game_execution.log");
+                PlanningAgent.LOGGER.addHandler(fh);
+
+                // Set logger's formatter
+                SimpleFormatter formatter = new SimpleFormatter();
+                fh.setFormatter(formatter);
+
+                PlanningAgent.LOGGER.info("Created agent successfully!");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -161,6 +189,13 @@ public class PlanningAgent extends AbstractPlayer {
         if (this.mustPlan) {
             // Set current goal
             this.agenda.setCurrentGoal();
+
+            // Save logging information
+            if (PlanningAgent.saveInformation) {
+                PlanningAgent.LOGGER.info(String.format(
+                        "TURN %d The following goal has been set as the current goal: %s",
+                        this.turn, this.agenda.getCurrentGoal().getGoalPredicate()));
+            }
 
             // SHOW DEBUG INFORMATION
             if (PlanningAgent.DEBUG_MODE) {
@@ -231,6 +266,12 @@ public class PlanningAgent extends AbstractPlayer {
                     System.out.println("No goal has been reached beforehand!\n");
                 }
 
+                // Save logging information
+                if (PlanningAgent.saveInformation && modifiedAgenda) {
+                    PlanningAgent.LOGGER.info(String.format("TURN %d One or more goals have been reached beforehand",
+                            this.turn));
+                }
+
                 action = nextPDDLAction.getGVGAIAction();
 
                 // If no actions are left, that means that the current goal has been reached
@@ -238,7 +279,9 @@ public class PlanningAgent extends AbstractPlayer {
                     // SHOW DEBUG INFORMATION
                     if (PlanningAgent.DEBUG_MODE) {
                         this.showMessagesWait(new String[]{
-                                String.format("The following goal is going the be reached after executing the next action: %s", this.agenda.getCurrentGoal()),
+                                String.format(
+                                        "The following goal is going the be reached after executing the next action: %s",
+                                        this.agenda.getCurrentGoal()),
                                 "\nIn the next turn I am going to search for a new plan!"
                         });
                     }
@@ -252,6 +295,13 @@ public class PlanningAgent extends AbstractPlayer {
                         for (String reachedGoal: this.agenda.getCurrentGoal().getRemoveReachedGoalsList()) {
                             this.reachedSavedGoalPredicates.remove(reachedGoal);
                         }
+                    }
+
+                    // Save logging information
+                    if (PlanningAgent.saveInformation) {
+                        PlanningAgent.LOGGER.info(String.format(
+                                "TURN %d The following goal is going to be reached in this turn: %s",
+                                this.turn, this.agenda.getCurrentGoal().getGoalPredicate()));
                     }
 
                     // Update reached goals
@@ -272,6 +322,13 @@ public class PlanningAgent extends AbstractPlayer {
                             "The following goal is going to be halted:"+ this.agenda.getCurrentGoal(),
                             "\nI am going to select a new goal and find a plan to it in the following turn!"
                     });
+                }
+
+                // Save logging information
+                if (PlanningAgent.saveInformation) {
+                    PlanningAgent.LOGGER.warning(String.format(
+                            "TURN %d Due to a discrepancy, the following goal is going to be halted: %s",
+                            this.turn, this.agenda.getCurrentGoal().getGoalPredicate()));
                 }
 
                 this.agenda.haltCurrentGoal();
@@ -565,6 +622,10 @@ public class PlanningAgent extends AbstractPlayer {
 
     public static void setDebugMode(boolean debugMode) {
         PlanningAgent.DEBUG_MODE = debugMode;
+    }
+
+    public static void setSaveInformation(boolean saveInformation) {
+        PlanningAgent.saveInformation = saveInformation;
     }
 
     /**
@@ -884,31 +945,42 @@ public class PlanningAgent extends AbstractPlayer {
     }
 
     private void saveProblemFile() {
+        String copyFileName = String.format("output/problems/problem_turn_%d.pddl", this.turn);
+
         Path problemFile = Paths.get("planning/problem.pddl");
-        Path saveProblemFile = Paths.get(String.format("output/problems/problem_turn_%d.pddl", this.turn));
+        Path saveProblemFile = Paths.get(copyFileName);
 
         try {
             Files.copy(problemFile, saveProblemFile);
+
+            // Save logging information
+            PlanningAgent.LOGGER.info(String.format("TURN %d Problem saved to file %s",
+                    this.turn, copyFileName));
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
     private void savePlan(JSONObject plannerResponse) {
+        String planFileName = String.format("output/plans/plan_turn_%d.txt", this.turn);
         StringBuilder sb = new StringBuilder();
 
         // Get the plan from the JSON object
         JSONArray plan = plannerResponse.getJSONObject("result").getJSONArray("plan");
 
-        // Transform each action to a PDDLAction instance
+        // Add each action description to the builder
         for (int i = 0; i < plan.length(); i++) {
             String actionDescription = plan.getJSONObject(i).getString("action");
             sb.append(String.format("\n%s\n", actionDescription));
         }
 
         try (BufferedWriter bf = new BufferedWriter(
-                new FileWriter(String.format("output/plans/plan_turn_%d.txt", this.turn)))) {
+                new FileWriter(planFileName))) {
             bf.write(sb.toString());
+
+            // Save logging information
+            PlanningAgent.LOGGER.info(String.format("TURN %d Plan saved to file %s",
+                    this.turn, planFileName));
         } catch (IOException e) {
             e.printStackTrace();
         }

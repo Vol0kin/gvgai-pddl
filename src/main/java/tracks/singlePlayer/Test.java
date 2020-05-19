@@ -73,6 +73,7 @@ public class Test {
 		} else {
 			PlanningAgent.setGameConfigFile(test.configurationFile);
 			PlanningAgent.setDebugMode(test.debugMode);
+			PlanningAgent.setSaveInformation(true);
 			ArcadeMachine.runOneGame(game, level, visuals, controller, null, seed, 0);
 		}
     }
