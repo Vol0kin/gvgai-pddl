@@ -26,12 +26,8 @@ import core.game.Observation;
 import core.player.AbstractPlayer;
 import core.game.StateObservation;
 import core.vgdl.VGDLRegistry;
-import kong.unirest.json.JSONArray;
-import kong.unirest.json.JSONException;
-import kong.unirest.json.JSONObject;
-import org.yaml.snakeyaml.constructor.Constructor;
+import tools.Vector2d;
 import tools.ElapsedCpuTimer;
-
 import ontology.Types;
 
 import java.io.*;
@@ -44,12 +40,15 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import tools.Vector2d;
 import kong.unirest.HttpResponse;
 import kong.unirest.JsonNode;
 import kong.unirest.Unirest;
+import kong.unirest.json.JSONArray;
+import kong.unirest.json.JSONException;
+import kong.unirest.json.JSONObject;
 
 import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.constructor.Constructor;
 
 /**
  * Planning agent class. It represents an agent which uses a planner to reach
@@ -427,11 +426,6 @@ public class PlanningAgent extends AbstractPlayer {
             } finally {
                 throw new PlannerException(exceptionMessage);
             }
-        }
-
-        // Throw exception if the status is not ok
-        if (!responseBody.getString("status").equals("ok")) {
-            throw new PlannerException(responseBody.getJSONObject("result").getString("output"));
         }
 
         // Create a new PDDLPlan instance if a valid plan has been found

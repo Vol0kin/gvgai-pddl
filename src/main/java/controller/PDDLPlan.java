@@ -73,10 +73,10 @@ public class PDDLPlan implements Iterable<PDDLAction>{
 
             // Get Strings that represent the action instance and its preconditions
             String actionInstance = action.getString("name");
-            String preconditions = action.getString("action");
+            String actionDescription = action.getString("action");
 
             // Add the new action to the list
-            PDDLActionList.add(new PDDLAction(actionInstance, preconditions, actionCorrespondence));
+            PDDLActionList.add(new PDDLAction(actionInstance, actionDescription, actionCorrespondence));
         }
 
         // Process resulting list of actions removing all null actions. These actions are the ones
