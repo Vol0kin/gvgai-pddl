@@ -26,6 +26,7 @@ import core.game.Observation;
 import core.player.AbstractPlayer;
 import core.game.StateObservation;
 import core.vgdl.VGDLRegistry;
+import kong.unirest.json.JSONException;
 import kong.unirest.json.JSONObject;
 import org.yaml.snakeyaml.constructor.Constructor;
 import tools.ElapsedCpuTimer;
@@ -39,6 +40,7 @@ import java.nio.file.Paths;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import tools.Vector2d;
@@ -58,7 +60,7 @@ public class PlanningAgent extends AbstractPlayer {
     // The following attributes can be modified
     protected static String GAME_CONFIG_FILE;
     protected static boolean DEBUG_MODE;
-    protected static boolean savePlans;
+    protected static boolean saveInformation = true;
 
     // Agenda that contains preempted, current and reached goals
     protected Agenda agenda;
@@ -123,6 +125,10 @@ public class PlanningAgent extends AbstractPlayer {
         // Set plan variable and turn
         this.mustPlan = true;
         this.turn = -1;
+
+        if (PlanningAgent.saveInformation) {
+            this.createOutputDirectories();
+        }
     }
 
     /**
@@ -752,10 +758,6 @@ public class PlanningAgent extends AbstractPlayer {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-        if (PlanningAgent.savePlans) {
-            Path outputDirectory = Paths.get("problems");
-        }
     }
 
     /**
@@ -847,6 +849,29 @@ public class PlanningAgent extends AbstractPlayer {
     private void printMessages(String[] messages) {
         for (String m: messages) {
             System.out.println(m);
+        }
+    }
+
+    private void createOutputDirectories() {
+        // List of directories
+        List<String> directories = Stream.of("output", "output/problems", "output/plans")
+                                            .collect(Collectors.toList());
+
+        // Delete top-level directory recursively if it exists
+        if (Files.exists(Paths.get(directories.get(0)))) {
+            try {
+                Files.walk(Paths.get(directories.get(0)))
+                        .map(Path::toFile)
+                        .sorted(Comparator.reverseOrder())
+                        .forEach(File::delete);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        // Create output directories
+        for (String dir: directories) {
+            new File(dir).mkdir();
         }
     }
 }
