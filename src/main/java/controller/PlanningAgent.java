@@ -111,7 +111,7 @@ public class PlanningAgent extends AbstractPlayer {
             System.out.println(e.getStackTrace());
         }
 
-        // Initialize PDDL game state information
+        // Initialize PDDL related variables
         this.reachedSavedGoalPredicates = new ArrayList<>();
         this.PDDLGameStatePredicates = new ArrayList<>();
         this.PDDLGameStateObjects = new HashMap<>();
@@ -199,7 +199,7 @@ public class PlanningAgent extends AbstractPlayer {
 
             // SHOW DEBUG INFORMATION
             if (PlanningAgent.debugMode) {
-                this.displayDebugInformation(new String[]{"I don't have a plan to the current goal or I must replan!"});
+                this.displayDebugInformation("I don't have a plan to the current goal or I must replan!");
             }
 
             // Write PDDL predicates into the problem file
@@ -211,7 +211,7 @@ public class PlanningAgent extends AbstractPlayer {
 
             // SHOW DEBUG INFORMATION
             if (PlanningAgent.debugMode) {
-                this.displayDebugInformation(new String[]{"Translated output plan"});
+                this.displayDebugInformation("Translated output plan");
             }
         } else {
             // Check preconditions for next action
@@ -219,8 +219,8 @@ public class PlanningAgent extends AbstractPlayer {
 
             // SHOW DEBUG INFORMATION
             if (PlanningAgent.debugMode) {
-                System.out.println("The agent will try to execute the following action:" + nextPDDLAction.toString());
-                System.out.println("\nChecking preconditions...");
+                this.printMessages("The agent will try to execute the following action:" + nextPDDLAction.toString(),
+                        "\nChecking preconditions...");
 
                 try {
                     Thread.sleep(2500);
@@ -259,9 +259,7 @@ public class PlanningAgent extends AbstractPlayer {
 
                 // SHOW DEBUG INFORMATION
                 if (PlanningAgent.debugMode && modifiedAgenda) {
-                    this.displayDebugInformation(new String[]{
-                            "\nThe agenda has been updated!"
-                    });
+                    this.displayDebugInformation("\nThe agenda has been updated!");
                 } else if (PlanningAgent.debugMode && !modifiedAgenda) {
                     System.out.println("No goal has been reached beforehand!\n");
                 }
@@ -278,12 +276,10 @@ public class PlanningAgent extends AbstractPlayer {
                 if (!this.iterPlan.hasNext()) {
                     // SHOW DEBUG INFORMATION
                     if (PlanningAgent.debugMode) {
-                        this.showMessagesWait(new String[]{
-                                String.format(
-                                        "The following goal is going the be reached after executing the next action: %s",
-                                        this.agenda.getCurrentGoal()),
-                                "\nIn the next turn I am going to search for a new plan!"
-                        });
+                        this.showMessagesWait(String.format(
+                                    "The following goal is going the be reached after executing the next action: %s",
+                                    this.agenda.getCurrentGoal()),
+                                "\nIn the next turn I am going to search for a new plan!");
                     }
                     // Save the reached goal in case it has to be saved
                     if (this.agenda.getCurrentGoal().isSaveGoal()) {
@@ -311,17 +307,15 @@ public class PlanningAgent extends AbstractPlayer {
 
                     // SHOW DEBUG INFORMATION
                     if (PlanningAgent.debugMode) {
-                        this.displayDebugInformation(new String[]{"\nThe agenda has been updated!"});
+                        this.displayDebugInformation("\nThe agenda has been updated!");
                     }
                 }
             } else {
                 // SHOW DEBUG INFORMATION
                 if (PlanningAgent.debugMode) {
-                    this.showMessagesWait(new String[]{
-                            "One or more preconditions couldn't be satisfied",
+                    this.showMessagesWait("One or more preconditions couldn't be satisfied",
                             "The following goal is going to be halted:"+ this.agenda.getCurrentGoal(),
-                            "\nI am going to select a new goal and find a plan to it in the following turn!"
-                    });
+                            "\nI am going to select a new goal and find a plan to it in the following turn!");
                 }
 
                 // Save logging information
@@ -337,7 +331,7 @@ public class PlanningAgent extends AbstractPlayer {
 
                 // SHOW DEBUG INFORMATION
                 if (PlanningAgent.debugMode) {
-                    this.displayDebugInformation(new String[]{"\nThe agenda has been updated!"});
+                    this.displayDebugInformation("\nThe agenda has been updated!");
                 }
             }
         }
@@ -441,10 +435,8 @@ public class PlanningAgent extends AbstractPlayer {
             modifiedGoals.stream().forEach(goal -> builder.append(goal.toString()));
             builder.append("\n");
 
-            this.showMessagesWait(new String[]{
-                    "The following goals have been reached beforehand:",
-                    builder.toString()
-            });
+            this.showMessagesWait("The following goals have been reached beforehand:",
+                    builder.toString());
         }
 
         return modifiedAgenda;
@@ -855,8 +847,7 @@ public class PlanningAgent extends AbstractPlayer {
      * program's execution. This method is used when the debug mode is enabled.
      * @param messages Messages to be printed.
      */
-    private void displayDebugInformation(String[] messages) {
-        // Show messages
+    private void displayDebugInformation(String... messages) {
         this.printMessages(messages);
 
         // Request input
@@ -865,11 +856,11 @@ public class PlanningAgent extends AbstractPlayer {
         final int EXIT_OPTION = 3;
 
         while (option != EXIT_OPTION) {
-            System.out.println("\nSelect what information you want to display:");
-            System.out.println("[1] : Agenda");
-            System.out.println("[2] : Current plan");
-            System.out.println("[3] : Continue execution");
-            System.out.print("\n$ ");
+            this.printMessages("\nSelect what information you want to display:",
+                    "[1] : Agenda",
+                    "[2] : Current plan",
+                    "[3] : Continue execution",
+                    "\n$ ");
 
             // Ignore option if it's not an integer
             while (!scanner.hasNextInt()) {
@@ -900,8 +891,7 @@ public class PlanningAgent extends AbstractPlayer {
      * This method is used when the debug mode is enabled.
      * @param messages Messages to be printed.
      */
-    private void showMessagesWait(String[] messages) {
-        // Show messages
+    private void showMessagesWait(String... messages) {
         this.printMessages(messages);
 
         Scanner scanner = new Scanner(System.in);
@@ -915,7 +905,7 @@ public class PlanningAgent extends AbstractPlayer {
      * mode is enabled.
      * @param messages Messages to be printed.
      */
-    private void printMessages(String[] messages) {
+    private void printMessages(String... messages) {
         for (String m: messages) {
             System.out.println(m);
         }
