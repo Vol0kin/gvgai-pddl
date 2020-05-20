@@ -61,8 +61,8 @@ import org.yaml.snakeyaml.constructor.Constructor;
  */
 public class PlanningAgent extends AbstractPlayer {
     // The following attributes can be modified
-    protected static String GAME_CONFIG_FILE;
-    protected static boolean DEBUG_MODE;
+    protected static String gameConfigFile;
+    protected static boolean debugMode;
     protected static boolean saveInformation;
 
     // Agenda that contains preempted, current and reached goals
@@ -105,7 +105,7 @@ public class PlanningAgent extends AbstractPlayer {
         Yaml yaml = new Yaml(new Constructor(GameInformation.class));
 
         try {
-            InputStream inputStream = new FileInputStream(new File(PlanningAgent.GAME_CONFIG_FILE));
+            InputStream inputStream = new FileInputStream(new File(PlanningAgent.gameConfigFile));
             this.gameInformation = yaml.load(inputStream);
         } catch (FileNotFoundException e) {
             System.out.println(e.getStackTrace());
@@ -173,7 +173,7 @@ public class PlanningAgent extends AbstractPlayer {
         this.turn++;
 
         // SHOW DEBUG INFORMATION
-        if (PlanningAgent.DEBUG_MODE) {
+        if (PlanningAgent.debugMode) {
             System.out.println(String.format("\n ---------- Turn %d ----------\n", this.turn));
             try {
                 Thread.sleep(500);
@@ -198,7 +198,7 @@ public class PlanningAgent extends AbstractPlayer {
             }
 
             // SHOW DEBUG INFORMATION
-            if (PlanningAgent.DEBUG_MODE) {
+            if (PlanningAgent.debugMode) {
                 this.displayDebugInformation(new String[]{"I don't have a plan to the current goal or I must replan!"});
             }
 
@@ -210,7 +210,7 @@ public class PlanningAgent extends AbstractPlayer {
             this.mustPlan = false;
 
             // SHOW DEBUG INFORMATION
-            if (PlanningAgent.DEBUG_MODE) {
+            if (PlanningAgent.debugMode) {
                 this.displayDebugInformation(new String[]{"Translated output plan"});
             }
         } else {
@@ -218,7 +218,7 @@ public class PlanningAgent extends AbstractPlayer {
             PDDLAction nextPDDLAction = this.iterPlan.next();
 
             // SHOW DEBUG INFORMATION
-            if (PlanningAgent.DEBUG_MODE) {
+            if (PlanningAgent.debugMode) {
                 System.out.println("The agent will try to execute the following action:" + nextPDDLAction.toString());
                 System.out.println("\nChecking preconditions...");
 
@@ -229,11 +229,11 @@ public class PlanningAgent extends AbstractPlayer {
                 }
             }
 
-            boolean satisfiedPreconditions = this.checkPreconditions(nextPDDLAction.getPreconditions(), PlanningAgent.DEBUG_MODE);
+            boolean satisfiedPreconditions = this.checkPreconditions(nextPDDLAction.getPreconditions(), PlanningAgent.debugMode);
 
             if (satisfiedPreconditions) {
                 // SHOW DEBUG INFORMATION
-                if (PlanningAgent.DEBUG_MODE) {
+                if (PlanningAgent.debugMode) {
                     System.out.println("All preconditions satisfied!");
 
                     try {
@@ -244,7 +244,7 @@ public class PlanningAgent extends AbstractPlayer {
                 }
 
                 // SHOW DEBUG INFORMATION
-                if (PlanningAgent.DEBUG_MODE) {
+                if (PlanningAgent.debugMode) {
                     System.out.println("\nChecking effects...");
 
                     try {
@@ -258,11 +258,11 @@ public class PlanningAgent extends AbstractPlayer {
                 boolean modifiedAgenda = this.checkEarlyReachedGoals(nextPDDLAction.getEffects());
 
                 // SHOW DEBUG INFORMATION
-                if (PlanningAgent.DEBUG_MODE && modifiedAgenda) {
+                if (PlanningAgent.debugMode && modifiedAgenda) {
                     this.displayDebugInformation(new String[]{
                             "\nThe agenda has been updated!"
                     });
-                } else if (PlanningAgent.DEBUG_MODE && !modifiedAgenda) {
+                } else if (PlanningAgent.debugMode && !modifiedAgenda) {
                     System.out.println("No goal has been reached beforehand!\n");
                 }
 
@@ -277,7 +277,7 @@ public class PlanningAgent extends AbstractPlayer {
                 // If no actions are left, that means that the current goal has been reached
                 if (!this.iterPlan.hasNext()) {
                     // SHOW DEBUG INFORMATION
-                    if (PlanningAgent.DEBUG_MODE) {
+                    if (PlanningAgent.debugMode) {
                         this.showMessagesWait(new String[]{
                                 String.format(
                                         "The following goal is going the be reached after executing the next action: %s",
@@ -310,13 +310,13 @@ public class PlanningAgent extends AbstractPlayer {
                     this.PDDLPlan.getPDDLActions().clear();
 
                     // SHOW DEBUG INFORMATION
-                    if (PlanningAgent.DEBUG_MODE) {
+                    if (PlanningAgent.debugMode) {
                         this.displayDebugInformation(new String[]{"\nThe agenda has been updated!"});
                     }
                 }
             } else {
                 // SHOW DEBUG INFORMATION
-                if (PlanningAgent.DEBUG_MODE) {
+                if (PlanningAgent.debugMode) {
                     this.showMessagesWait(new String[]{
                             "One or more preconditions couldn't be satisfied",
                             "The following goal is going to be halted:"+ this.agenda.getCurrentGoal(),
@@ -336,14 +336,14 @@ public class PlanningAgent extends AbstractPlayer {
                 this.PDDLPlan.getPDDLActions().clear();
 
                 // SHOW DEBUG INFORMATION
-                if (PlanningAgent.DEBUG_MODE) {
+                if (PlanningAgent.debugMode) {
                     this.displayDebugInformation(new String[]{"\nThe agenda has been updated!"});
                 }
             }
         }
 
         // SHOW DEBUG INFORMATION
-        if (PlanningAgent.DEBUG_MODE) {
+        if (PlanningAgent.debugMode) {
             System.out.println("The following action is going to be executed in this turn: " + action);
 
             try {
@@ -436,7 +436,7 @@ public class PlanningAgent extends AbstractPlayer {
         boolean modifiedAgenda = !modifiedGoals.isEmpty();
 
         // SHOW DEBUG INFORMATION
-        if (PlanningAgent.DEBUG_MODE && modifiedAgenda) {
+        if (PlanningAgent.debugMode && modifiedAgenda) {
             StringBuilder builder = new StringBuilder();
             modifiedGoals.stream().forEach(goal -> builder.append(goal.toString()));
             builder.append("\n");
@@ -617,11 +617,11 @@ public class PlanningAgent extends AbstractPlayer {
     }
 
     public static void setGameConfigFile(String path) {
-        PlanningAgent.GAME_CONFIG_FILE = path;
+        PlanningAgent.gameConfigFile = path;
     }
 
     public static void setDebugMode(boolean debugMode) {
-        PlanningAgent.DEBUG_MODE = debugMode;
+        PlanningAgent.debugMode = debugMode;
     }
 
     public static void setSaveInformation(boolean saveInformation) {
