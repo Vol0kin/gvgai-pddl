@@ -30,8 +30,8 @@ public class Test {
 	@Option(names = {"-d", "--debug"}, description = "Debug mode.")
 	private boolean debugMode;
 
-	@Option(names = {"-s", "--save"}, description = "Save the generated PDDL problems.")
-	private boolean saveProblems;
+	@Option(names = {"-s", "--save"}, description = "Save runtime information (problems, plans and log).")
+	private boolean saveOutput;
 
     public static void main(String[] args) {
     	// Load commandline arguments
@@ -73,7 +73,7 @@ public class Test {
 		} else {
 			PlanningAgent.setGameConfigFile(test.configurationFile);
 			PlanningAgent.setDebugMode(test.debugMode);
-			PlanningAgent.setSaveInformation(true);
+			PlanningAgent.setSaveInformation(test.saveOutput);
 			ArcadeMachine.runOneGame(game, level, visuals, controller, null, seed, 0);
 		}
     }
