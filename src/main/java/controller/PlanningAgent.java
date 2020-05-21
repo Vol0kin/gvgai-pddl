@@ -859,8 +859,9 @@ public class PlanningAgent extends AbstractPlayer {
             this.printMessages("\nSelect what information you want to display:",
                     "[1] : Agenda",
                     "[2] : Current plan",
-                    "[3] : Continue execution",
-                    "\n$ ");
+                    "[3] : Continue execution");
+            
+            System.out.print("\n$ ");
 
             // Ignore option if it's not an integer
             while (!scanner.hasNextInt()) {
