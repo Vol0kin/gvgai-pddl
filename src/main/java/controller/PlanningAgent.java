@@ -644,7 +644,7 @@ public class PlanningAgent extends AbstractPlayer {
                 if (y - 1 >= 0) {
                     String connection = this.gameInformation.connections.get(Position.UP);
                     connection = connection.replace("?c", currentCell);
-                    connection = connection.replace("?p", String
+                    connection = connection.replace("?u", String
                             .format("%s_%d_%d", this.gameInformation.cellVariable, x, y - 1)
                             .replace("?", ""));
 
@@ -654,7 +654,7 @@ public class PlanningAgent extends AbstractPlayer {
                 if (y + 1 < Y_MAX) {
                     String connection = this.gameInformation.connections.get(Position.DOWN);
                     connection = connection.replace("?c", currentCell);
-                    connection = connection.replace("?n", String
+                    connection = connection.replace("?d", String
                             .format("%s_%d_%d", this.gameInformation.cellVariable, x, y + 1)
                             .replace("?", ""));
 
@@ -664,7 +664,7 @@ public class PlanningAgent extends AbstractPlayer {
                 if (x - 1 >= 0) {
                     String connection = this.gameInformation.connections.get(Position.LEFT);
                     connection = connection.replace("?c", currentCell);
-                    connection = connection.replace("?p", String
+                    connection = connection.replace("?l", String
                             .format("%s_%d_%d", this.gameInformation.cellVariable, x - 1, y)
                             .replace("?", ""));
 
@@ -674,7 +674,7 @@ public class PlanningAgent extends AbstractPlayer {
                 if (x + 1 < X_MAX) {
                     String connection = this.gameInformation.connections.get(Position.RIGHT);
                     connection = connection.replace("?c", currentCell);
-                    connection = connection.replace("?n", String
+                    connection = connection.replace("?r", String
                             .format("%s_%d_%d", this.gameInformation.cellVariable, x + 1, y)
                             .replace("?", ""));
 
@@ -860,7 +860,7 @@ public class PlanningAgent extends AbstractPlayer {
                     "[1] : Agenda",
                     "[2] : Current plan",
                     "[3] : Continue execution");
-            
+
             System.out.print("\n$ ");
 
             // Ignore option if it's not an integer
