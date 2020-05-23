@@ -35,6 +35,7 @@ import ontology.Types;
  */
 public class GameInformation {
     public String domainFile;
+    public String problemFile;
     public String domainName;
     public Map<String, ArrayList<String>> gameElementsCorrespondence;
     public Map<Position, String> orientationCorrespondence;

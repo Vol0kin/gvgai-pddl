@@ -453,7 +453,7 @@ public class PlanningAgent extends AbstractPlayer {
     public PDDLPlan findPlan() throws PlannerException {
         // Read domain and problem files
         String domain = readFile(this.gameInformation.domainFile);
-        String problem = readFile("planning/problem.pddl");
+        String problem = readFile(this.gameInformation.problemFile);
 
 
         // Create JSON object which will be sent in the request's body
@@ -769,7 +769,7 @@ public class PlanningAgent extends AbstractPlayer {
     private void createProblemFile() {
         String outGoal = this.agenda.getCurrentGoal().getGoalPredicate();
 
-        try (BufferedWriter bf = new BufferedWriter(new FileWriter("planning/problem.pddl"))) {
+        try (BufferedWriter bf = new BufferedWriter(new FileWriter(this.gameInformation.problemFile))) {
             // Write problem name
             bf.write(String.format("(define (problem %sProblem)", this.gameInformation.domainName));
             bf.newLine();
@@ -966,7 +966,7 @@ public class PlanningAgent extends AbstractPlayer {
     private void saveProblemFile() {
         String copyFileName = String.format("output/problems/problem_turn_%d.pddl", this.turn);
 
-        Path problemFile = Paths.get("planning/problem.pddl");
+        Path problemFile = Paths.get(this.gameInformation.problemFile);
         Path saveProblemFile = Paths.get(copyFileName);
 
         try {

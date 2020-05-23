@@ -121,6 +121,9 @@ if __name__ == '__main__':
     # Add domain file name
     game_information['domainFile'] = args.domain
 
+    # Add problem file name
+    game_information['problemFile'] = 'problem.pddl'
+
     # Add domain name
     game_information['domainName'] = get_domain_name(domain_content)
 
