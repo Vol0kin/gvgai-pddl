@@ -67,14 +67,12 @@
         </plugins>
     </build>
 
-
-
     <dependencies>
         <!-- https://mvnrepository.com/artifact/com.konghq/unirest-java -->
         <dependency>
             <groupId>com.konghq</groupId>
             <artifactId>unirest-java</artifactId>
-            <version>3.4.01</version>
+            <version>3.7.02</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.yaml/snakeyaml -->

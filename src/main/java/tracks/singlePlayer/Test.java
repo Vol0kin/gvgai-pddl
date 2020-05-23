@@ -33,6 +33,9 @@ public class Test {
 	@Option(names = {"-s", "--save"}, description = "Save runtime information (problems, plans and log).")
 	private boolean saveOutput;
 
+	@Option(names = {"--localhost"}, description = "Call planner running on localhost.")
+	private boolean localHost;
+
     public static void main(String[] args) {
     	// Load commandline arguments
     	Test test = new Test();
@@ -74,6 +77,7 @@ public class Test {
 			PlanningAgent.setGameConfigFile(test.configurationFile);
 			PlanningAgent.setDebugMode(test.debugMode);
 			PlanningAgent.setSaveInformation(test.saveOutput);
+			PlanningAgent.setLocalHost(test.localHost);
 			ArcadeMachine.runOneGame(game, level, visuals, controller, null, seed, 0);
 		}
     }

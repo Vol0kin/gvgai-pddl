@@ -64,6 +64,7 @@ public class PlanningAgent extends AbstractPlayer {
     protected static String gameConfigFile;
     protected static boolean debugMode;
     protected static boolean saveInformation;
+    protected static boolean localHost;
 
     // Agenda that contains preempted, current and reached goals
     protected Agenda agenda;
@@ -205,7 +206,7 @@ public class PlanningAgent extends AbstractPlayer {
             // Write PDDL predicates into the problem file
             this.createProblemFile();
 
-            this.PDDLPlan = findPlan();
+            this.PDDLPlan = this.findPlan();
             this.iterPlan = PDDLPlan.iterator();
             this.mustPlan = false;
 
@@ -451,14 +452,27 @@ public class PlanningAgent extends AbstractPlayer {
      */
     public PDDLPlan findPlan() throws PlannerException {
         // Read domain and problem files
-        String domain = readFile(this.gameInformation.domainFile),
-               problem = readFile("planning/problem.pddl");
+        String domain = readFile(this.gameInformation.domainFile);
+        String problem = readFile("planning/problem.pddl");
 
-        // Call online planner and get its response
-        HttpResponse<JsonNode> response = Unirest.post("http://solver.planning.domains/solve")
-                .header("accept", "application/json")
-                .field("domain", domain)
-                .field("problem", problem)
+
+        // Create JSON object which will be sent in the request's body
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("domain", domain);
+        jsonObject.put("problem", problem);
+
+        String url;
+
+        if (PlanningAgent.localHost) {
+            url = "http://localhost:5000/solve";
+        } else {
+            url = "http://solver.planning.domains/solve";
+        }
+
+        // Call planner and get its response as a JSON
+        HttpResponse<JsonNode> response = Unirest.post(url)
+                .header("Content-Type", "application/json")
+                .body(jsonObject)
                 .asJson();
 
         // Get the JSON from the body of the HTTP response
@@ -618,6 +632,10 @@ public class PlanningAgent extends AbstractPlayer {
 
     public static void setSaveInformation(boolean saveInformation) {
         PlanningAgent.saveInformation = saveInformation;
+    }
+
+    public static void setLocalHost(boolean localHost) {
+        PlanningAgent.localHost = localHost;
     }
 
     /**
