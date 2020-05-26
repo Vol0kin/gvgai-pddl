@@ -98,12 +98,24 @@ public class PDDLSingleGoal {
         if (o == null || this.getClass() != o.getClass()) {
             return false;
         }
+
         PDDLSingleGoal that = (PDDLSingleGoal) o;
 
-        return this.goalPredicate.equals(that.goalPredicate) &&
-                this.priority == that.priority &&
-                this.saveGoal == that.saveGoal &&
-                this.removeReachedGoalsList.equals(that.removeReachedGoalsList);
+        boolean areEqual;
 
+        if (this.removeReachedGoalsList != null && that.removeReachedGoalsList != null) {
+            areEqual = this.goalPredicate.equals(that.goalPredicate) &&
+                    this.priority == that.priority &&
+                    this.saveGoal == that.saveGoal &&
+                    this.removeReachedGoalsList.equals(that.removeReachedGoalsList);
+        } else if (this.removeReachedGoalsList == null && that.removeReachedGoalsList == null) {
+            areEqual = this.goalPredicate.equals(that.goalPredicate) &&
+                    this.priority == that.priority &&
+                    this.saveGoal == that.saveGoal;
+        } else {
+            areEqual = false;
+        }
+
+        return areEqual;
     }
 }
