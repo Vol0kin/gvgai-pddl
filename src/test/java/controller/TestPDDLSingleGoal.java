@@ -14,12 +14,12 @@ public class TestPDDLSingleGoal {
         PDDLSingleGoal singleGoal1 = new PDDLSingleGoal();
         PDDLSingleGoal singleGoal2 = new PDDLSingleGoal();
 
-        singleGoal1.setGoalPredicate("(at p c_1_1");
+        singleGoal1.setGoalPredicate("(at p c_1_1)");
         singleGoal1.setPriority(1);
         singleGoal1.setSaveGoal(false);
         singleGoal1.setRemoveReachedGoalsList(null);
 
-        singleGoal2.setGoalPredicate("(at p c_1_1");
+        singleGoal2.setGoalPredicate("(at p c_1_1)");
         singleGoal2.setPriority(1);
         singleGoal2.setSaveGoal(false);
         singleGoal2.setRemoveReachedGoalsList(Arrays.asList(new String[]{"(exists p)"}));
