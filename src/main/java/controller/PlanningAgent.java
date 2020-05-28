@@ -455,7 +455,6 @@ public class PlanningAgent extends AbstractPlayer {
         String domain = readFile(this.gameInformation.domainFile);
         String problem = readFile(this.gameInformation.problemFile);
 
-
         // Create JSON object which will be sent in the request's body
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("domain", domain);
