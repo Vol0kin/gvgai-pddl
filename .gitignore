@@ -97,7 +97,7 @@ target/
 
 # Extra files
 plan*.txt
-problem.pddl
+/problem.pddl
 
 # Virtual environment
 env/
