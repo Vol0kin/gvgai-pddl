@@ -191,20 +191,34 @@ public class PlanningAgent extends AbstractPlayer {
             // Set current goal
             this.agenda.setCurrentGoal();
 
-            // Save logging information
-            if (PlanningAgent.saveInformation) {
-                PlanningAgent.LOGGER.info(String.format(
-                        "TURN %d The following goal has been set as the current goal: %s",
-                        this.turn, this.agenda.getCurrentGoal().getGoalPredicate()));
-            }
-
             // SHOW DEBUG INFORMATION
             if (PlanningAgent.debugMode) {
                 this.displayDebugInformation("I don't have a plan to the current goal or I must replan!");
             }
 
             // Write PDDL predicates into the problem file
-            this.createProblemFile();
+            try {
+                this.createProblemFile();
+            } catch (NullPointerException e) {
+                if (PlanningAgent.debugMode) {
+                    this.printMessages("The agent has reached all goals but can't exit the level!", "Exiting...");
+                }
+
+                if (PlanningAgent.saveInformation) {
+                    PlanningAgent.LOGGER.warning(
+                            String.format("TURN %d All goals reached but agent can't completed the level.",
+                                    this.turn));
+                }
+
+                System.exit(1);
+            }
+
+            // Save logging information
+            if (PlanningAgent.saveInformation) {
+                PlanningAgent.LOGGER.info(String.format(
+                        "TURN %d The following goal has been set as the current goal: %s",
+                        this.turn, this.agenda.getCurrentGoal().getGoalPredicate()));
+            }
 
             this.PDDLPlan = this.findPlan();
             this.iterPlan = PDDLPlan.iterator();
