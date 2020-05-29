@@ -10,7 +10,5 @@ jobs:
     - os: osx
       osx_image: xcode9.2
 
-intall:
-    - ls -la test_files/
-    - mvn install -DskipTests=true -B -V
+intall: mvn install -DskipTests=true -B -V
 script: mvn test -B

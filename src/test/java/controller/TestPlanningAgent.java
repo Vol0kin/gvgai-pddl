@@ -72,7 +72,7 @@ public class TestPlanningAgent {
     public void testFindPlan() {
         PDDLPlan plan = agent.findPlan();
 
-        assertEquals(plan.getPDDLActions().size(), 8);
+        assertEquals(plan.getPDDLActions().size(), 12);
 
         agent.gameInformation.domainFile = "test_files/domain_error.pddl";
         assertThrows(PlannerException.class, () -> agent.findPlan());
