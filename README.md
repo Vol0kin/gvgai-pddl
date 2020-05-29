@@ -1,5 +1,6 @@
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 ![Java CI with Maven](https://github.com/Vol0kin/gvgai-pddl/workflows/Java%20CI%20with%20Maven/badge.svg)
+[![Build Status](https://travis-ci.org/Vol0kin/gvgai-pddl.svg?branch=master)](https://travis-ci.org/Vol0kin/gvgai-pddl)
 
 # gvgai-pddl
 
