@@ -7,8 +7,6 @@ jobs:
       dist: xenial
     - os: linux
       dist: bionic
-    - os: osx
-      osx_image: xcode9.2
 
 intall: mvn install -DskipTests=true -B -V
 script: mvn test -B
