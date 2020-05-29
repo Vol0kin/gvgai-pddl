@@ -423,7 +423,7 @@ public class PlanningAgent extends AbstractPlayer {
         // Check not planned goals
         for (PDDLAction.Effect effect: effects) {
             if (effect.getConditions().isEmpty()) {
-                // Check both lists and update them acorrdingly
+                // Check both lists and update them accordingly
                 PDDLSingleGoal modifiedGoal = this.checkSingleEffect(effect.getEffectPredicate());
 
                 if (modifiedGoal != null) {
