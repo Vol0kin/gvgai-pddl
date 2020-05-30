@@ -4,6 +4,14 @@ import re
 import yaml
 
 def check_pddl_extension(path):
+    """
+    Function that checks whether a file's extension is .pddl.
+
+    :parm path: Path of the file whose extension will be checked.
+    :returns: The file's path.
+    :raises ArgumentTypeError: Exception risen when the file doesn't have the
+                               correct extension.
+    """
     _, ext = os.path.splitext(path)
 
     if not ext.lower() == '.pddl':
@@ -13,6 +21,14 @@ def check_pddl_extension(path):
 
 
 def check_yaml_extension(path):
+    """
+    Function that checks whether a file's extension is .yaml.
+
+    :parm path: Path of the file whose extension will be checked.
+    :returns: The file's path.
+    :raises ArgumentTypeError: Exception risen when the file doesn't have the
+                               correct extension.
+    """
     _, ext = os.path.splitext(path)
 
     if not ext == '.yaml':
@@ -22,6 +38,12 @@ def check_yaml_extension(path):
 
 
 def get_domain_name(domain_content):
+    """
+    Function that extracts the domain name from a PDDL domain description.
+
+    :param domain_content: PDDL domain description.
+    :returns: Domain's name.
+    """
     domain_name = re.findall(r'domain\s+[a-zA-Z]+', domain_content)[0]
     domain_name = re.sub(r'\s+', ' ', domain_name).split()[-1]
 
@@ -29,6 +51,14 @@ def get_domain_name(domain_content):
 
 
 def process_pddl_action(pddl_action):
+    """
+    Function that transforms an action from a PDDL domain description to a GVGAI
+    action if it contains a certain string.
+
+    :param pddl_action: PDDL action to be translated.
+    :returns: None if the action couldn't be translated or a GVGAI action if it
+              has been successfully translated.
+    """
     gvgai_action = None
 
     if 'UP' in pddl_action:
@@ -46,6 +76,14 @@ def process_pddl_action(pddl_action):
 
 
 def get_pddl_actions(domain_content):
+    """
+    Function that gets the actions from a PDDL domain description along with
+    their default GVGAI action.
+
+    :param domain_content: PDDL domain description.
+    :returns: Dictionary containing the PDDL actions and their their default
+              translations
+    """
     # Get all the actions
     actions = re.findall(r'action\s+[a-zA-Z\-_]+' , domain_content)
 
@@ -59,6 +97,13 @@ def get_pddl_actions(domain_content):
 
 
 def get_game_elements(game_file):
+    """
+    Function that gets all the game elements from a game description file.
+
+    :param game_file: Game file path.
+    :returns: Returns a dictionary containing the game elements and a list of
+              empty PDDL predicates associated to them.
+    """
     game_elements = []
 
     with open(game_file) as f:
@@ -80,7 +125,7 @@ def get_game_elements(game_file):
 
 if __name__ == '__main__':
     # Create parser object
-    parser = argparse.ArgumentParser(description='Generate the game information file',
+    parser = argparse.ArgumentParser(description="Generate the game's configuration file.",
                                      allow_abbrev=False)
 
     # Add positional argument referred to the domain file
@@ -89,22 +134,26 @@ if __name__ == '__main__':
                         '--domain',
                         action='store',
                         type=check_pddl_extension,
+                        help='Domain file.',
                         required=True)
 
     # Add positional argument referred to the GVGAI game file
     parser.add_argument('-g',
                         '--game',
                         action='store',
+                        help='Game description file.',
                         required=True)
 
     # Add optional argument referred to the output file path
     parser.add_argument('-o',
                         '--output',
                         type=check_yaml_extension,
+                        help='Output file.',
                         action='store')
 
     # Add optional argument referred to the use of orientations
     parser.add_argument('--orientations',
+                        help='Use orientation predicates.',
                         action='store_true')
 
     # Parse arguments and get namespace
