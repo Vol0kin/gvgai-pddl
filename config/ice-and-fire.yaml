@@ -59,6 +59,7 @@ actionsCorrespondence:
   MOVE-DOWN-FIRE: ACTION_DOWN
   MOVE-LEFT-FIRE: ACTION_LEFT
   MOVE-RIGHT-FIRE: ACTION_RIGHT
+  PICK-BOOTS: null
 goals:
 - goalPredicate: (has-ice-boots a)
   priority: 1

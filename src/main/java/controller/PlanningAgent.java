@@ -782,7 +782,13 @@ public class PlanningAgent extends AbstractPlayer {
     private void createProblemFile() {
         String outGoal = this.agenda.getCurrentGoal().getGoalPredicate();
 
-        try (BufferedWriter bf = new BufferedWriter(new FileWriter(this.gameInformation.problemFile))) {
+        File outputProblemFile = new File(this.gameInformation.problemFile);
+
+        if (outputProblemFile.getParentFile() != null) {
+            outputProblemFile.getParentFile().mkdirs();
+        }
+
+        try (BufferedWriter bf = new BufferedWriter(new FileWriter(outputProblemFile))) {
             // Write problem name
             bf.write(String.format("(define (problem %sProblem)", this.gameInformation.domainName));
             bf.newLine();

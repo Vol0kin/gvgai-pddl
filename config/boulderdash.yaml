@@ -6,6 +6,8 @@ gameElementsCorrespondence:
   - (terrain-empty ?c)
   wall:
   - (terrain-wall ?c)
+  sword:
+  - (terrain-empty ?c)
   dirt:
   - (terrain-ground ?c)
   exitdoor:
@@ -67,6 +69,7 @@ actionsCorrespondence:
   DIG-DOWN: ACTION_USE
   DIG-LEFT: ACTION_USE
   DIG-RIGHT: ACTION_USE
+  EXIT-LEVEL: null
 goals:
 - goalPredicate: (got g_5_3)
   priority: 1
