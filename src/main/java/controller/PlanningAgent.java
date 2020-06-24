@@ -640,6 +640,89 @@ public class PlanningAgent extends AbstractPlayer {
         return gameStringMap;
     }
 
+    /**
+     * Method that creates a PDDL problem file. It writes the PDDL predicates, variables
+     * and the current goal to the problem file.
+     */
+    public void createProblemFile() {
+        String outGoal = this.agenda.getCurrentGoal().getGoalPredicate();
+
+        File outputProblemFile = new File(this.gameInformation.problemFile);
+
+        if (outputProblemFile.getParentFile() != null) {
+            outputProblemFile.getParentFile().mkdirs();
+        }
+
+        try (BufferedWriter bf = new BufferedWriter(new FileWriter(outputProblemFile))) {
+            // Write problem name
+            bf.write(String.format("(define (problem %sProblem)", this.gameInformation.domainName));
+            bf.newLine();
+
+            // Write domain that is used
+            bf.write(String.format("    (:domain %s)", this.gameInformation.domainName));
+            bf.newLine();
+
+            // Write the objects
+            // Each variable will be written
+            bf.write("    (:objects");
+            bf.newLine();
+
+            // Write each object
+            for (String key : this.PDDLGameStateObjects.keySet()) {
+                if (!this.PDDLGameStateObjects.get(key).isEmpty()) {
+                    String objectsStr = String.join(" ", this.PDDLGameStateObjects.get(key));
+                    objectsStr += String.format(" - %s", this.gameInformation.variablesTypes.get(key));
+                    bf.write(String.format("        %s", objectsStr));
+                    bf.newLine();
+                }
+            }
+
+            // Finish object writing
+            bf.write("    )");
+            bf.newLine();
+
+            // Start init writing
+            bf.write("    (:init");
+            bf.newLine();
+
+            // Write the predicates list into the file
+            for (String predicate : this.PDDLGameStatePredicates) {
+                bf.write(String.format("        %s", predicate));
+                bf.newLine();
+            }
+
+            // Finish init writing
+            bf.write("    )");
+            bf.newLine();
+
+            // Write goal
+            // THIS HAS TO CHANGE
+            bf.write("    (:goal");
+            bf.newLine();
+
+            bf.write("        (AND");
+            bf.newLine();
+
+            bf.write(String.format("            %s", outGoal));
+            bf.newLine();
+
+            bf.write("        )");
+            bf.newLine();
+
+            bf.write("    )");
+            bf.newLine();
+
+            // Finish problem writing
+            bf.write(")");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        if (PlanningAgent.saveInformation) {
+            this.saveProblemFile();
+        }
+    }
+
     public static void setGameConfigFile(String path) {
         PlanningAgent.gameConfigFile = path;
     }
@@ -781,89 +864,6 @@ public class PlanningAgent extends AbstractPlayer {
         }
 
         return modifiedGoal;
-    }
-
-    /**
-     * Method that creates a PDDL problem file. It writes the PDDL predicates, variables
-     * and the current goal to the problem file.
-     */
-    private void createProblemFile() {
-        String outGoal = this.agenda.getCurrentGoal().getGoalPredicate();
-
-        File outputProblemFile = new File(this.gameInformation.problemFile);
-
-        if (outputProblemFile.getParentFile() != null) {
-            outputProblemFile.getParentFile().mkdirs();
-        }
-
-        try (BufferedWriter bf = new BufferedWriter(new FileWriter(outputProblemFile))) {
-            // Write problem name
-            bf.write(String.format("(define (problem %sProblem)", this.gameInformation.domainName));
-            bf.newLine();
-
-            // Write domain that is used
-            bf.write(String.format("    (:domain %s)", this.gameInformation.domainName));
-            bf.newLine();
-
-            // Write the objects
-            // Each variable will be written
-            bf.write("    (:objects");
-            bf.newLine();
-
-            // Write each object
-            for (String key : this.PDDLGameStateObjects.keySet()) {
-                if (!this.PDDLGameStateObjects.get(key).isEmpty()) {
-                    String objectsStr = String.join(" ", this.PDDLGameStateObjects.get(key));
-                    objectsStr += String.format(" - %s", this.gameInformation.variablesTypes.get(key));
-                    bf.write(String.format("        %s", objectsStr));
-                    bf.newLine();
-                }
-            }
-
-            // Finish object writing
-            bf.write("    )");
-            bf.newLine();
-
-            // Start init writing
-            bf.write("    (:init");
-            bf.newLine();
-
-            // Write the predicates list into the file
-            for (String predicate : this.PDDLGameStatePredicates) {
-                bf.write(String.format("        %s", predicate));
-                bf.newLine();
-            }
-
-            // Finish init writing
-            bf.write("    )");
-            bf.newLine();
-
-            // Write goal
-            // THIS HAS TO CHANGE
-            bf.write("    (:goal");
-            bf.newLine();
-
-            bf.write("        (AND");
-            bf.newLine();
-
-            bf.write(String.format("            %s", outGoal));
-            bf.newLine();
-
-            bf.write("        )");
-            bf.newLine();
-
-            bf.write("    )");
-            bf.newLine();
-
-            // Finish problem writing
-            bf.write(")");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        if (PlanningAgent.saveInformation) {
-            this.saveProblemFile();
-        }
     }
 
     /**
