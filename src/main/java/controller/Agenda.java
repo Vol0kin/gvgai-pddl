@@ -33,7 +33,7 @@ import java.util.stream.Collectors;
  * and a list of reached goals (those goals that have been completed). Also, it stores
  * the current goal, which is the one that the agent is trying to achieve at
  * the moment.
- *
+ * <p>
  * The lists of pending goals and preempted goals are sorted by priority. See
  * {@link PDDLSingleGoal} to get more information.
  *
@@ -95,7 +95,7 @@ public class Agenda {
             // to their priority. Pending goals are preferred over preempted goals in case
             // their priorities are equal
             PDDLSingleGoal firstPending = this.pendingGoals.getFirst(),
-                           firstPreempted = this.preemptedGoals.getFirst();
+                    firstPreempted = this.preemptedGoals.getFirst();
 
             if (firstPreempted.getPriority() < firstPending.getPriority()) {
                 this.currentGoal = firstPreempted;
@@ -137,6 +137,7 @@ public class Agenda {
     /**
      * Method that allows to check whether a predicate is contained in the pending
      * goals list.
+     *
      * @param predicate Predicate to be searched.
      * @return Returns a PDDLSingleGoal instance containing the predicate if it is
      * found and null otherwise.
@@ -148,6 +149,7 @@ public class Agenda {
     /**
      * Method that allows to check whether a predicate is contained in the preempted
      * goals list.
+     *
      * @param predicate Predicate to be searched.
      * @return Returns a PDDLSingleGoal instance containing the predicate if it is
      * found and null otherwise.
@@ -159,6 +161,7 @@ public class Agenda {
     /**
      * Method that allows to move a goal instance from the pending goals list
      * to the reached goals list.
+     *
      * @param goal PDDLSingleGoal instance to be moved.
      */
     public void setReachedFromPending(PDDLSingleGoal goal) {
@@ -168,6 +171,7 @@ public class Agenda {
     /**
      * Method that allows to move a goal instance from the preempted goals list
      * to the reached goals list.
+     *
      * @param goal PDDLSingleGoal instance to be moved.
      */
     public void setReachedFromPreempted(PDDLSingleGoal goal) {
@@ -182,19 +186,19 @@ public class Agenda {
 
         builder.append("\nList of NOT PLANNED goals:");
 
-        for (PDDLSingleGoal pending: this.pendingGoals) {
+        for (PDDLSingleGoal pending : this.pendingGoals) {
             builder.append(pending.toString());
         }
 
         builder.append("\n\nList of PREEMPTED (halted) goals:");
 
-        for (PDDLSingleGoal preempted: this.preemptedGoals) {
+        for (PDDLSingleGoal preempted : this.preemptedGoals) {
             builder.append(preempted.toString());
         }
 
         builder.append("\n\nList of REACHED goals:");
 
-        for (PDDLSingleGoal reached: this.reachedGoals) {
+        for (PDDLSingleGoal reached : this.reachedGoals) {
             builder.append(reached.toString());
         }
 
@@ -211,6 +215,7 @@ public class Agenda {
 
     /**
      * Method that sorts a list of goals. The list is sorted by priority.
+     *
      * @param list LinkedList of goals to be sorted
      * @return Returns the input list sorted by priority.
      */
@@ -224,6 +229,7 @@ public class Agenda {
     /**
      * Method used to check if a PDDL predicate is contained in some list of the
      * agenda.
+     *
      * @param predicate Predicate to be searched in a given list.
      * @param goalsList List of PDDLSingleGoal in which the predicate is searched.
      * @return Returns a PDDLSingleGoal instance containing the predicate if it is
@@ -232,7 +238,7 @@ public class Agenda {
     private PDDLSingleGoal containedPredicateInGoalsList(String predicate, LinkedList<PDDLSingleGoal> goalsList) {
         PDDLSingleGoal containedGoal = null;
 
-        for (PDDLSingleGoal goal: goalsList) {
+        for (PDDLSingleGoal goal : goalsList) {
             if (goal.getGoalPredicate().equals(predicate)) {
                 containedGoal = goal;
             }
@@ -244,7 +250,8 @@ public class Agenda {
     /**
      * Method that allows to move a goal instance from a given list to the reached
      * goals list.
-     * @param goal PDDLSingleGoal instance to be moved.
+     *
+     * @param goal      PDDLSingleGoal instance to be moved.
      * @param goalsList List from which the goal will be removed.
      */
     private void setReachedFromList(PDDLSingleGoal goal, LinkedList<PDDLSingleGoal> goalsList) {

@@ -23,12 +23,20 @@
 package controller;
 
 import core.game.Observation;
-import core.player.AbstractPlayer;
 import core.game.StateObservation;
+import core.player.AbstractPlayer;
 import core.vgdl.VGDLRegistry;
-import tools.Vector2d;
-import tools.ElapsedCpuTimer;
+import kong.unirest.HttpResponse;
+import kong.unirest.JsonNode;
+import kong.unirest.Unirest;
+import kong.unirest.json.JSONArray;
+import kong.unirest.json.JSONException;
+import kong.unirest.json.JSONObject;
 import ontology.Types;
+import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.constructor.Constructor;
+import tools.ElapsedCpuTimer;
+import tools.Vector2d;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -42,16 +50,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import kong.unirest.HttpResponse;
-import kong.unirest.JsonNode;
-import kong.unirest.Unirest;
-import kong.unirest.json.JSONArray;
-import kong.unirest.json.JSONException;
-import kong.unirest.json.JSONObject;
-
-import org.yaml.snakeyaml.Yaml;
-import org.yaml.snakeyaml.constructor.Constructor;
 
 /**
  * Planning agent class. It represents an agent which uses a planner to reach
@@ -76,10 +74,10 @@ public class PlanningAgent extends AbstractPlayer {
     // Plan to the current goal and iterator to iterate over it
     protected PDDLPlan PDDLPlan;
     protected Iterator<PDDLAction> iterPlan;
-    
+
     // Game information data structure (loaded from a .yaml file) and file path
     protected GameInformation gameInformation;
-    
+
     // List of reached goal predicates that have to be saved
     protected List<String> reachedSavedGoalPredicates;
 
@@ -98,8 +96,9 @@ public class PlanningAgent extends AbstractPlayer {
 
     /**
      * Class constructor. Creates a new planning agent.
+     *
      * @param stateObservation State observation of the game.
-     * @param elapsedCpuTimer Elapsed CPU time.
+     * @param elapsedCpuTimer  Elapsed CPU time.
      */
     public PlanningAgent(StateObservation stateObservation, ElapsedCpuTimer elapsedCpuTimer) {
         // Load game information
@@ -163,8 +162,9 @@ public class PlanningAgent extends AbstractPlayer {
     /**
      * Method called in each turn that returns the next action that the agent
      * will execute. It is responsible for controlling the agent's behaviour.
+     *
      * @param stateObservation State observation of the game.
-     * @param elapsedCpuTimer Elapsed CPU time
+     * @param elapsedCpuTimer  Elapsed CPU time
      * @return Returns the action that will be executed by the agent in the
      * current turn.
      */
@@ -292,8 +292,8 @@ public class PlanningAgent extends AbstractPlayer {
                     // SHOW DEBUG INFORMATION
                     if (PlanningAgent.debugMode) {
                         this.showMessagesWait(String.format(
-                                    "The following goal is going the be reached after executing the next action: %s",
-                                    this.agenda.getCurrentGoal()),
+                                "The following goal is going the be reached after executing the next action: %s",
+                                this.agenda.getCurrentGoal()),
                                 "\nIn the next turn I am going to search for a new plan!");
                     }
                     // Save the reached goal in case it has to be saved
@@ -303,7 +303,7 @@ public class PlanningAgent extends AbstractPlayer {
 
                     // Remove other reached goals if the current reached goal needs to do it
                     if (this.agenda.getCurrentGoal().getRemoveReachedGoalsList() != null) {
-                        for (String reachedGoal: this.agenda.getCurrentGoal().getRemoveReachedGoalsList()) {
+                        for (String reachedGoal : this.agenda.getCurrentGoal().getRemoveReachedGoalsList()) {
                             this.reachedSavedGoalPredicates.remove(reachedGoal);
                         }
                     }
@@ -329,7 +329,7 @@ public class PlanningAgent extends AbstractPlayer {
                 // SHOW DEBUG INFORMATION
                 if (PlanningAgent.debugMode) {
                     this.showMessagesWait("One or more preconditions couldn't be satisfied",
-                            "The following goal is going to be halted:"+ this.agenda.getCurrentGoal(),
+                            "The following goal is going to be halted:" + this.agenda.getCurrentGoal(),
                             "\nI am going to select a new goal and find a plan to it in the following turn!");
                 }
 
@@ -370,7 +370,8 @@ public class PlanningAgent extends AbstractPlayer {
      * not. In this case, the preconditions are going to be satisfied if all the
      * positive preconditions are contained in the list of PDDL predicates and
      * all the negative ones aren't contained.
-     * @param preconditions List of preconditions to check.
+     *
+     * @param preconditions   List of preconditions to check.
      * @param showInformation Boolean telling whether to show or not debug information.
      * @return Returns true if all preconditions are satisfied and false otherwise.
      */
@@ -379,7 +380,7 @@ public class PlanningAgent extends AbstractPlayer {
         List<String> falsePreconditions = new ArrayList<>();
 
         // Check whether all preconditions are satisfied
-        for (String precondition: preconditions) {
+        for (String precondition : preconditions) {
             // If the precondition is negative, it has to be checked that the positive can't be found
             if (precondition.contains("not")) {
                 String positivePred = precondition.replace("(not ", "");
@@ -412,6 +413,7 @@ public class PlanningAgent extends AbstractPlayer {
      * the effects of an action. In case some goal is reached beforehand, the
      * agenda is updated accordingly.
      * updates the agenda accordingly
+     *
      * @param effects List that contains the effect predicates of an action that
      *                will be checked.
      * @return Returns true if some goal has been reached beforehand and false
@@ -421,7 +423,7 @@ public class PlanningAgent extends AbstractPlayer {
         List<PDDLSingleGoal> modifiedGoals = new ArrayList<>();
 
         // Check not planned goals
-        for (PDDLAction.Effect effect: effects) {
+        for (PDDLAction.Effect effect : effects) {
             if (effect.getConditions().isEmpty()) {
                 // Check both lists and update them accordingly
                 PDDLSingleGoal modifiedGoal = this.checkSingleEffect(effect.getEffectPredicate());
@@ -461,6 +463,7 @@ public class PlanningAgent extends AbstractPlayer {
      * Method that allows the agent to find a plan to the current given goal. It calls
      * the planner and translates its output, generating in the process a new PDDLPlan
      * instance.
+     *
      * @return Returns a new PDDLPlan instance.
      * @throws PlannerException Thrown when the planner's response status is not OK.
      */
@@ -489,7 +492,7 @@ public class PlanningAgent extends AbstractPlayer {
                 .asJson();
 
         // Get the JSON from the body of the HTTP response
-        JSONObject responseBody =  response.getBody().getObject();
+        JSONObject responseBody = response.getBody().getObject();
 
         // SHOW DEBUG INFORMATION
         if (!responseBody.getString("status").equals("ok")) {
@@ -497,7 +500,7 @@ public class PlanningAgent extends AbstractPlayer {
 
             try {
                 exceptionMessage = responseBody.getJSONObject("result").getString("output");
-            } catch (JSONException jsonException){
+            } catch (JSONException jsonException) {
                 exceptionMessage = responseBody.getString("result");
             } finally {
                 throw new PlannerException(exceptionMessage);
@@ -516,6 +519,7 @@ public class PlanningAgent extends AbstractPlayer {
 
     /**
      * Method that translates a game state observation to PDDL predicates.
+     *
      * @param stateObservation State observation of the game.
      */
     public void translateGameStateToPDDL(StateObservation stateObservation) {
@@ -531,7 +535,7 @@ public class PlanningAgent extends AbstractPlayer {
         // Process game elements
         for (int y = 0; y < Y_MAX; y++) {
             for (int x = 0; x < X_MAX; x++) {
-                for (String cellObservation: gameMap[x][y]) {
+                for (String cellObservation : gameMap[x][y]) {
                     // If the observation is in the domain, instantiate its predicates
                     if (this.gameInformation.gameElementsCorrespondence.containsKey(cellObservation)) {
                         List<String> predicateList = this.gameInformation.gameElementsCorrespondence.get(cellObservation);
@@ -600,6 +604,7 @@ public class PlanningAgent extends AbstractPlayer {
      * Method that translates a game state observation to a matrix of strings which
      * represent the elements of the game in each position according to the VGDDL
      * registry. There can be more than one game element in each position.
+     *
      * @param stateObservation State observation of the game.
      * @return Returns a matrix containing the elements of the game in each position.
      */
@@ -620,7 +625,7 @@ public class PlanningAgent extends AbstractPlayer {
         for (int y = 0; y < Y_MAX; y++) {
             for (int x = 0; x < X_MAX; x++) {
                 gameStringMap[x][y] = new HashSet<>();
-                
+
                 if (gameState[x][y].size() > 0) {
                     for (int i = 0; i < gameState[x][y].size(); i++) {
                         int itype = gameState[x][y].get(i).itype;
@@ -654,6 +659,7 @@ public class PlanningAgent extends AbstractPlayer {
     /**
      * Method that generates the connection predicates between the cells of the
      * map.
+     *
      * @param stateObservation State observation of the game.
      * @return Returns a set which preserves insertion order and contains
      * the PDDL predicates associated to the cells connections.
@@ -720,6 +726,7 @@ public class PlanningAgent extends AbstractPlayer {
     /**
      * Method used to extract the variables from the predicates associated to a game
      * element and associate them to game elements directly.
+     *
      * @return Returns a mapping between the game elements and the variables
      * associated to them.
      */
@@ -730,12 +737,12 @@ public class PlanningAgent extends AbstractPlayer {
         Pattern variablePattern = Pattern.compile("\\?[a-zA-Z]+");
 
         // Iterate over all the pairs <game element: [predicates]>
-        for (Map.Entry<String, ArrayList<String>> entry: this.gameInformation.gameElementsCorrespondence.entrySet()) {
+        for (Map.Entry<String, ArrayList<String>> entry : this.gameInformation.gameElementsCorrespondence.entrySet()) {
             String gameObservation = entry.getKey();
             Set<String> variables = new HashSet<>();
 
             // Iterate over the predicates searching for variables
-            for (String observation: entry.getValue()) {
+            for (String observation : entry.getValue()) {
                 Matcher variableMatcher = variablePattern.matcher(observation);
 
                 while (variableMatcher.find()) {
@@ -755,6 +762,7 @@ public class PlanningAgent extends AbstractPlayer {
     /**
      * Method that checks whether a single effect predicate is contained
      * in the agenda.
+     *
      * @param effect Effect predicate to be checked.
      * @return Returns a PDDLSingleGoal instance which contains the effect
      * predicate if it has been found in the agenda and null otherwise.
@@ -803,7 +811,7 @@ public class PlanningAgent extends AbstractPlayer {
             bf.newLine();
 
             // Write each object
-            for (String key: this.PDDLGameStateObjects.keySet()) {
+            for (String key : this.PDDLGameStateObjects.keySet()) {
                 if (!this.PDDLGameStateObjects.get(key).isEmpty()) {
                     String objectsStr = String.join(" ", this.PDDLGameStateObjects.get(key));
                     objectsStr += String.format(" - %s", this.gameInformation.variablesTypes.get(key));
@@ -821,8 +829,8 @@ public class PlanningAgent extends AbstractPlayer {
             bf.newLine();
 
             // Write the predicates list into the file
-            for (String predicate: this.PDDLGameStatePredicates) {
-                bf.write(String.format( "        %s", predicate));
+            for (String predicate : this.PDDLGameStatePredicates) {
+                bf.write(String.format("        %s", predicate));
                 bf.newLine();
             }
 
@@ -860,6 +868,7 @@ public class PlanningAgent extends AbstractPlayer {
 
     /**
      * Method that reads the content of a given file.
+     *
      * @param filename Path of the file to be read.
      * @return Returns the content of the file.
      */
@@ -882,6 +891,7 @@ public class PlanningAgent extends AbstractPlayer {
      * of the available options. These options include displaying information about
      * the agenda, displaying information about the current plan or continuing the
      * program's execution. This method is used when the debug mode is enabled.
+     *
      * @param messages Messages to be printed.
      */
     private void displayDebugInformation(String... messages) {
@@ -927,6 +937,7 @@ public class PlanningAgent extends AbstractPlayer {
     /**
      * Method that prints an array of messages and waits for the user's input.
      * This method is used when the debug mode is enabled.
+     *
      * @param messages Messages to be printed.
      */
     private void showMessagesWait(String... messages) {
@@ -941,10 +952,11 @@ public class PlanningAgent extends AbstractPlayer {
     /**
      * Method that prints an array of messages. This method is used when the debug
      * mode is enabled.
+     *
      * @param messages Messages to be printed.
      */
     private void printMessages(String... messages) {
-        for (String m: messages) {
+        for (String m : messages) {
             System.out.println(m);
         }
     }
@@ -957,7 +969,7 @@ public class PlanningAgent extends AbstractPlayer {
     private void createOutputDirectories() {
         // List of directories
         List<String> directories = Stream.of("output", "output/problems", "output/plans")
-                                            .collect(Collectors.toList());
+                .collect(Collectors.toList());
 
         // Delete top-level directory recursively if it exists
         if (Files.exists(Paths.get(directories.get(0)))) {
@@ -972,7 +984,7 @@ public class PlanningAgent extends AbstractPlayer {
         }
 
         // Create output directories
-        for (String dir: directories) {
+        for (String dir : directories) {
             new File(dir).mkdir();
         }
     }
@@ -1003,6 +1015,7 @@ public class PlanningAgent extends AbstractPlayer {
      * Method that saves the plan generated by the planner into a file within
      * the output directories structure. It is saved in the directory
      * 'output/plans'.
+     *
      * @param plannerResponse
      */
     private void savePlan(JSONObject plannerResponse) {

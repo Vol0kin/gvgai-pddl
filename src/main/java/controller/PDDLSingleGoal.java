@@ -23,7 +23,6 @@
 package controller;
 
 import java.util.List;
-import java.util.Objects;
 
 /**
  * Class that represents a PDDL goal. A PDDLSingleGoal object contains a PDDL
@@ -42,7 +41,8 @@ public class PDDLSingleGoal {
     /**
      * Class default constructor. Creates a new PDDLSingleGoal instance.
      */
-    public  PDDLSingleGoal() {}
+    public PDDLSingleGoal() {
+    }
 
     public String getGoalPredicate() {
         return this.goalPredicate;

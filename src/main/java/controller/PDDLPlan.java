@@ -27,9 +27,9 @@ import kong.unirest.json.JSONObject;
 import ontology.Types;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Iterator;
 import java.util.stream.Collectors;
 
 /**
@@ -39,7 +39,7 @@ import java.util.stream.Collectors;
  *
  * @author Vladislav Nikolov Vasilev
  */
-public class PDDLPlan implements Iterable<PDDLAction>{
+public class PDDLPlan implements Iterable<PDDLAction> {
     private List<PDDLAction> PDDLActions;
 
     /**
@@ -52,8 +52,8 @@ public class PDDLPlan implements Iterable<PDDLAction>{
     /**
      * Class constructor. Creates an object with a valid plan.
      *
-     * @param plannerResponse JSONObject that represents the planner's response. It must
-     *                        be a valid response (a response that contains a valid plan).
+     * @param plannerResponse      JSONObject that represents the planner's response. It must
+     *                             be a valid response (a response that contains a valid plan).
      * @param actionCorrespondence Map that represents the correspondence between PDDL and
      *                             GVGAI actions.
      */
@@ -82,9 +82,9 @@ public class PDDLPlan implements Iterable<PDDLAction>{
         // Process resulting list of actions removing all null actions. These actions are the ones
         // that don't have a correspondence
         this.PDDLActions = PDDLActionList
-                        .stream()
-                        .filter(PDDLAction -> PDDLAction.getGVGAIAction() != null)
-                        .collect(Collectors.toList());
+                .stream()
+                .filter(PDDLAction -> PDDLAction.getGVGAIAction() != null)
+                .collect(Collectors.toList());
     }
 
     public List<PDDLAction> getPDDLActions() {
@@ -98,7 +98,7 @@ public class PDDLPlan implements Iterable<PDDLAction>{
         builder.append("\n--------------------------------------------------------------------------------\n");
         builder.append("\n------------------------------------  PLAN  ------------------------------------\n");
 
-        for (PDDLAction action: this.PDDLActions) {
+        for (PDDLAction action : this.PDDLActions) {
             builder.append(action.toString());
         }
 

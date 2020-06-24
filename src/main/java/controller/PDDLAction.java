@@ -22,11 +22,15 @@
  */
 package controller;
 
-import java.util.*;
-import java.util.regex.*;
-
 import ontology.Types;
 import tools.Pair;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Class that represents a PDDL action. A PDDLAction object contains a PDDL
@@ -53,9 +57,10 @@ public class PDDLAction {
         /**
          * Class constructor. Creates a new instance with a given effect predicate
          * and a list of conditions.
+         *
          * @param effectPredicate Instantiated effect predicate.
-         * @param conditions List of conditions that must be met for the effect to
-         *                   take place.
+         * @param conditions      List of conditions that must be met for the effect to
+         *                        take place.
          */
         public Effect(String effectPredicate, List<String> conditions) {
             this.effectPredicate = effectPredicate;
@@ -65,6 +70,7 @@ public class PDDLAction {
         /**
          * Class constructor. Creates a new instance from a given effect predicate.
          * The list of conditions will be empty, since there are none.
+         *
          * @param effectPredicate Instantiated effect predicate.
          */
         public Effect(String effectPredicate) {
@@ -87,9 +93,10 @@ public class PDDLAction {
 
     /**
      * Class constructor.
-     * @param actionInstance String that contains an instantiated PDDL action.
-     * @param actionDescription String that contains the description of an action
-     *                          (action name, parameters, preconditions and effects).
+     *
+     * @param actionInstance       String that contains an instantiated PDDL action.
+     * @param actionDescription    String that contains the description of an action
+     *                             (action name, parameters, preconditions and effects).
      * @param actionCorrespondence Map that contains the correspondence from a PDDL
      *                             action to a GVGAI action.
      */
@@ -176,11 +183,12 @@ public class PDDLAction {
     /**
      * Method that reads an action's description and obtains all the effects
      * associated to that action. All of the effects are instantiated.
+     *
      * @param actionDescription String that contains the description of an action
      *                          (action name, parameters, preconditions and effects).
      * @return Returns a list containing the instantiated effects.
      */
-    private List<Effect> processEffectsFromActionDescription(String actionDescription){
+    private List<Effect> processEffectsFromActionDescription(String actionDescription) {
         // Get effects match
         String effectsMatch = this.matchFormatPattern(Pattern.compile(":effect[^:]+"),
                 actionDescription,
@@ -191,7 +199,7 @@ public class PDDLAction {
         List<Effect> actionEffects = new ArrayList<>();
 
         // Process each effect
-        for (String effect: splitEffectsList) {
+        for (String effect : splitEffectsList) {
             if (effect.contains("when")) {
                 // Split effect into a list of conditions and a list of effects
                 Pair<List<String>, List<String>> conditionsEffectsPair = this.splitConditionsFromEffects(effect);
@@ -211,8 +219,9 @@ public class PDDLAction {
      * Method that matches a part of an action description, removing all extra
      * spaces and parentheses. It can be used to retrieve the effects and the
      * preconditions from an action description.
-     * @param pattern Pattern to be found in the description.
-     * @param description String containing the action's description.
+     *
+     * @param pattern       Pattern to be found in the description.
+     * @param description   String containing the action's description.
      * @param removeElement Element to be removed from the string.
      * @return Returns a formatted string containing the match.
      */
@@ -249,6 +258,7 @@ public class PDDLAction {
 
     /**
      * Method that splits the conditions from the effects.
+     *
      * @param description String which contains the conditions and the effects.
      * @return Returns a pair containing a list of conditions and a list of
      * effects which depend on those conditions.
@@ -285,6 +295,7 @@ public class PDDLAction {
     /**
      * Method that allows to split a given description into parenthesized blocks
      * according to the opened and closed parentheses found in the string.
+     *
      * @param description String to be split into blocks.
      * @return Returns a list of parenthesized blocks.
      */
@@ -293,7 +304,7 @@ public class PDDLAction {
         StringBuilder builder = new StringBuilder();
         int numParentheses = 0;
 
-        for (char c: description.toCharArray()) {
+        for (char c : description.toCharArray()) {
             boolean changed = false;
 
             if (c == '(') {

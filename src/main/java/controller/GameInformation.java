@@ -22,10 +22,11 @@
  */
 package controller;
 
+import ontology.Types;
+
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Map;
-import ontology.Types;
 
 /**
  * Class that contains the game's information. It is loaded from a YAML configuration
@@ -46,5 +47,6 @@ public class GameInformation {
     public String cellVariable;
     public String avatarVariable;
 
-    public GameInformation() { }
+    public GameInformation() {
+    }
 }
