@@ -79,6 +79,7 @@ public class Test {
 			PlanningAgent.setSaveInformation(test.saveOutput);
 			PlanningAgent.setLocalHost(test.localHost);
 			ArcadeMachine.runOneGame(game, level, visuals, controller, null, seed, 0);
+			PlanningAgent.displayStats();
 		}
     }
 }

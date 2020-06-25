@@ -91,6 +91,12 @@ public class PlanningAgent extends AbstractPlayer {
     // Variable that indicates the game's turn
     protected int turn;
 
+    // Runtime information
+    protected static long executionTime = 0;
+    protected static int callsPlanner = 0;
+    protected static int numDiscrepancies = 0;
+    protected static int numGoals;
+
     // Logger
     private final static Logger LOGGER = Logger.getLogger(PlanningAgent.class.getName());
 
@@ -157,6 +163,8 @@ public class PlanningAgent extends AbstractPlayer {
                 e.printStackTrace();
             }
         }
+
+        PlanningAgent.numGoals = this.agenda.getPendingGoals().size();
     }
 
     /**
@@ -223,6 +231,7 @@ public class PlanningAgent extends AbstractPlayer {
             this.PDDLPlan = this.findPlan();
             this.iterPlan = PDDLPlan.iterator();
             this.mustPlan = false;
+            PlanningAgent.callsPlanner++;
 
             // SHOW DEBUG INFORMATION
             if (PlanningAgent.debugMode) {
@@ -326,6 +335,8 @@ public class PlanningAgent extends AbstractPlayer {
                     }
                 }
             } else {
+                PlanningAgent.numDiscrepancies++;
+
                 // SHOW DEBUG INFORMATION
                 if (PlanningAgent.debugMode) {
                     this.showMessagesWait("One or more preconditions couldn't be satisfied",
@@ -361,6 +372,8 @@ public class PlanningAgent extends AbstractPlayer {
                 e.printStackTrace();
             }
         }
+
+        PlanningAgent.executionTime += elapsedCpuTimer.elapsedMillis();
 
         return action;
     }
@@ -737,6 +750,19 @@ public class PlanningAgent extends AbstractPlayer {
 
     public static void setLocalHost(boolean localHost) {
         PlanningAgent.localHost = localHost;
+    }
+
+    /**
+     * Method used to display game stats after the execution has finished. It displays
+     * the execution time, the number of goals that were reached, the number of times
+     * the planner was called and the number of discrepancies that were found.
+     */
+    public static void displayStats() {
+        System.out.println("\n----STATS----\n");
+        System.out.println("Execution time: " + PlanningAgent.executionTime + " ms");
+        System.out.println("Number of goals: " + PlanningAgent.numGoals);
+        System.out.println("Number of time the planner was called: " + PlanningAgent.callsPlanner);
+        System.out.println("Number of discrepancies: " + PlanningAgent.numDiscrepancies);
     }
 
     /**
