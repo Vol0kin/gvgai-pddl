@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.stream.Stream;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 
 public class TestPDDLPlan {
     private PDDLPlan pddlPlan;
@@ -80,4 +81,12 @@ public class TestPDDLPlan {
         assertEquals(this.pddlPlan.getPDDLActions().size(), 12);
     }
 
+    @Test
+    public void testClearPlan() {
+        this.pddlPlan = new PDDLPlan(responseBody, actionsCorrespondence);
+        assertNotEquals(this.pddlPlan.getPDDLActions().size(), 0);
+
+        this.pddlPlan.clearPlan();
+        assertEquals(this.pddlPlan.getPDDLActions().size(), 0);
+    }
 }

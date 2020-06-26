@@ -327,7 +327,7 @@ public class PlanningAgent extends AbstractPlayer {
                     // Update reached goals
                     this.agenda.updateReachedGoals();
                     this.mustPlan = true;
-                    this.PDDLPlan.getPDDLActions().clear();
+                    this.PDDLPlan.clearPlan();
 
                     // SHOW DEBUG INFORMATION
                     if (PlanningAgent.debugMode) {
@@ -353,7 +353,7 @@ public class PlanningAgent extends AbstractPlayer {
 
                 this.agenda.haltCurrentGoal();
                 this.mustPlan = true;
-                this.PDDLPlan.getPDDLActions().clear();
+                this.PDDLPlan.clearPlan();
 
                 // SHOW DEBUG INFORMATION
                 if (PlanningAgent.debugMode) {

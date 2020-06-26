@@ -91,6 +91,14 @@ public class PDDLPlan implements Iterable<PDDLAction> {
         return this.PDDLActions;
     }
 
+    /**
+     * Method used to clear the plan. It removes all the actions from the plan, leaving an
+     * empty plan.
+     */
+    public void clearPlan() {
+        this.PDDLActions.clear();
+    }
+
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
