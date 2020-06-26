@@ -432,11 +432,11 @@ public class PlanningAgent extends AbstractPlayer {
      * @return Returns true if some goal has been reached beforehand and false
      * otherwise.
      */
-    public boolean checkEarlyReachedGoals(List<PDDLAction.Effect> effects) {
+    public boolean checkEarlyReachedGoals(List<PDDLAction.PDDLEffect> effects) {
         List<PDDLSingleGoal> modifiedGoals = new ArrayList<>();
 
         // Check not planned goals
-        for (PDDLAction.Effect effect : effects) {
+        for (PDDLAction.PDDLEffect effect : effects) {
             if (effect.getConditions().isEmpty()) {
                 // Check both lists and update them accordingly
                 PDDLSingleGoal modifiedGoal = this.checkSingleEffect(effect.getEffectPredicate());
@@ -872,7 +872,7 @@ public class PlanningAgent extends AbstractPlayer {
      * Method that checks whether a single effect predicate is contained
      * in the agenda.
      *
-     * @param effect Effect predicate to be checked.
+     * @param effect PDDLEffect predicate to be checked.
      * @return Returns a PDDLSingleGoal instance which contains the effect
      * predicate if it has been found in the agenda and null otherwise.
      */

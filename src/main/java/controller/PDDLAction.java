@@ -43,14 +43,14 @@ public class PDDLAction {
     private String actionInstance;
     private Types.ACTIONS GVGAIAction;
     private List<String> preconditions;
-    private List<Effect> effects;
+    private List<PDDLEffect> effects;
 
     /**
      * Class that represents an effect of a PDDL action. An effect is consists of
      * an instantiated effect predicate and a list of conditions that must be met
      * for the effect to take place.
      */
-    public class Effect {
+    public class PDDLEffect {
         private String effectPredicate;
         private List<String> conditions;
 
@@ -62,7 +62,7 @@ public class PDDLAction {
          * @param conditions      List of conditions that must be met for the effect to
          *                        take place.
          */
-        public Effect(String effectPredicate, List<String> conditions) {
+        public PDDLEffect(String effectPredicate, List<String> conditions) {
             this.effectPredicate = effectPredicate;
             this.conditions = conditions;
         }
@@ -73,7 +73,7 @@ public class PDDLAction {
          *
          * @param effectPredicate Instantiated effect predicate.
          */
-        public Effect(String effectPredicate) {
+        public PDDLEffect(String effectPredicate) {
             this(effectPredicate, new ArrayList<>());
         }
 
@@ -87,7 +87,7 @@ public class PDDLAction {
 
         @Override
         public String toString() {
-            return "{ Effect predicate: " + this.effectPredicate + ", Conditions: " + this.conditions + " }";
+            return "{ PDDLEffect predicate: " + this.effectPredicate + ", Conditions: " + this.conditions + " }";
         }
     }
 
@@ -119,7 +119,7 @@ public class PDDLAction {
         return this.GVGAIAction;
     }
 
-    public List<Effect> getEffects() {
+    public List<PDDLEffect> getEffects() {
         return this.effects;
     }
 
@@ -188,7 +188,7 @@ public class PDDLAction {
      *                          (action name, parameters, preconditions and effects).
      * @return Returns a list containing the instantiated effects.
      */
-    private List<Effect> processEffectsFromActionDescription(String actionDescription) {
+    private List<PDDLEffect> processEffectsFromActionDescription(String actionDescription) {
         // Get effects match
         String effectsMatch = this.matchFormatPattern(Pattern.compile(":effect[^:]+"),
                 actionDescription,
@@ -196,7 +196,7 @@ public class PDDLAction {
 
         // Split effects string into a list of effects
         List<String> splitEffectsList = this.splitDescriptionIntoBlocks(effectsMatch);
-        List<Effect> actionEffects = new ArrayList<>();
+        List<PDDLEffect> actionEffects = new ArrayList<>();
 
         // Process each effect
         for (String effect : splitEffectsList) {
@@ -206,9 +206,9 @@ public class PDDLAction {
                 List<String> conditionsList = conditionsEffectsPair.first;
                 List<String> effectsList = conditionsEffectsPair.second;
 
-                effectsList.stream().forEach(e -> actionEffects.add(new Effect(e, conditionsList)));
+                effectsList.stream().forEach(e -> actionEffects.add(new PDDLEffect(e, conditionsList)));
             } else {
-                actionEffects.add(new Effect(effect));
+                actionEffects.add(new PDDLEffect(effect));
             }
         }
 

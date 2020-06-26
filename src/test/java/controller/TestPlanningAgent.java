@@ -113,11 +113,11 @@ public class TestPlanningAgent {
         PDDLAction action = new PDDLAction(actionInstance, actionDescription, actionCorrespondence);
 
         // Lists of effects
-        ArrayList<PDDLAction.Effect> effectsReached = new ArrayList<>();
-        ArrayList<PDDLAction.Effect> effectsNotReached = new ArrayList<>();
+        ArrayList<PDDLAction.PDDLEffect> effectsReached = new ArrayList<>();
+        ArrayList<PDDLAction.PDDLEffect> effectsNotReached = new ArrayList<>();
 
-        effectsReached.add(action.new Effect("(got g_16_9)", new ArrayList<>()));
-        effectsNotReached.add(action.new Effect("(at p c_10_7)", new ArrayList<>()));
+        effectsReached.add(action.new PDDLEffect("(got g_16_9)", new ArrayList<>()));
+        effectsNotReached.add(action.new PDDLEffect("(at p c_10_7)", new ArrayList<>()));
 
         assertTrue(agent.checkEarlyReachedGoals(effectsReached));
         assertFalse(agent.checkEarlyReachedGoals(effectsNotReached));
