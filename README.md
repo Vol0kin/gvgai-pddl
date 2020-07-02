@@ -2,7 +2,7 @@
 ![Java CI with Maven](https://github.com/Vol0kin/gvgai-pddl/workflows/Java%20CI%20with%20Maven/badge.svg)
 [![Build Status](https://travis-ci.org/Vol0kin/gvgai-pddl.svg?branch=master)](https://travis-ci.org/Vol0kin/gvgai-pddl)
 
-# gvgai-pddl
+# :robot: GVGAI-PDDL
 
 Implementation of a planning-based agent in GVGAI. This project is being developed as part
 of my Bachelor's thesis.
@@ -14,13 +14,13 @@ your own project, please check [the following page](http://solver.planning.domai
 >This projects is being developed and partially funded under the framework of the Spanish MINECO
 R&D Projects TIN2015-71618-R and RTI2018-098460-B-I00.
 
-## Prerequisites
+## :unlock: Requirements
 
 This project has the following dependencies:
 
-- OpenJDK 1.8
+- OpenJDK 8
 - Maven
-- Python 3.6+
+- Python3
 - Python3 venv
 
 To install them, run the following command:
@@ -29,7 +29,10 @@ To install them, run the following command:
 $ sudo apt install openjdk-8-jdk maven python3 python3-venv
 ```
 
-## Installation
+**NOTE**: If you have more than one version of `java` installed in your device, you will have to select
+the `openjdk-8-jdk` version by running `sudo update-alternatives --config java`.
+
+## :wrench: Installation
 
 First clone this repository:
 
@@ -37,8 +40,15 @@ First clone this repository:
 $ git clone https://github.com/Vol0kin/gvgai-pddl.git
 ```
 
-The best way to install the Python dependencies is by creating a virtual environment
-and installing them in it. To do so, run the following commands
+After the repository has been cloned, change the working directory to the directory that contains
+the cloned files. To do that, run the following command:
+
+```sh
+$ cd gvgai-pddl
+```
+
+To install the required Python dependencies, you can create a virtual environment and install them in there.
+You can do this by running the following commands:
 
 ```sh
 # Create virtual envirnoment
@@ -51,7 +61,14 @@ $ source env/bin/activate
 $ pip install -r requirements.txt
 ```
 
-Now everything that's left is installing the main 
+This way, you will be able to run the Python script without any kind of issue whenever the virtual
+environment is active. If you want to exit the virtual environment, run the following command:
+
+```sh
+deactivate
+```
+
+To create the executable JAR file, run one of these two commands:
 
 ```sh
 # Create executable file and run the tests
@@ -60,3 +77,13 @@ $ mvn package
 # Create executable file without running the tests
 $ mvn package -DskipTests=true
 ```
+
+Either of these commands will generate the following JAR file: `target/GVGAI-PDDL-1.0.jar`. The `target/` directory
+also contains external dependencies. Without them, the JAR file can't be executed.
+
+## :computer: Usage
+
+### Generation of configuration files templates
+
+### Running the system
+
