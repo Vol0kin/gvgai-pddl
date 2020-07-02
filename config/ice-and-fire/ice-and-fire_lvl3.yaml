@@ -1,0 +1,72 @@
+domainFile: domains/ice-and-fire-domain.pddl
+problemFile: problem.pddl
+domainName: IceAndFire
+gameElementsCorrespondence:
+  background:
+  - (empty ?c)
+  exit:
+  - (at ?e ?c)
+  avatar:
+  - (at ?a ?c)
+  trap:
+  - (at ?t ?c)
+  - (non-traversable ?c)
+  ice:
+  - (at ?i ?c)
+  - (has-hazard ?c)
+  fire:
+  - (at ?f ?c)
+  - (has-hazard ?c)
+  iceshoes:
+  - (at ?ib ?c)
+  - (ice-boots ?ib)
+  fireboots:
+  - (at ?fb ?c)
+  - (fire-boots ?fb)
+  chip:
+  - (at ?m ?c)
+  wall:
+  - (at ?w ?c)
+  - (non-traversable ?c)
+variablesTypes:
+  ?e: Exit
+  ?a: Avatar
+  ?t: Trap
+  ?i: Ice
+  ?f: Fire
+  ?ib: Boots
+  ?fb: Boots
+  ?m: Coin
+  ?w: Tree
+  ?c: Cell
+cellVariable: ?c
+avatarVariable: ?a
+connections:
+  UP: (connected-up ?c ?u)
+  DOWN: (connected-down ?c ?d)
+  LEFT: (connected-left ?c ?l)
+  RIGHT: (connected-right ?c ?r)
+actionsCorrespondence:
+  MOVE-UP: ACTION_UP
+  MOVE-DOWN: ACTION_DOWN
+  MOVE-LEFT: ACTION_LEFT
+  MOVE-RIGHT: ACTION_RIGHT
+  MOVE-UP-ICE: ACTION_UP
+  MOVE-DOWN-ICE: ACTION_DOWN
+  MOVE-LEFT-ICE: ACTION_LEFT
+  MOVE-RIGHT-ICE: ACTION_RIGHT
+  MOVE-UP-FIRE: ACTION_UP
+  MOVE-DOWN-FIRE: ACTION_DOWN
+  MOVE-LEFT-FIRE: ACTION_LEFT
+  MOVE-RIGHT-FIRE: ACTION_RIGHT
+  PICK-BOOTS: null
+goals:
+- goalPredicate: (has-ice-boots a)
+  priority: 1
+  saveGoal: yes
+- goalPredicate: (has-fire-boots a)
+  priority: 2
+  saveGoal: yes
+- goalPredicate: (exited-level a)
+  priority: 3
+  saveGoal: no

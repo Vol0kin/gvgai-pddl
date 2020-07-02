@@ -71,33 +71,33 @@ actionsCorrespondence:
   DIG-RIGHT: ACTION_USE
   EXIT-LEVEL: null
 goals:
-- goalPredicate: (got g_5_3)
+- goalPredicate: (got g_4_11)
   priority: 1
   saveGoal: no
-- goalPredicate: (got g_6_3)
+- goalPredicate: (got g_5_11)
   priority: 1
   saveGoal: no
-- goalPredicate: (got g_7_3)
+- goalPredicate: (got g_6_8)
   priority: 1
   saveGoal: no
-- goalPredicate: (got g_1_4)
+- goalPredicate: (got g_7_8)
   priority: 1
   saveGoal: no
-- goalPredicate: (got g_6_1)
+- goalPredicate: (got g_8_8)
   priority: 1
   saveGoal: no
-- goalPredicate: (got g_7_1)
+- goalPredicate: (got g_9_5)
   priority: 1
   saveGoal: no
-- goalPredicate: (got g_7_9)
+- goalPredicate: (got g_10_5)
   priority: 1
   saveGoal: no
-- goalPredicate: (got g_9_10)
+- goalPredicate: (got g_11_5)
+  priority: 1
+  saveGoal: no
+- goalPredicate: (got g_12_5)
   priority: 1
   saveGoal: no
 - goalPredicate: (exited-level)
   priority: 2
-  saveGoal: no
-- goalPredicate: (got g_16_9)
-  priority: 1
   saveGoal: no

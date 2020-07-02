@@ -6,6 +6,8 @@ gameElementsCorrespondence:
   - (terrain-empty ?c)
   wall:
   - (terrain-wall ?c)
+  sword:
+  - (terrain-empty ?c)
   dirt:
   - (terrain-ground ?c)
   exitdoor:
@@ -67,35 +69,33 @@ actionsCorrespondence:
   DIG-DOWN: ACTION_USE
   DIG-LEFT: ACTION_USE
   DIG-RIGHT: ACTION_USE
+  EXIT-LEVEL: null
 goals:
-- goalPredicate: (got g_4_2)
+- goalPredicate: (got g_15_8)
   priority: 1
   saveGoal: no
-- goalPredicate: (got g_3_7)
+- goalPredicate: (got g_14_8)
   priority: 1
   saveGoal: no
-- goalPredicate: (got g_2_7)
+- goalPredicate: (got g_9_9)
   priority: 1
   saveGoal: no
-- goalPredicate: (got g_1_7)
+- goalPredicate: (got g_9_8)
   priority: 1
   saveGoal: no
-- goalPredicate: (got g_2_8)
+- goalPredicate: (got g_7_7)
   priority: 1
   saveGoal: no
-- goalPredicate: (got g_3_8)
+- goalPredicate: (got g_7_6)
   priority: 1
   saveGoal: no
-- goalPredicate: (got g_5_8)
+- goalPredicate: (got g_7_11)
   priority: 1
   saveGoal: no
-- goalPredicate: (got g_6_8)
+- goalPredicate: (got g_6_11)
   priority: 1
   saveGoal: no
-- goalPredicate: (got g_7_8)
-  priority: 1
-  saveGoal: no
-- goalPredicate: (got g_3_8)
+- goalPredicate: (got g_5_11)
   priority: 1
   saveGoal: no
 - goalPredicate: (exited-level)
