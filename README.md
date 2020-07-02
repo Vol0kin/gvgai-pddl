@@ -18,6 +18,7 @@ R&D Projects TIN2015-71618-R and RTI2018-098460-B-I00.
 
 This project has the following dependencies:
 
+- git
 - OpenJDK 8
 - Maven
 - Python3
@@ -26,7 +27,7 @@ This project has the following dependencies:
 To install them, run the following command:
 
 ```sh
-$ sudo apt install openjdk-8-jdk maven python3 python3-venv
+$ sudo apt install git openjdk-8-jdk maven python3 python3-venv
 ```
 
 **NOTE**: If you have more than one version of `java` installed in your device, you will have to select
@@ -65,10 +66,10 @@ This way, you will be able to run the Python script without any kind of issue wh
 environment is active. If you want to exit the virtual environment, run the following command:
 
 ```sh
-deactivate
+$ deactivate
 ```
 
-To create the executable JAR file, run one of these two commands:
+To create the executable JAR file, run either of these two commands:
 
 ```sh
 # Create executable file and run the tests
@@ -78,12 +79,91 @@ $ mvn package
 $ mvn package -DskipTests=true
 ```
 
-Either of these commands will generate the following JAR file: `target/GVGAI-PDDL-1.0.jar`. The `target/` directory
+Either of them will generate the following JAR file: `target/GVGAI-PDDL-1.0.jar`. The `target/` directory
 also contains external dependencies. Without them, the JAR file can't be executed.
 
 ## :computer: Usage
 
-### Generation of configuration files templates
+### :pencil: Generation of template configuration files
 
-### Running the system
+The `gen_config_file.py` script allows the generation of template configuration files.
 
+```
+usage: gen_config_file.py [-h] -d DOMAIN -g GAME [-o OUTPUT] [--orientations]
+
+Generate the game's configuration file.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -d DOMAIN, --domain DOMAIN
+                        Domain file.
+  -g GAME, --game GAME  Game description file.
+  -o OUTPUT, --output OUTPUT
+                        Output file.
+  --orientations        Use orientation predicates.
+```
+
+The game description files can be found in the `examples/gridphysic/` directory.
+Their names follow the following pattern: `gamename.txt`.
+
+### :running: Running the system
+
+To run the system, execute the following command:
+
+```sh
+$ java -jar target/GVGAI-PDDL-1.0.jar [ options ]
+```
+
+The detailed list of options can be found here:
+
+```
+Usage: GVGAI-PDDL [-dhsV] [--localhost] [-c=<configurationFile>] -g=<gameIdx>
+                  -l=<levelIdx>
+Launches a new GVGAI game played by a planning agent or by a human.
+  -c, --config=<configurationFile>
+                           YAML configuration file that will be used by the
+                             agent.
+  -d, --debug              Debug mode.
+  -g, --game=<gameIdx>     Game to be played.
+  -h, --help               Show this help message and exit.
+  -l, --level=<levelIdx>   Level to be played.
+      --localhost          Call planner running on localhost.
+  -s, --save               Save runtime information (problems, plans and log).
+  -V, --version            Print version information and exit.
+```
+
+The `levelIdx` parameter ranges from 0 to 4. To find out what the `gameIdx` of a given
+game is, please check [this file](https://github.com/Vol0kin/gvgai-pddl/blob/master/examples/all_games_sp.csv).
+
+## :cloud: Running the planner on localhost
+
+Sometimes you might experience some issues while trying to run the system because the cloud solver is busy.
+To solve this problems and get faster execution times, consider running it on localhost. This is especially advisable if you
+are going to do some heavy testing. However, in order to run it you will need to install NodeJS beforehand. Please referr to
+the [official web page](https://nodejs.org/en/) to find the latests releases and the installation process.
+
+After you have installed it, go to the [solver's repository](https://github.com/AI-Planning/cloud-solver) and
+clone it. Once you have cloned it, go to the directory where the source files are found and run the
+following commands:
+
+```sh
+# Install the project's dependencies
+$ npm install .
+
+# Run the server
+$ node web.js
+```
+
+This will create a new server running on `localhost:5000`. By running the system with the `--localhost` option,
+the HTTP requests will be automatically sent to the server running on localhost.
+
+## :books: Source code documentation
+
+The source code's documentation is available [here](https://vol0kin.github.io/gvgai-pddl/src-docs/). There you can
+find the generated JavaDoc for the whole project (including GVGAI's source files). However, if you are more interested
+in the documentation of this particular agent, check the documentation of the `controller` package.
+
+## :handshake: Contributing
+
+If you want to contribute to this project or think that some feature is broken/missing, please consider
+opening a PR. All contributions are welcome! :smile:
