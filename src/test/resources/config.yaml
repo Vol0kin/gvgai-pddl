@@ -1,5 +1,5 @@
-domainFile: test_files/domain.pddl
-problemFile: test_files/problem.pddl
+domainFile: src/test/resources/domain.pddl
+problemFile: src/test/resources/problem.pddl
 domainName: BoulderDash
 gameElementsCorrespondence:
   background:

@@ -39,7 +39,7 @@ public class TestPlanningAgent {
         stateObservation = toPlay.getObservation();
         ElapsedCpuTimer timer = new ElapsedCpuTimer();
 
-        PlanningAgent.setGameConfigFile("test_files/config.yaml");
+        PlanningAgent.setGameConfigFile("src/test/resources/config.yaml");
         agent = new PlanningAgent(stateObservation, timer);
     }
 
@@ -74,7 +74,7 @@ public class TestPlanningAgent {
 
         assertEquals(plan.getPDDLActions().size(), 12);
 
-        agent.gameInformation.domainFile = "test_files/domain_error.pddl";
+        agent.gameInformation.domainFile = "src/test/resources/domain_error.pddl";
         assertThrows(PlannerException.class, () -> agent.findPlan());
     }
 

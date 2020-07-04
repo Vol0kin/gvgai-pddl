@@ -40,8 +40,8 @@ public class TestPDDLPlan {
 
     @BeforeClass
     public static void instantiatePDDLPlan() {
-        String domain = readFile("test_files/domain.pddl");
-        String problem = readFile("test_files/problem.pddl");
+        String domain = readFile("src/test/resources/domain.pddl");
+        String problem = readFile("src/test/resources/problem.pddl");
 
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("domain", domain);
