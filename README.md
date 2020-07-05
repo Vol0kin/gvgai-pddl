@@ -135,6 +135,47 @@ Launches a new GVGAI game played by a planning agent or by a human.
 The `levelIdx` parameter ranges from 0 to 4. To find out what the `gameIdx` of a given
 game is, please check [this file](https://github.com/Vol0kin/gvgai-pddl/blob/master/examples/all_games_sp.csv).
 
+#### :joystick: Human player
+
+If you want to play a level of a given game to mess with it and understand it better, just run the system with the following options:
+
+```sh
+$ java -jar target/GVGAI-PDDL-1.0.jar -g [gameIdx] -l [lvlIdx]
+```
+
+#### :space_invader: Run system using configuration file
+
+To run the system using the implemented planning agent, you must specify the path of a configuration file. To do so, run the
+system with the following options:
+
+```sh
+$ java -jar target/GVGAI-PDDL-1.0.jar -g [gameIdx] -l [lvlIdx] -c [configurationFile]
+```
+
+#### :bug: Debugging mode
+
+The system also has a debugging mode, which can be very handy if you want to get more information during execution time. To enable it,
+run the system with the following options:
+
+```sh
+$ java -jar target/GVGAI-PDDL-1.0.jar -g [gameIdx] -l [lvlIdx] -c [configurationFile] -d
+```
+
+> **Note**: In order to run the debugging mode, you have to use the implemented planning agent. Thus, you must specify a configuration
+file. Otherwise, the `-d` flag won't do anything.
+
+#### :floppy_disk: Save runtime information
+
+You can also save runtime information such as the generated problems, the response plans and a log file which contains
+information about everything that is going on in the system. To enable this option, run the system as follows:
+
+```sh
+$ java -jar target/GVGAI-PDDL-1.0.jar -g [gameIdx] -l [lvlIdx] -c [configurationFile] -s
+```
+
+> **Note**: This option is only available if you are running the implemented planning agent. Thus, you must specify a configuration
+file. Otherwise, the `-s` flag won't do anything.
+
 ## :cloud: Running the planner on localhost
 
 Sometimes you might experience some issues while trying to run the system because the cloud solver is busy.
