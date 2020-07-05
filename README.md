@@ -202,7 +202,15 @@ the HTTP requests will be automatically sent to the server running on localhost.
 
 The source code's documentation is available [here](https://vol0kin.github.io/gvgai-pddl/src-docs/). There you can
 find the generated JavaDoc for the whole project (including GVGAI's source files). However, if you are more interested
-in the documentation of this particular agent, check the documentation of the `controller` package.
+in the documentation of this particular agent, you can check the
+[controller package documentation](https://vol0kin.github.io/gvgai-pddl/src-docs/controller/package-summary.html).
+
+## :mortar_board: Other documentation
+
+In the following links you can find out more documentation about this project:
+
+- [My Bachelor's Thesis (Spanish)](https://vol0kin.github.io/TFG/pdfs/memoriaTFG.pdf)
+- [User's manual (Spanish)](https://vol0kin.github.io/TFG/pdfs/manual_usuario.pdf)
 
 ## :handshake: Contributing
 
