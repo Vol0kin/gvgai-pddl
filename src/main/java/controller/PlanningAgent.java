@@ -603,6 +603,11 @@ public class PlanningAgent extends AbstractPlayer {
                         }
                     }
                 }
+
+                this.PDDLGameStateObjects.get(this.gameInformation.cellVariable).add(
+                    String.format("%s_%d_%d", this.gameInformation.cellVariable, x, y)
+                      .replace("?", "")
+                );
             }
         }
 
